@@ -1,0 +1,55 @@
+<!--pages/client/index/index.wxml-->
+<view class="container client-home">
+  <!-- 顶部标题栏 -->
+  <view class="header-bar flex flex-between flex-v-center mb-20">
+    <text class="page-title">服务中心</text>
+    <view class="add-device-btn" bindtap="onActivateProduct">
+      <text class="icon">+</text>
+      <text>添加设备</text>
+    </view>
+  </view>
+
+  <!-- 我的设备区域 -->
+  <view class="section-title mb-20">我的设备</view>
+  
+  <!-- 有设备时显示列表 -->
+  <scroll-view scroll-x="true" class="my-product-scroll" enable-flex="true" wx:if="{{myProducts && myProducts.length > 0}}">
+    <view class="my-product-list">
+      <view class="my-product-item card" wx:for="{{myProducts}}" wx:key="id" bindtap="onProductDetail" data-id="{{item.id}}" data-product-code="{{item.name}}" data-image="{{item.image}}">
+        <image class="my-product-img" src="{{item.image}}" mode="aspectFill" bindtap="" data-product-code="{{item.name}}" data-image="{{item.image}}"></image>
+        <view class="my-product-info">
+          <text class="my-product-name" bindtap="" data-product-code="{{item.name}}">{{item.name}}</text>
+          <text class="my-product-status {{item.status === 'active' ? 'status-success' : 'status-error'}}" bindtap="onProductStatusTap" data-product-code="{{item.name}}" data-status="{{item.status}}">
+            {{item.status === 'active' ? '质保中' : '已过保'}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 无设备时显示虚线占位 -->
+  <view class="empty-device-box" bindtap="onActivateProduct" wx:else>
+    <view class="plus-large">+</view>
+    <text class="empty-text">点击激活您的第一台设备</text>
+  </view>
+
+  <!-- 服务进度区域 -->
+  <!-- <view class="section-title mt-20 mb-20">服务进度</view> -->
+  
+  <!-- 有进度时显示 -->
+  <!-- <view class="progress-list" wx:if="{{recentFeedbacks && recentFeedbacks.length > 0}}">
+    <view class="card progress-card" wx:for="{{recentFeedbacks}}" wx:key="id" bindtap="onViewFeedback" data-id="{{item.id}}">
+      <view class="flex flex-between mb-20">
+        <text class="progress-title">{{item.title}}</text>
+        <text class="status-text text-primary">{{item.statusText}}</text>
+      </view>
+      <text class="progress-desc text-secondary">{{item.description}}</text>
+    </view>
+  </view> -->
+
+  <!-- 无进度时显示空状态 -->
+  <!-- <view class="empty-progress-card card flex flex-center" wx:else>
+    <text class="text-secondary">暂无正在进行的服务</text>
+  </view> -->
+
+</view>

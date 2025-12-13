@@ -1,0 +1,224 @@
+<!--pages/manager/feedback/feedback.wxml-->
+<view class="feedback-container {{showBackupNav ? 'has-backup-nav' : ''}}">
+  <!-- 备用导航栏 - 仅在特殊情况下显示 -->
+  <view class="backup-navbar" wx:if="{{showBackupNav}}">
+    <view class="nav-left" bindtap="onSmartBack">
+      <text class="nav-icon">←</text>
+      <text class="nav-text">返回</text>
+    </view>
+    <view class="nav-center">
+      <text class="nav-title">{{mode === 'view' ? '问题详情' : '问题反馈'}}</text>
+    </view>
+  </view>
+  <view class="feedback-form" wx:if="{{mode === 'create'}}">
+    <!-- 所有表单项合并到一个卡片 -->
+    <view class="form-section">
+      <!-- 产品型号 - 必选 -->
+      <view class="form-group">
+        <view class="form-label-row">
+          <text class="form-label">产品型号</text>
+          <text class="label-tag required">必选</text>
+        </view>
+        
+        <!-- 产品类型选择 -->
+        <view class="product-type-tabs">
+          <view 
+            class="type-tab {{productType === 'integrated' ? 'active' : ''}}"
+            bindtap="onProductTypeChange"
+            data-type="integrated"
+          >
+            一体式
+          </view>
+          <view 
+            class="type-tab {{productType === 'split' ? 'active' : ''}}"
+            bindtap="onProductTypeChange"
+            data-type="split"
+          >
+            分体式
+          </view>
+        </view>
+        
+        <!-- 产品型号列表 -->
+        <view class="product-model-list">
+          <view 
+            class="product-model-item {{formData.productModel === item.model ? 'selected' : ''}}"
+            wx:for="{{currentProductList}}"
+            wx:key="model"
+            bindtap="onProductModelSelect"
+            data-model="{{item.model}}"
+            data-name="{{item.name}}"
+          >
+            <image class="product-image" src="{{item.image}}" mode="aspectFill"></image>
+            <view class="product-info">
+              <text class="product-name">{{item.name}}</text>
+              <text class="product-model">{{item.model}}</text>
+            </view>
+            <view class="product-check" wx:if="{{formData.productModel === item.model}}">
+              <text class="check-icon">✓</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 详细描述 - 选填 -->
+      <view class="form-group">
+        <view class="form-label-row">
+          <text class="form-label">详细描述</text>
+          <text class="label-tag optional">选填</text>
+        </view>
+        <view class="textarea-container">
+          <textarea 
+            class="form-textarea" 
+            placeholder="请详细描述问题现象、发生时间、影响程度等" 
+            value="{{formData.description}}" 
+            bindinput="onDescriptionInput"
+            maxlength="500"
+          ></textarea>
+        </view>
+        <view class="char-count">{{formData.description.length}}/500</view>
+      </view>
+
+      <!-- 问题图片 - 选填 -->
+      <view class="form-group">
+        <view class="form-label-row">
+          <text class="form-label">问题图片</text>
+          <text class="label-tag optional">选填</text>
+        </view>
+        <view class="image-upload">
+          <view class="image-list">
+            <view 
+              class="image-item" 
+              wx:for="{{formData.images}}" 
+              wx:key="index"
+            >
+              <image 
+                class="uploaded-image" 
+                src="{{item}}" 
+                mode="aspectFill"
+                bindtap="onPreviewImage"
+                data-url="{{item}}"
+              ></image>
+              <view 
+                class="image-delete" 
+                bindtap="onDeleteImage"
+                data-index="{{index}}"
+              >
+                <text class="delete-icon">×</text>
+              </view>
+            </view>
+            
+            <view 
+              class="image-upload-btn" 
+              bindtap="onChooseImage"
+              wx:if="{{formData.images.length < 6}}"
+            >
+              <text class="upload-icon">+</text>
+              <text class="upload-text">添加图片</text>
+            </view>
+          </view>
+          <text class="upload-tip">最多6张，支持JPG、PNG格式</text>
+        </view>
+      </view>
+
+      <!-- 联系方式 - 必填 -->
+      <view class="form-group" style="margin-bottom: 0;">
+        <view class="form-label-row">
+          <text class="form-label">联系电话</text>
+          <text class="label-tag required">必填</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="number" 
+          placeholder="请输入联系电话" 
+          value="{{formData.contactPhone}}" 
+          bindinput="onContactPhoneInput"
+        />
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="form-actions">
+      <button 
+        class="btn btn-primary btn-block submit-btn" 
+        bindtap="onSubmit"
+        disabled="{{!canSubmit || isSubmitting}}"
+      >
+        {{isSubmitting ? '提交中...' : '提交反馈'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 查看模式 -->
+  <view class="feedback-detail" wx:if="{{mode === 'view'}}">
+    <view class="detail-section">
+      <view class="section-title">基本信息</view>
+      <view class="detail-item">
+        <text class="detail-label">反馈编号</text>
+        <text class="detail-value">#{{feedbackDetail.id}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">问题标题</text>
+        <text class="detail-value">{{feedbackDetail.title}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">问题类型</text>
+        <text class="detail-value">{{feedbackDetail.problemType}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">紧急程度</text>
+        <view class="priority-tag priority-{{feedbackDetail.priority}}">
+          {{feedbackDetail.priorityText}}
+        </view>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">当前状态</text>
+        <view class="status-tag status-{{feedbackDetail.status}}">
+          {{feedbackDetail.statusText}}
+        </view>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">提交时间</text>
+        <text class="detail-value">{{feedbackDetail.createTime}}</text>
+      </view>
+    </view>
+
+    <view class="detail-section">
+      <view class="section-title">问题描述</view>
+      <text class="detail-description">{{feedbackDetail.description}}</text>
+    </view>
+
+    <view class="detail-section" wx:if="{{feedbackDetail.images.length > 0}}">
+      <view class="section-title">问题图片</view>
+      <view class="detail-images">
+        <image 
+          class="detail-image" 
+          wx:for="{{feedbackDetail.images}}" 
+          wx:key="index"
+          src="{{item}}" 
+          mode="aspectFill"
+          bindtap="onPreviewImage"
+          data-url="{{item}}"
+        ></image>
+      </view>
+    </view>
+
+    <view class="detail-section" wx:if="{{feedbackDetail.progress.length > 0}}">
+      <view class="section-title">处理进度</view>
+      <view class="progress-timeline">
+        <view 
+          class="timeline-item" 
+          wx:for="{{feedbackDetail.progress}}" 
+          wx:key="index"
+        >
+          <view class="timeline-dot"></view>
+          <view class="timeline-content">
+            <text class="timeline-title">{{item.title}}</text>
+            <text class="timeline-desc">{{item.description}}</text>
+            <text class="timeline-time">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+

@@ -1,0 +1,43 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .logo-circle { fill: #000000; }
+      .logo-pattern { fill: #000000; }
+      .logo-bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="512" cy="512" r="512" class="logo-bg"/>
+  
+  <!-- 外圆环 -->
+  <circle cx="512" cy="512" r="480" fill="none" stroke="#000000" stroke-width="60"/>
+  
+  <!-- 内部抽象图案 -->
+  <!-- 左侧C形 -->
+  <path d="M 200 300 Q 150 400 200 500 Q 250 600 300 500 Q 350 400 300 300 Q 250 200 200 300" class="logo-pattern"/>
+  
+  <!-- 右侧C形（镜像） -->
+  <path d="M 824 300 Q 874 400 824 500 Q 774 600 724 500 Q 674 400 724 300 Q 774 200 824 300" class="logo-pattern"/>
+  
+  <!-- 上方弧形 -->
+  <path d="M 300 200 Q 400 150 500 200 Q 600 250 500 300 Q 400 350 300 300 Q 200 250 300 200" class="logo-pattern"/>
+  
+  <!-- 下方弧形 -->
+  <path d="M 300 724 Q 400 774 500 724 Q 600 674 500 624 Q 400 574 300 624 Q 200 674 300 724" class="logo-pattern"/>
+  
+  <!-- 中心连接线 -->
+  <path d="M 400 400 Q 512 350 624 400 Q 512 450 400 400" class="logo-pattern"/>
+  <path d="M 400 624 Q 512 674 624 624 Q 512 574 400 624" class="logo-pattern"/>
+  
+  <!-- 中心小圆 -->
+  <circle cx="512" cy="512" r="40" class="logo-bg"/>
+</svg>
+
+
+
+
+
+
+
+

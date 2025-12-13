@@ -1,0 +1,130 @@
+/* pages/client/news-detail/news-detail.wxss */
+
+.news-detail-page {
+  padding-bottom: 120rpx; /* 为底部栏留出空间 */
+  background: #FFFFFF;
+}
+
+.article-header {
+  padding: 0 10rpx;
+}
+
+.article-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+  line-height: 1.4;
+}
+
+.article-meta {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.article-content {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.8;
+  padding: 0 10rpx;
+}
+
+.article-image {
+  width: 100%;
+  border-radius: 16rpx;
+  background: #f0f0f0;
+}
+
+.comments-section {
+  margin-top: 60rpx;
+  padding: 0 10rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.comment-item {
+  margin-bottom: 40rpx;
+}
+
+.avatar-box {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #E0E0E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-user {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.comment-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.comment-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #FFFFFF;
+  padding: 20rpx 32rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.input-box {
+  flex: 1;
+  margin-right: 32rpx;
+}
+
+.comment-input {
+  background: #F5F7FA;
+  border-radius: 32rpx;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  height: 72rpx;
+}
+
+.action-box {
+  display: flex;
+}
+
+.like-btn, .share-btn {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.like-btn .icon {
+  font-size: 40rpx;
+  color: #666; /* 未点赞颜色 */
+}
+
+.count {
+  font-size: 20rpx;
+  margin-top: 4rpx;
+}

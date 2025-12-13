@@ -1,0 +1,74 @@
+<!-- pages/worker/request-parts/request-parts.wxml -->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="header">
+    <text class="title">申请发出配件</text>
+    <text class="subtitle">任务编号：{{task.issueId}}</text>
+  </view>
+
+  <!-- 任务基本信息 -->
+  <view class="issue-info">
+    <view class="info-item">
+      <text class="label">问题标题</text>
+      <text class="value">{{task.title}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">客户姓名</text>
+      <text class="value">{{task.clientName}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系电话</text>
+      <text class="value">{{task.clientPhone}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">安装地址</text>
+      <text class="value">{{task.clientAddress}}</text>
+    </view>
+  </view>
+
+  <!-- 配件详情 -->
+  <view class="form-section">
+    <view class="section-title">配件详情 <text class="required">*</text></view>
+    <textarea 
+      class="textarea" 
+      placeholder="请详细填写需要的配件信息，例如：主板 x1，内存条 x2..."
+      maxlength="300"
+      value="{{partsDetail}}"
+      bindinput="onPartsDetailInput"
+    />
+    <view class="char-count">{{partsDetail.length}}/300</view>
+  </view>
+
+  <!-- 问题描述 -->
+  <view class="form-section">
+    <view class="section-title">问题描述 <text class="required">*</text></view>
+    <textarea 
+      class="textarea" 
+      placeholder="请描述需要更换配件的原因和问题详情..."
+      maxlength="500"
+      value="{{problemDescription}}"
+      bindinput="onProblemInput"
+    />
+    <view class="char-count">{{problemDescription.length}}/500</view>
+  </view>
+
+  <!-- 申请理由 -->
+  <view class="form-section">
+    <view class="section-title">申请理由 <text class="required">*</text></view>
+    <textarea 
+      class="textarea" 
+      placeholder="请说明申请发出配件的理由，帮助主管更好地审批..."
+      maxlength="500"
+      value="{{requestReason}}"
+      bindinput="onRequestReasonInput"
+    />
+    <view class="char-count">{{requestReason.length}}/500</view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button class="btn-cancel" bindtap="onCancel">取消</button>
+    <button class="btn-confirm" bindtap="onConfirm">提交申请</button>
+  </view>
+</view>
+

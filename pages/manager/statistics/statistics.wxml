@@ -1,0 +1,185 @@
+<!--pages/manager/statistics/statistics.wxml-->
+<view class="statistics-page">
+  <!-- 顶部今日统计卡片 -->
+  <view class="today-stats">
+    <view class="stats-card">
+      <view class="stats-icon new">📝</view>
+      <view class="stats-content">
+        <text class="stats-number">{{todayStats.newIssues}}</text>
+        <text class="stats-label">今日新增</text>
+      </view>
+    </view>
+    
+    <view class="stats-card">
+      <view class="stats-icon resolved">✅</view>
+      <view class="stats-content">
+        <text class="stats-number">{{todayStats.resolvedToday}}</text>
+        <text class="stats-label">今日解决</text>
+      </view>
+    </view>
+    
+    <view class="stats-card">
+      <view class="stats-icon pending">⏰</view>
+      <view class="stats-content">
+        <text class="stats-number">{{todayStats.pendingIssues}}</text>
+        <text class="stats-label">待处理</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 总体统计 -->
+  <view class="overall-stats">
+    <view class="section-title">总体概况</view>
+    <view class="overall-cards">
+      <view class="overall-card">
+        <text class="overall-number">{{totalIssues}}</text>
+        <text class="overall-label">总问题数</text>
+      </view>
+      <view class="overall-card">
+        <text class="overall-number">{{totalWorkers}}</text>
+        <text class="overall-label">维修工数</text>
+      </view>
+      <view class="overall-card">
+        <text class="overall-number">{{avgResolveTime}}h</text>
+        <text class="overall-label">平均解决</text>
+      </view>
+      <view class="overall-card">
+        <text class="overall-number">{{avgSatisfaction}}</text>
+        <text class="overall-label">平均评分</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 状态统计 -->
+  <view class="status-stats">
+    <view class="section-title">问题状态分布</view>
+    <view class="status-list">
+      <view class="status-item" bindtap="onGoToPending">
+        <view class="status-info">
+          <text class="status-name">待处理</text>
+          <text class="status-count">{{statusStats.pending}}</text>
+        </view>
+        <view class="status-bar">
+          <view class="status-bar-fill" style="width: {{statusStats.pending / totalIssues * 100}}%; background: #fa8c16;"></view>
+        </view>
+      </view>
+      
+      <view class="status-item" bindtap="onGoToAssigned">
+        <view class="status-info">
+          <text class="status-name">已分配</text>
+          <text class="status-count">{{statusStats.assigned}}</text>
+        </view>
+        <view class="status-bar">
+          <view class="status-bar-fill" style="width: {{statusStats.assigned / totalIssues * 100}}%; background: #1890ff;"></view>
+        </view>
+      </view>
+      
+      <view class="status-item">
+        <view class="status-info">
+          <text class="status-name">处理中</text>
+          <text class="status-count">{{statusStats.processing}}</text>
+        </view>
+        <view class="status-bar">
+          <view class="status-bar-fill" style="width: {{statusStats.processing / totalIssues * 100}}%; background: #722ed1;"></view>
+        </view>
+      </view>
+      
+      <view class="status-item" bindtap="onGoToResolved">
+        <view class="status-info">
+          <text class="status-name">已解决</text>
+          <text class="status-count">{{statusStats.resolved}}</text>
+        </view>
+        <view class="status-bar">
+          <view class="status-bar-fill" style="width: {{statusStats.resolved / totalIssues * 100}}%; background: #52c41a;"></view>
+        </view>
+      </view>
+      
+      <view class="status-item">
+        <view class="status-info">
+          <text class="status-name">已关闭</text>
+          <text class="status-count">{{statusStats.closed}}</text>
+        </view>
+        <view class="status-bar">
+          <view class="status-bar-fill" style="width: {{statusStats.closed / totalIssues * 100}}%; background: #666;"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 优先级统计 -->
+  <view class="priority-stats">
+    <view class="section-title">优先级分布</view>
+    <view class="priority-grid">
+      <view class="priority-card urgent">
+        <text class="priority-count">{{priorityStats.urgent}}</text>
+        <text class="priority-label">紧急</text>
+      </view>
+      <view class="priority-card high">
+        <text class="priority-count">{{priorityStats.high}}</text>
+        <text class="priority-label">高</text>
+      </view>
+      <view class="priority-card medium">
+        <text class="priority-count">{{priorityStats.medium}}</text>
+        <text class="priority-label">中</text>
+      </view>
+      <view class="priority-card low">
+        <text class="priority-count">{{priorityStats.low}}</text>
+        <text class="priority-label">低</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 类别统计 -->
+  <view class="category-stats" wx:if="{{categoryList.length > 0}}">
+    <view class="section-title">问题类别分布</view>
+    <view class="category-list">
+      <view class="category-item" wx:for="{{categoryList}}" wx:key="name">
+        <view class="category-info">
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-count">{{item.count}}</text>
+        </view>
+        <view class="category-bar">
+          <view class="category-bar-fill" style="width: {{item.count / totalIssues * 100}}%;"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 维修工表现统计 -->
+  <view class="worker-stats" wx:if="{{workerStats.length > 0}}">
+    <view class="section-title">维修工表现</view>
+    <view class="worker-list">
+      <view class="worker-item" wx:for="{{workerStats}}" wx:key="workerId">
+        <view class="worker-header">
+          <text class="worker-name">{{item.workerName}}</text>
+          <text class="worker-satisfaction">⭐ {{item.avgSatisfaction}}</text>
+        </view>
+        <view class="worker-stats-row">
+          <view class="worker-stat">
+            <text class="stat-label">总任务</text>
+            <text class="stat-value">{{item.totalTasks}}</text>
+          </view>
+          <view class="worker-stat">
+            <text class="stat-label">已完成</text>
+            <text class="stat-value">{{item.completedTasks}}</text>
+          </view>
+          <view class="worker-stat">
+            <text class="stat-label">进行中</text>
+            <text class="stat-value">{{item.inProgressTasks}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{totalIssues === 0 && !isLoading}}">
+    <text class="empty-icon">📊</text>
+    <text class="empty-text">暂无统计数据</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{isLoading}}">
+    <text>加载中...</text>
+  </view>
+</view>

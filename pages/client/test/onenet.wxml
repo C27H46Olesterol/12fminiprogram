@@ -1,0 +1,15 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <view class="status-bar">
+    <text>设备状态: {{deviceData ? '在线' : '离线'}}</text>
+    <text class="last-update">最后更新: {{lastUpdateTime}}</text>
+  </view>
+  
+  <view class="data-card" wx:if="{{deviceData}}">
+    <view class="data-item">
+      <text>测试内容 {{deviceData.testText}}°C</text>
+    </view>
+  </view>
+  
+  <button type="primary" bindtap="refreshData">手动刷新</button>
+</view>

@@ -1,0 +1,110 @@
+/* pages/client/index/index.wxss */
+
+.client-home {
+  padding-top: 40rpx;
+}
+
+.header-bar {
+  padding: 0 10rpx;
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.add-device-btn {
+  background: #E6F7FF;
+  color: #1677ff;
+  padding: 12rpx 24rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  color: #666;
+  margin-left: 10rpx;
+}
+
+/* 虚线添加设备框 */
+.empty-device-box {
+  width: 100%;
+  height: 240rpx;
+  border: 2rpx dashed #D9D9D9;
+  border-radius: 24rpx;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.plus-large {
+  font-size: 60rpx;
+  font-weight: 300;
+  margin-bottom: 16rpx;
+  color: #ccc;
+}
+
+.empty-text {
+  font-size: 26rpx;
+}
+
+/* 我的设备列表 */
+.my-product-scroll {
+  width: 100%;
+  white-space: nowrap;
+  padding-bottom: 10rpx;
+}
+
+.my-product-list {
+  display: flex;
+  gap: 20rpx;
+}
+
+.my-product-item {
+  width: 280rpx;
+  flex-shrink: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.my-product-img {
+  width: 100%;
+  height: 200rpx;
+  background: #f0f0f0;
+}
+
+.my-product-info {
+  padding: 20rpx;
+}
+
+.my-product-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.my-product-status {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+/* 服务进度空状态 */
+.empty-progress-card {
+  height: 160rpx;
+  border-radius: 24rpx;
+  box-shadow: none; /* 图片中看起来很平 */
+  border: none;
+}

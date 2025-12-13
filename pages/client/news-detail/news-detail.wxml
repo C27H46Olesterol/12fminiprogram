@@ -1,0 +1,67 @@
+<!--pages/client/news-detail/news-detail.wxml-->
+<view class="container news-detail-page">
+  <!-- 顶部导航栏 (模拟，实际使用系统导航栏) -->
+  <!-- <view class="nav-bar">
+    <view class="back-icon">
+      <text class="icon"><</text>
+    </view>
+    <text class="nav-title">资讯详情</text>
+    <view class="share-icon">
+      <text class="icon">🔗</text>
+    </view>
+  </view> -->
+
+  <!-- 文章头部 -->
+  <view class="article-header mb-20">
+    <view class="article-title">{{news.title}}</view>
+    <view class="article-meta flex flex-v-center">
+      <text class="article-date mr-20">{{news.date}}</text>
+      <text class="article-read">阅读 {{news.views}}</text>
+    </view>
+  </view>
+
+  <!-- 文章内容 -->
+  <view class="article-content mb-20">
+    <image class="article-image mb-20" src="{{news.image}}" mode="widthFix" wx:if="{{news.image}}"></image>
+    <view class="article-text">
+      <text>{{news.content}}</text>
+    </view>
+  </view>
+
+  <!-- 评论区 -->
+  <view class="comments-section">
+    <view class="section-title mb-20">全部评论 ({{comments.length}})</view>
+    
+    <view class="comment-list">
+      <view class="comment-item flex" wx:for="{{comments}}" wx:key="id">
+        <view class="avatar-box mr-20">
+          <text class="avatar-text">{{item.avatarText}}</text>
+        </view>
+        <view class="comment-content">
+          <view class="flex flex-between flex-v-center mb-10">
+            <text class="comment-user">{{item.user}}</text>
+            <text class="comment-date">{{item.date}}</text>
+          </view>
+          <text class="comment-text">{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar flex flex-between flex-v-center">
+    <view class="input-box">
+      <input class="comment-input" placeholder="说点什么..." placeholder-class="input-placeholder" />
+    </view>
+    <view class="action-box flex flex-v-center">
+      <view class="like-btn flex flex-column flex-center">
+        <text class="icon">❤️</text>
+        <text class="count">{{news.likes}}</text>
+      </view>
+      <view class="share-btn flex flex-column flex-center ml-20">
+        <text class="icon">👤</text> <!-- 使用 text 模拟图标 -->
+        <text class="count">我的</text>
+      </view>
+    </view>
+  </view>
+</view>

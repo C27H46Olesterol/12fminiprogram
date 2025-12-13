@@ -1,0 +1,47 @@
+<!--pages/client/product-detail/product-detail.wxml-->
+<view class="container product-detail">
+  <!-- 顶部产品信息区域 -->
+  <view class="product-header">
+    <view class="product-image-container">
+      <image class="product-image" src="{{productInfo.image}}" mode="aspectFill"></image>
+    </view>
+    <view class="product-basic-info">
+      <text class="product-name">{{productInfo.name}}</text>
+      <text class="product-code">产品编码：{{productInfo.productCode}}</text>
+      <text class="product-status {{productInfo.status === 'active' ? 'status-active' : 'status-inactive'}}">
+        {{productInfo.status === 'active' ? '质保中' : '已过保'}}
+      </text>
+    </view>
+  </view>
+
+  <!-- 产品详细信息 -->
+  <view class="section">
+    <view class="section-title">产品信息</view>
+    <view class="info-list">
+      <view class="info-item">
+        <text class="info-label">激活时间：</text>
+        <text class="info-value">{{productInfo.activateTime}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">保修到期：</text>
+        <text class="info-value">{{productInfo.warrantyEnd}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">安装位置：</text>
+        <text class="info-value">{{productInfo.location}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">序列号：</text>
+        <text class="info-value">{{productInfo.serialNumber}}</text>
+      </view>
+    </view>
+  </view>
+
+
+
+  <!-- 操作按钮区域 -->
+  <view class="action-buttons">
+    <button class="action-btn feedback-btn" bindtap="onFeedback">报修反馈</button>
+    <button class="action-btn service-btn" bindtap="onCallService">联系客服</button>
+  </view>
+</view>

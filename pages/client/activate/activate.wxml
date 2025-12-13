@@ -1,0 +1,186 @@
+<!--pages/client/activate/activate.wxml-->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header-section">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="header-title">激活您的产品</view>
+      <view class="header-desc">请填写信息以享受官方售后保障</view>
+    </view>
+  </view>
+
+  <!-- 激活表单 -->
+  <view class="form-container">
+    
+    <!-- 产品信息卡片 -->
+    <view class="form-card">
+      <view class="card-title">产品信息</view>
+      
+      <!-- 产品码 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>产品序列号</text>
+          <text class="required-mark">*</text>
+        </view>
+        <view class="code-input-wrap">
+          <input 
+            class="form-input code-input" 
+            type="text" 
+            placeholder="请输入S/N码或扫描二维码" 
+            placeholder-class="input-placeholder"
+            value="{{formData.productCode}}" 
+            bindinput="onProductCodeInput"
+          />
+          <button class="scan-btn" bindtap="onScanQRCode" hover-class="btn-hover">
+            <text class="scan-icon">📷</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 车牌号 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>安装车辆车牌</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="text" 
+          placeholder="请输入车牌号码 (例: 京A88888)" 
+          placeholder-class="input-placeholder"
+          value="{{formData.licensePlate}}" 
+          bindinput="onLicensePlateInput"
+        />
+      </view>
+    </view>
+
+    <!-- 联系信息卡片 -->
+    <view class="form-card">
+      <view class="card-title">联系信息</view>
+      
+      <!-- 用户手机号 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>用户手机号</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="number" 
+          maxlength="11"
+          placeholder="请输入您的手机号码" 
+          placeholder-class="input-placeholder"
+          value="{{formData.userPhone}}" 
+          bindinput="onUserPhoneInput"
+        />
+      </view>
+
+      <!-- 安装师傅手机号 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>安装师傅手机号</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="number" 
+          maxlength="11"
+          placeholder="请输入安装师傅的联系方式" 
+          placeholder-class="input-placeholder"
+          value="{{formData.installerPhone}}" 
+          bindinput="onInstallerPhoneInput"
+        />
+      </view>
+    </view>
+
+    <!-- 安装记录卡片 -->
+    <view class="form-card">
+      <view class="card-title">安装记录</view>
+      
+      <!-- 安装过程照片 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>安装过程照片</text>
+          <text class="required-mark">*</text>
+          <text class="label-desc">展示关键安装步骤</text>
+        </view>
+        <view class="image-upload-area">
+          <view 
+            class="uploaded-item" 
+            wx:for="{{formData.processImages}}" 
+            wx:key="*this"
+          >
+            <image 
+              class="uploaded-img" 
+              src="{{item}}" 
+              mode="aspectFill"
+              bindtap="onPreviewProcessImage"
+              data-url="{{item}}"
+            />
+            <view class="delete-btn" catchtap="onDeleteProcessImage" data-index="{{index}}">
+              <text class="delete-icon">×</text>
+            </view>
+          </view>
+          
+          <view class="upload-btn" bindtap="onChooseProcessImage" wx:if="{{formData.processImages.length < 3}}">
+            <view class="upload-icon-wrap">
+              <text class="upload-icon">+</text>
+            </view>
+            <text class="upload-text">上传照片</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 安装完成照片 -->
+      <view class="form-group no-border">
+        <view class="form-label">
+          <text>安装完成照片</text>
+          <text class="required-mark">*</text>
+          <text class="label-desc">展示安装后的整体效果</text>
+        </view>
+        <view class="image-upload-area">
+          <view 
+            class="uploaded-item" 
+            wx:for="{{formData.finishImages}}" 
+            wx:key="*this"
+          >
+            <image 
+              class="uploaded-img" 
+              src="{{item}}" 
+              mode="aspectFill"
+              bindtap="onPreviewFinishImage"
+              data-url="{{item}}"
+            />
+            <view class="delete-btn" catchtap="onDeleteFinishImage" data-index="{{index}}">
+              <text class="delete-icon">×</text>
+            </view>
+          </view>
+          
+          <view class="upload-btn" bindtap="onChooseFinishImage" wx:if="{{formData.finishImages.length < 3}}">
+            <view class="upload-icon-wrap">
+              <text class="upload-icon">+</text>
+            </view>
+            <text class="upload-text">上传照片</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="submit-area">
+      <button 
+        class="btn-submit" 
+        hover-class="btn-hover"
+        bindtap="onSubmit"
+        disabled="{{isSubmitting || !canSubmit}}"
+      >
+        {{isSubmitting ? '提交中...' : '确认激活'}}
+      </button>
+      <view class="agreement-tips">
+        提交即代表您同意<text class="link">《产品保修条款》</text>
+      </view>
+    </view>
+
+  </view>
+</view>
+

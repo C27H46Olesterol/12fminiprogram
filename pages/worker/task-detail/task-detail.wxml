@@ -1,0 +1,445 @@
+<!--pages/worker/task-detail/task-detail.wxml-->
+<wxs module="utils">
+  // 获取状态文本
+  var getStatusText = function(status) {
+    var map = {
+      'pending': '待处理',
+      'assigned': '已分配',
+      'processing': '处理中',
+      'parts_request': '配件申请中',
+      'parts_sent': '配件已发出',
+      'parts_received': '返件已收到',
+      'resolved': '已解决',
+      'closed': '已关闭',
+      'cancelled': '已取消'
+    };
+    return map[status] || '未知';
+  };
+
+  // 获取优先级文本
+  var getPriorityText = function(priority) {
+    var map = {
+      'low': '低',
+      'medium': '中',
+      'high': '高',
+      'urgent': '紧急'
+    };
+    return map[priority] || '未设置';
+  };
+
+  // 获取优先级颜色
+  var getPriorityColor = function(priority) {
+    var map = {
+      'low': '#52c41a',
+      'medium': '#1890ff',
+      'high': '#fa8c16',
+      'urgent': '#f5222d'
+    };
+    return map[priority] || '#666';
+  };
+
+  // 格式化时间
+  var formatTime = function(timestamp) {
+    if (!timestamp) return '';
+    
+    var date = getDate(timestamp);
+    var year = date.getFullYear();
+    var month = (date.getMonth() + 1).toString();
+    var day = date.getDate().toString();
+    var hours = date.getHours().toString();
+    var minutes = date.getMinutes().toString();
+    
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    if (hours.length < 2) hours = '0' + hours;
+    if (minutes.length < 2) minutes = '0' + minutes;
+    
+    return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+  };
+
+  module.exports = {
+    getStatusText: getStatusText,
+    getPriorityText: getPriorityText,
+    getPriorityColor: getPriorityColor,
+    formatTime: formatTime
+  };
+</wxs>
+
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="header">
+    <text class="title">任务详情</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{isLoading}}" class="loading">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 任务详情 -->
+  <view wx:else class="task-detail">
+    <!-- 基本信息 -->
+    <view class="section">
+      <view class="section-title">基本信息</view>
+      <view class="info-item">
+        <text class="label">任务编号：</text>
+        <text class="value">{{task.issueId}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">任务标题：</text>
+        <text class="value">{{task.title}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">问题描述：</text>
+        <text class="value">{{task.description}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">问题分类：</text>
+        <text class="value">{{task.category}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">优先级：</text>
+        <text class="value priority" style="color: {{utils.getPriorityColor(task.priority)}}">
+          {{utils.getPriorityText(task.priority)}}
+        </text>
+      </view>
+      <view class="info-item">
+        <text class="label">当前状态：</text>
+        <text class="value status">{{utils.getStatusText(task.status)}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">分配时间：</text>
+        <text class="value">{{utils.formatTime(task.assignedTime)}}</text>
+      </view>
+    </view>
+
+    <!-- 客户信息 -->
+    <view class="section">
+      <view class="section-title">客户信息</view>
+      <view class="info-item">
+        <text class="label">客户姓名：</text>
+        <text class="value">{{task.clientName}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">联系电话：</text>
+        <text class="value phone" bindtap="onCallPhone" data-phone="{{task.clientPhone}}">
+          {{task.clientPhone}}
+        </text>
+      </view>
+      <view class="info-item">
+        <text class="label">安装地址：</text>
+        <text class="value">{{task.clientAddress}}</text>
+      </view>
+      <view class="info-item">
+        <text class="label">产品型号：</text>
+        <text class="value">{{task.productModel}}</text>
+      </view>
+      <view class="info-item" wx:if="{{task.bestContactTime}}">
+        <text class="label">最佳联系时间：</text>
+        <text class="value">{{task.bestContactTime}}</text>
+      </view>
+    </view>
+
+    <!-- 客户评价 -->
+    <view class="section" wx:if="{{task.satisfaction > 0}}">
+      <view class="section-title">客户评价</view>
+      <view class="info-item">
+        <text class="label">服务评分：</text>
+        <view class="rating-display">
+          <view class="stars">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="index" class="star {{task.satisfaction >= item ? 'active' : ''}}">★</text>
+          </view>
+          <text class="rating-text" style="color: {{getRatingColor(task.satisfaction)}}">
+            {{getRatingText(task.satisfaction)}}
+          </text>
+        </view>
+      </view>
+      <view class="info-item" wx:if="{{task.feedback}}">
+        <text class="label">评价内容：</text>
+        <text class="value feedback-content">{{task.feedback}}</text>
+      </view>
+    </view>
+
+    <!-- 处理信息 -->
+    <view class="section" wx:if="{{task.processingTime || task.resolvedTime}}">
+      <view class="section-title">处理信息</view>
+      <view class="info-item" wx:if="{{task.processingTime}}">
+        <text class="label">开始处理：</text>
+        <text class="value">{{utils.formatTime(task.processingTime)}}</text>
+      </view>
+      <view class="info-item" wx:if="{{task.resolvedTime}}">
+        <text class="label">完成时间：</text>
+        <text class="value">{{utils.formatTime(task.resolvedTime)}}</text>
+      </view>
+      <view class="info-item" wx:if="{{task.resultDescription}}">
+        <text class="label">处理结果：</text>
+        <text class="value">{{task.resultDescription}}</text>
+      </view>
+      <view class="info-item" wx:if="{{task.projectType}}">
+        <text class="label">项目类型：</text>
+        <text class="value">{{task.projectType}}</text>
+      </view>
+      <view class="info-item" wx:elif="{{task.workHours}}">
+        <text class="label">工作时长：</text>
+        <text class="value">{{task.workHours}} 小时</text>
+      </view>
+    </view>
+
+    <!-- 任务进度详情 -->
+    <view class="section" wx:if="{{task.status !== 'assigned'}}">
+      <view class="section-title">任务进度详情</view>
+      
+      <!-- 是否需要配件 -->
+      <view class="info-item" wx:if="{{task.status === 'processing' || task.status === 'parts_sent' || task.status === 'parts_received' || task.status === 'resolved'}}">
+        <text class="label">是否需要配件：</text>
+        <text class="value">{{task.needParts ? '需要' : '不需要'}}</text>
+      </view>
+      
+      <!-- 配件详情（如果需要配件） -->
+      <view wx:if="{{task.needParts && task.partsDetail}}" class="info-item">
+        <text class="label">配件详情：</text>
+        <text class="value">{{task.partsDetail}}</text>
+      </view>
+      
+      <!-- 问题诊断描述（发出配件时的描述） -->
+      <view wx:if="{{task.problemDescription}}" class="info-item">
+        <text class="label">问题诊断：</text>
+        <text class="value">{{task.problemDescription}}</text>
+      </view>
+      
+      <!-- 配件发出时间 -->
+      <view wx:if="{{task.partsSentTime}}" class="info-item">
+        <text class="label">配件发出时间：</text>
+        <text class="value">{{utils.formatTime(task.partsSentTime)}}</text>
+      </view>
+      
+      <!-- 配件发出操作人 -->
+      <view wx:if="{{task.partsSentByName}}" class="info-item">
+        <text class="label">配件发出人：</text>
+        <text class="value">{{task.partsSentByName}}</text>
+      </view>
+      
+      <!-- 返件发出时间 -->
+      <view wx:if="{{task.partsReturnedTime}}" class="info-item">
+        <text class="label">返件发出时间：</text>
+        <text class="value">{{utils.formatTime(task.partsReturnedTime)}}</text>
+      </view>
+      
+      <!-- 返件发出操作人 -->
+      <view wx:if="{{task.partsReturnedByName}}" class="info-item">
+        <text class="label">返件发出人：</text>
+        <text class="value">{{task.partsReturnedByName}}</text>
+      </view>
+      
+      <!-- 返件快递单号 -->
+      <view wx:if="{{task.trackingNumber}}" class="info-item">
+        <text class="label">返件快递单号：</text>
+        <text class="value">{{task.trackingNumber}}</text>
+      </view>
+      
+      <!-- 返件图片 -->
+      <view wx:if="{{task.partsImages && task.partsImages.length > 0}}" class="info-item" style="flex-direction: column; align-items: flex-start;">
+        <text class="label" style="margin-bottom: 15rpx;">返件图片：</text>
+        <view class="images" style="display: flex; flex-wrap: wrap; gap: 15rpx;">
+          <image 
+            wx:for="{{task.partsImages}}" 
+            wx:key="index"
+            src="{{item}}" 
+            class="parts-image"
+            style="width: 200rpx; height: 200rpx; border-radius: 8rpx;"
+            mode="aspectFill"
+            bindtap="onPreviewPartsImage"
+            data-src="{{item}}"
+            data-urls="{{task.partsImages}}"
+          />
+        </view>
+      </view>
+      
+      <!-- 返件收到时间 -->
+      <view wx:if="{{task.partsReceivedTime}}" class="info-item">
+        <text class="label">返件收到时间：</text>
+        <text class="value">{{utils.formatTime(task.partsReceivedTime)}}</text>
+      </view>
+      
+      <!-- 返件收到操作人 -->
+      <view wx:if="{{task.partsReceivedByName}}" class="info-item">
+        <text class="label">返件收到人：</text>
+        <text class="value">{{task.partsReceivedByName}}</text>
+      </view>
+      
+      <!-- 返件备注 -->
+      <view wx:if="{{task.receivedNote}}" class="info-item">
+        <text class="label">返件备注：</text>
+        <text class="value">{{task.receivedNote}}</text>
+      </view>
+    </view>
+
+    <!-- 图片信息 -->
+    <view class="section" wx:if="{{task.images && task.images.length > 0}}">
+      <view class="section-title">相关图片</view>
+      <view class="images">
+        <image 
+          wx:for="{{task.images}}" 
+          wx:key="index"
+          src="{{item}}" 
+          class="image"
+          bindtap="onPreviewImage"
+          data-src="{{item}}"
+        />
+      </view>
+    </view>
+
+    <!-- 调试信息（开发时可见） -->
+    <view class="debug-info" style="background: #f0f0f0; padding: 20rpx; margin: 20rpx; border-radius: 10rpx; font-size: 24rpx; line-height: 1.8;">
+      <text style="display: block; font-weight: bold; margin-bottom: 10rpx;">🔍 实时调试信息</text>
+      <text style="display: block;">• 当前状态: {{task.status}}</text>
+      <text style="display: block;">• 是否处理中: {{isProcessing ? '是' : '否'}}</text>
+      <text style="display: block;">• 显示"开始处理": {{task.status === 'assigned' ? '是' : '否'}}</text>
+      <text style="display: block;">• 显示"完成任务": {{task.status === 'processing' ? '是' : '否'}}</text>
+      <text style="display: block; color: #999; margin-top: 10rpx; font-size: 20rpx;">提示：状态更新后，对应按钮应该自动切换</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="actions">
+      <!-- 已分配状态：显示开始处理 -->
+      <button 
+        wx:if="{{task.status === 'assigned'}}"
+        class="btn primary" 
+        bindtap="onStartTask"
+        disabled="{{isProcessing}}"
+      >
+        {{isProcessing ? '处理中...' : '开始处理'}}
+      </button>
+      
+      <!-- 处理中状态：根据是否需要配件显示不同按钮 -->
+      <!-- 不需要配件：直接显示完成任务 -->
+      <button 
+        wx:if="{{task.status === 'processing' && !task.needParts}}"
+        class="btn success" 
+        bindtap="onShowCompleteModal"
+        disabled="{{isProcessing}}"
+      >
+        完成任务
+      </button>
+      
+      <!-- 需要配件：维修工显示申请发出配件按钮 -->
+      <button 
+        wx:if="{{task.status === 'processing' && task.needParts}}"
+        class="btn warning" 
+        bindtap="onRequestParts"
+        disabled="{{isProcessing}}"
+      >
+        申请发出配件
+      </button>
+      
+      <!-- 配件申请中状态：显示等待审批提示 -->
+      <button 
+        wx:if="{{task.status === 'parts_request'}}"
+        class="btn secondary" 
+        disabled="true"
+      >
+        等待主管审批
+      </button>
+      
+      <!-- 配件已发出状态：显示发出返件按钮（主管和维修工都可以操作） -->
+      <button 
+        wx:if="{{task.status === 'parts_sent'}}"
+        class="btn warning" 
+        bindtap="onReturnParts"
+        disabled="{{isProcessing}}"
+      >
+        发出返件
+      </button>
+      
+      <!-- 返件已收到状态：维修工不能完成任务，显示等待主管完成 -->
+      <button 
+        wx:if="{{task.status === 'parts_received'}}"
+        class="btn secondary" 
+        disabled="true"
+      >
+        等待主管完成任务
+      </button>
+      
+      <!-- 申请协助（所有进行中的任务都可以申请） -->
+      <button 
+        wx:if="{{task.status === 'assigned' || task.status === 'processing' || task.status === 'parts_sent'}}"
+        class="btn secondary" 
+        bindtap="onShowHelpModal"
+        disabled="{{isProcessing}}"
+      >
+        申请协助
+      </button>
+    </view>
+
+    <!-- 状态历史 -->
+    <view class="section" wx:if="{{history && history.length > 0}}">
+      <view class="section-title">状态历史</view>
+      <view class="history-list">
+        <view 
+          wx:for="{{history}}" 
+          wx:key="index"
+          class="history-item"
+        >
+          <view class="history-time">{{utils.formatTime(item.createTime || item.timestamp)}}</view>
+          <view class="history-content">
+            <text class="history-status">{{utils.getStatusText(item.status)}}</text>
+            <text class="history-operator">{{item.operatorName}}</text>
+            <text class="history-remark" wx:if="{{item.remark}}">{{item.remark}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 完成任务弹窗 -->
+  <view class="modal" wx:if="{{showCompleteModal}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">完成任务</text>
+        <text class="modal-close" bindtap="onHideCompleteModal">×</text>
+      </view>
+      <view class="modal-body">
+        <view class="input-group">
+          <text class="input-label">处理结果：</text>
+          <textarea 
+            class="textarea"
+            placeholder="请详细描述处理过程和结果"
+            value="{{resultDescription}}"
+            bindinput="onResultDescriptionInput"
+            maxlength="500"
+          />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn secondary" bindtap="onHideCompleteModal">取消</button>
+        <button class="btn primary" bindtap="onConfirmComplete">确认完成</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 申请协助弹窗 -->
+  <view class="modal" wx:if="{{showHelpModal}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">申请协助</text>
+        <text class="modal-close" bindtap="onHideHelpModal">×</text>
+      </view>
+      <view class="modal-body">
+        <view class="input-group">
+          <text class="input-label">协助原因：</text>
+          <textarea 
+            class="textarea"
+            placeholder="请说明需要协助的具体原因"
+            value="{{helpReason}}"
+            bindinput="onHelpReasonInput"
+            maxlength="300"
+          />
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="btn secondary" bindtap="onHideHelpModal">取消</button>
+        <button class="btn primary" bindtap="onConfirmHelp">确认申请</button>
+      </view>
+    </view>
+  </view>
+</view>

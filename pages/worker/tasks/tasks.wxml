@@ -1,0 +1,202 @@
+﻿<!--pages/worker/tasks/tasks.wxml-->
+<view class="tasks-container">
+  <!-- 筛选栏 -->
+  <view class="filter-section">
+    <!-- 第一行：状态筛选（始终显示） -->
+    <view class="filter-tabs-secondary">
+      <view 
+        class="filter-tab-status {{statusFilter === 'pending' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="pending"
+      >
+        <text class="status-text">待处理</text>
+        <view class="red-dot" wx:if="{{hasPendingTasks && statusFilter !== 'pending'}}"></view>
+      </view>
+      <view 
+        class="filter-tab-status {{statusFilter === 'processing' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="processing"
+      >
+        <text class="status-text">进行中</text>
+      </view>
+      <view 
+        class="filter-tab-status {{statusFilter === 'completed' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="completed"
+      >
+        <text class="status-text">已完成</text>
+      </view>
+    </view>
+    
+    <!-- 第二行：优先级筛选 -->
+    <view class="filter-tabs-primary">
+      <view 
+        class="filter-tab {{priorityFilter === 'all' ? 'active' : ''}}"
+        bindtap="onPriorityFilter"
+        data-priority="all"
+      >
+        全部
+      </view>
+      <view 
+        class="filter-tab {{priorityFilter === 'high' ? 'active' : ''}}"
+        bindtap="onPriorityFilter"
+        data-priority="high"
+      >
+        紧急
+      </view>
+      <view 
+        class="filter-tab {{priorityFilter === 'medium' ? 'active' : ''}}"
+        bindtap="onPriorityFilter"
+        data-priority="medium"
+      >
+        普通
+      </view>
+      <view 
+        class="filter-tab {{priorityFilter === 'low' ? 'active' : ''}}"
+        bindtap="onPriorityFilter"
+        data-priority="low"
+      >
+        一般
+      </view>
+    </view>
+  </view>
+
+  <!-- 任务列表 -->
+  <view class="tasks-list">
+    <view 
+      class="task-item" 
+      wx:for="{{filteredTasks}}" 
+      wx:key="id"
+      bindtap="onViewTask"
+      data-id="{{item.id}}"
+    >
+      <view class="task-header">
+        <view class="task-title-row">
+          <text class="task-title">{{item.title}}</text>
+          <view class="priority-tag priority-{{item.priority}}">
+            {{item.priority === 'high' ? '紧急' : item.priority === 'medium' ? '普通' : '一般'}}
+          </view>
+        </view>
+        <view class="status-tag status-{{item.status}}">
+          {{item.status === 'assigned' ? '已分配' : 
+            item.status === 'processing' ? '处理中' : 
+            item.status === 'parts_request' ? '配件申请中' :
+            item.status === 'parts_sent' ? '配件已发出' :
+            item.status === 'parts_return_approval' ? '待主管审批' :
+            item.status === 'parts_received' ? '返件已收到' :
+            '已完成'}}
+        </view>
+      </view>
+      
+      <text class="task-desc">{{item.description}}</text>
+      
+      <view class="task-meta">
+        <view class="meta-left">
+          <text class="task-customer">客户：{{item.clientName || '未知'}}</text>
+          <text class="task-phone">电话：{{item.contactPhoneData || item.clientPhone || '未知'}}</text>
+        </view>
+        <view class="meta-right">
+          <text class="task-time">{{item.assignTime}}</text>
+        </view>
+      </view>
+      
+      <!-- 操作按钮 -->
+      <view class="task-actions">
+        <!-- 已分配状态：显示"开始处理" -->
+        <button 
+          wx:if="{{item.status === 'assigned'}}"
+          class="btn btn-primary btn-small"
+          catchtap="onStartProcessing"
+          data-id="{{item.id}}"
+        >
+          开始处理
+        </button>
+        
+        <!-- 处理中且需要配件：显示"申请发出配件" -->
+        <button 
+          wx:if="{{item.status === 'processing' && item.needParts}}"
+          class="btn btn-warning btn-small"
+          catchtap="onRequestParts"
+          data-id="{{item.id}}"
+        >
+          申请发出配件
+        </button>
+        
+        <!-- 配件申请中：显示等待审批（禁用） -->
+        <button 
+          wx:if="{{item.status === 'parts_request'}}"
+          class="btn btn-disabled btn-small"
+          disabled="true"
+        >
+          等待主管审批
+        </button>
+        
+        <!-- 配件已发出状态：显示"发出返件" -->
+        <button 
+          wx:if="{{item.status === 'parts_sent'}}"
+          class="btn btn-warning btn-small"
+          catchtap="onReturnParts"
+          data-id="{{item.id}}"
+        >
+          发出返件
+        </button>
+        
+        <!-- 返件待审批状态：等待主管审批 -->
+        <button 
+          wx:if="{{item.status === 'parts_return_approval'}}"
+          class="btn btn-disabled btn-small"
+          disabled="true"
+        >
+          等待主管审批
+        </button>
+        
+        <!-- 返件已收到状态：维修工不能完成任务，只显示等待主管 -->
+        <button 
+          wx:if="{{item.status === 'parts_received'}}"
+          class="btn btn-disabled btn-small"
+          disabled="true"
+        >
+          等待主管完成
+        </button>
+        
+        <!-- 处理中且不需要配件：显示"完成任务" -->
+        <button 
+          wx:if="{{item.status === 'processing' && !item.needParts}}"
+          class="btn btn-success btn-small"
+          catchtap="onCompleteTask"
+          data-id="{{item.id}}"
+        >
+          完成任务
+        </button>
+        
+        <!-- 查看详情按钮（所有状态都显示） -->
+        <button 
+          class="btn btn-outline btn-small"
+          catchtap="onViewTask"
+          data-id="{{item.id}}"
+        >
+          查看详情
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!filteredTasks || filteredTasks.length == 0}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无任务</text>
+    <text class="empty-tip">等待主管分配任务</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && filteredTasks.length > 0}}">
+    <button 
+      class="btn btn-outline" 
+      bindtap="onLoadMore"
+      disabled="{{isLoadingMore}}"
+    >
+      {{isLoadingMore ? '加载中...' : '加载更多'}}
+    </button>
+  </view>
+</view>
+

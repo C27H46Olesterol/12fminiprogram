@@ -1,0 +1,45 @@
+/* pages/profile/profile.wxss */
+
+.user-avatar-large {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: #1677ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 48rpx;
+  font-weight: 600;
+}
+
+.user-name-large {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.user-phone-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.menu-list {
+  padding: 0 32rpx;
+}
+
+.menu-item {
+  padding: 32rpx 0;
+}
+
+.menu-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.divider {
+  height: 1rpx;
+  background: #f0f0f0;
+  width: 100%;
+}

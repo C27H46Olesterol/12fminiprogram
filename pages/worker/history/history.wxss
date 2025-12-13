@@ -1,0 +1,284 @@
+/* pages/worker/history/history.wxss */
+.history-container {
+  min-height: 100vh;
+  background: var(--background-color);
+  padding: 20rpx;
+}
+
+/* 筛选区域 */
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+  background: var(--card-background);
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: var(--shadow);
+}
+
+.time-filter {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border: 2rpx solid var(--border-color);
+  border-radius: 12rpx;
+  background: #F8F9FA;
+  transition: all 0.3s ease;
+}
+
+.date-picker:active {
+  border-color: var(--primary-color);
+  background: #FFFFFF;
+}
+
+.date-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  margin-right: 12rpx;
+}
+
+.date-value {
+  font-size: 26rpx;
+  color: var(--text-primary);
+  margin-right: 12rpx;
+}
+
+.picker-arrow {
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  transform: rotate(90deg);
+}
+
+.date-separator {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+/* 统计信息 */
+.stats-section {
+  margin-bottom: 30rpx;
+}
+
+.stats-cards {
+  display: flex;
+  gap: 20rpx;
+}
+
+.stats-card {
+  flex: 1;
+  background: var(--card-background);
+  border-radius: 16rpx;
+  padding: 30rpx 20rpx;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.stats-card:active {
+  transform: translateY(4rpx);
+}
+
+.stats-number {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+/* 历史记录列表 */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.history-item {
+  background: var(--card-background);
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  border-left: 6rpx solid var(--success-color);
+}
+
+.history-item:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.history-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.history-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-right: 16rpx;
+  flex: 1;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4rpx;
+}
+
+.star {
+  font-size: 24rpx;
+  color: #E0E0E0;
+  transition: color 0.3s ease;
+}
+
+.star.active {
+  color: #FFD700;
+}
+
+.history-desc {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.history-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.meta-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.meta-right {
+  display: flex;
+  align-items: center;
+}
+
+.history-customer {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.history-phone {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.history-time {
+  font-size: 22rpx;
+  color: var(--text-disabled);
+}
+
+/* 处理记录 */
+.process-record {
+  background: #F8F9FA;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.record-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.record-content {
+  font-size: 26rpx;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* 客户评价 */
+.customer-review {
+  background: #E8F5E8;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+
+.review-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.review-content {
+  font-size: 26rpx;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 60rpx;
+  color: var(--text-disabled);
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  margin-bottom: 16rpx;
+  text-align: center;
+}
+
+.empty-tip {
+  font-size: 26rpx;
+  text-align: center;
+  opacity: 0.8;
+}
+
+/* 加载更多 */
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: 40rpx 0;
+}
+
+.load-more .btn {
+  padding: 24rpx 48rpx;
+  font-size: 26rpx;
+}
+

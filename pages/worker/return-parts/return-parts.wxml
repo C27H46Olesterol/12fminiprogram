@@ -1,0 +1,83 @@
+<!-- pages/worker/return-parts/return-parts.wxml -->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="header">
+    <text class="title">发出返件</text>
+    <text class="subtitle">工单编号：{{issue.issueId}}</text>
+  </view>
+
+  <!-- 工单基本信息 -->
+  <view class="issue-info">
+    <view class="info-item">
+      <text class="label">问题标题</text>
+      <text class="value">{{issue.title}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">客户姓名</text>
+      <text class="value">{{issue.clientName}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系电话</text>
+      <text class="value">{{issue.clientPhone}}</text>
+    </view>
+  </view>
+
+  <!-- 已发出的配件信息 -->
+  <view class="parts-info">
+    <view class="section-title">已发出配件信息</view>
+    <view class="info-item">
+      <text class="label">配件详情</text>
+      <text class="value">{{issue.partsDetail || '无'}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">发出时间</text>
+      <text class="value">{{currentTime}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">维修工电话</text>
+      <text class="value">{{issue.assignedWorkerPhone || '未分配'}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">维修工地区</text>
+      <text class="value">{{issue.assignedWorkerRegion || '未知'}}</text>
+    </view>
+  </view>
+
+  <!-- 返件信息填写 -->
+  <view class="form-section">
+    <view class="section-title">快递单号（选填）</view>
+    <input 
+      class="input-field" 
+      placeholder="请输入返件快递单号（选填）" 
+      value="{{trackingNumber}}"
+      bindinput="onTrackingNumberInput"
+    />
+  </view>
+
+  <!-- 配件图片上传 -->
+  <view class="form-section">
+    <view class="section-title required">配件图片</view>
+    <view class="upload-area">
+      <view class="image-list">
+        <!-- 已上传的图片 -->
+        <view class="image-item" wx:for="{{images}}" wx:key="index">
+          <image class="image" src="{{item}}" mode="aspectFill" bindtap="onPreviewImage" data-url="{{item}}"/>
+          <view class="delete-btn" catchtap="onDeleteImage" data-index="{{index}}">×</view>
+        </view>
+        
+        <!-- 上传按钮 -->
+        <view class="upload-btn" wx:if="{{images.length < 9}}" bindtap="onChooseImage">
+          <text class="upload-icon">+</text>
+          <text class="upload-text">上传图片</text>
+        </view>
+      </view>
+      <view class="upload-tip">最多9张</view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="button-group">
+    <button class="btn cancel" bindtap="onCancel">取消</button>
+    <button class="btn confirm" bindtap="onConfirm">确认发出</button>
+  </view>
+</view>

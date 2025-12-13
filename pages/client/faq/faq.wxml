@@ -1,0 +1,51 @@
+<!--pages/client/faq/faq.wxml-->
+<view class="container faq-page">
+  <view class="page-title mb-20">自助服务</view>
+
+  <!-- 产品手册卡片 -->
+  <view class="card manual-card flex flex-between flex-v-center" bindtap="onOpenManual">
+    <view class="flex flex-v-center">
+      <view class="icon-box mr-20">
+        <image src="/images/manual-icon.png" class="manual-icon" mode="aspectFit"></image> <!-- 需替换为实际图标或使用text图标 -->
+        <text style="font-size: 40rpx;">📱</text>
+      </view>
+      <view>
+        <view class="card-title">产品手册</view>
+        <view class="text-secondary" style="font-size: 24rpx;">查看官方使用指南</view>
+      </view>
+    </view>
+    <text class="arrow-icon">></text>
+  </view>
+
+  <view class="section-title mb-20">常见问题与解决</view>
+
+  <!-- 问题列表 (Accordion) -->
+  <view class="faq-list">
+    <view class="card faq-item" wx:for="{{filteredItems}}" wx:key="id">
+      <view class="faq-header flex flex-between flex-v-center" bindtap="onToggleItem" data-id="{{item.id}}">
+        <view class="flex flex-v-center">
+          <view class="dot-indicator mr-20"></view>
+          <view>
+            <view class="faq-title">{{item.title}}</view>
+            <view class="faq-category">{{item.category || '通用问题'}}</view>
+          </view>
+        </view>
+        <text class="arrow-icon {{item.expanded ? 'rotate' : ''}}">▼</text>
+      </view>
+      
+      <view class="faq-content" wx:if="{{item.expanded}}">
+        <view class="divider mb-20"></view>
+        <rich-text nodes="{{item.solution}}"></rich-text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部大按钮 -->
+  <view class="footer-btn-container">
+    <button class="btn btn-primary btn-block" style="border-radius: 44rpx; height: 88rpx;" bindtap="onContactService">
+      <text class="mr-20">📞</text>
+      <text>这里没有我遇到的情况</text>
+    </button>
+  </view>
+
+</view>

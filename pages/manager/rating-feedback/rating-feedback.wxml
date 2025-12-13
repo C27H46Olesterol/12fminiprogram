@@ -1,0 +1,131 @@
+<!--pages/manager/rating-feedback/rating-feedback.wxml-->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <text class="title">评分反馈</text>
+    <text class="count">共 {{total}} 个工单</text>
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-section">
+    <view class="filter-item" bindtap="onFilterChange" data-type="all">
+      <view class="filter-tag {{filterType === 'all' ? 'active' : ''}}">
+        全部
+      </view>
+    </view>
+    <view class="filter-item" bindtap="onFilterChange" data-type="rated">
+      <view class="filter-tag {{filterType === 'rated' ? 'active' : ''}}">
+        已评价
+      </view>
+    </view>
+    <view class="filter-item" bindtap="onFilterChange" data-type="unrated">
+      <view class="filter-tag {{filterType === 'unrated' ? 'active' : ''}}">
+        待评价
+      </view>
+    </view>
+  </view>
+
+  <!-- 工单列表 -->
+  <scroll-view class="issues-list" scroll-y bindscrolltolower="loadMore" lower-threshold="100">
+    <view wx:if="{{issues.length > 0}}">
+      <view class="issue-card" wx:for="{{issues}}" wx:key="_id" bindtap="onViewIssue" data-id="{{item._id}}" data-issue-id="{{item.issueId}}">
+        <!-- 工单头部 -->
+        <view class="issue-header">
+          <text class="issue-title">{{item.title}}</text>
+          <view class="rating-badge {{item.managerSatisfaction ? 'rated' : 'unrated'}}">
+            {{item.managerSatisfaction ? '已评价' : '待评价'}}
+          </view>
+        </view>
+
+        <!-- 工单描述 -->
+        <text class="issue-description">{{item.description}}</text>
+
+        <!-- 评分显示（如果已评价） -->
+        <view wx:if="{{item.managerSatisfaction}}" class="rating-display">
+          <view class="rating-stars">
+            <text class="star {{index < item.managerSatisfaction ? 'active' : ''}}" wx:for="{{[1,2,3,4,5]}}" wx:key="index">★</text>
+          </view>
+          <text class="rating-text">{{getRatingText(item.managerSatisfaction)}}</text>
+        </view>
+
+        <!-- 反馈内容（如果有） -->
+        <view wx:if="{{item.managerFeedback}}" class="feedback-section">
+          <text class="feedback-label">反馈内容：</text>
+          <text class="feedback-text">{{item.managerFeedback}}</text>
+        </view>
+
+        <!-- 工单信息 -->
+        <view class="issue-info">
+          <view class="info-item">
+            <text class="info-label">工单编号：</text>
+            <text class="info-value">{{item.issueId}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">维修工：</text>
+            <text class="info-value">{{item.resolvedWorkerName || item.assignedWorkerName}}</text>
+          </view>
+        </view>
+
+        <!-- 客户信息 -->
+        <view class="client-info" wx:if="{{item.clientName}}">
+          <view class="info-item">
+            <text class="info-label">客户：</text>
+            <text class="info-value">{{item.clientName}}</text>
+          </view>
+          <view class="info-item" wx:if="{{item.clientPhone}}">
+            <text class="info-label">电话：</text>
+            <text class="info-value">{{item.clientPhone}}</text>
+          </view>
+        </view>
+
+        <!-- 时间信息 -->
+        <view class="time-info">
+          <view class="time-item">
+            <text class="time-label">完成时间：</text>
+            <text class="time-value">{{item.resolvedTime}}</text>
+          </view>
+          <view class="time-item" wx:if="{{item.managerRatedTime}}">
+            <text class="time-label">评价时间：</text>
+            <text class="time-value">{{item.managerRatedTime}}</text>
+          </view>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view class="actions">
+          <button 
+            class="btn-rate {{item.managerSatisfaction ? 'btn-view' : ''}}" 
+            size="mini" 
+            catchtap="onRateIssue" 
+            data-id="{{item._id}}"
+            data-issue-id="{{item.issueId}}"
+            data-has-rating="{{item.managerSatisfaction}}"
+          >
+            {{item.managerSatisfaction ? '查看评价' : '立即评价'}}
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!isLoading && issues.length === 0}}" class="empty-state">
+      <view class="empty-icon">⭐</view>
+      <text class="empty-text">{{filterType === 'rated' ? '暂无已评价工单' : filterType === 'unrated' ? '暂无待评价工单' : '暂无已完成工单'}}</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view wx:if="{{isLoading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{!isLoading && hasMore && issues.length > 0}}" class="load-more">
+      <text>上拉加载更多</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view wx:if="{{!hasMore && issues.length > 0}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+</view>
+

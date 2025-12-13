@@ -1,0 +1,139 @@
+<!--pages/client/progress/progress.wxml-->
+<view class="progress-container">
+  <!-- 搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <input 
+        class="search-input" 
+        type="text" 
+        placeholder="搜索编号或关键词" 
+        value="{{searchKeyword}}" 
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+      />
+      <button class="btn btn-primary btn-small" bindtap="onSearch">搜索</button>
+    </view>
+  </view>
+
+  <!-- 筛选条件 -->
+  <view class="filter-section">
+    <view class="filter-tabs">
+      <view 
+        class="filter-tab {{statusFilter === 'all' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="all"
+      >
+        全部
+      </view>
+      <view 
+        class="filter-tab {{statusFilter === 'rating' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="rating"
+      >
+        待评价
+      </view>
+      <view 
+        class="filter-tab {{statusFilter === 'pending' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="pending"
+      >
+        待处理
+      </view>
+      <view 
+        class="filter-tab {{statusFilter === 'assigned' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="assigned"
+      >
+        已分配
+      </view>
+      <view 
+        class="filter-tab {{statusFilter === 'resolved' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="resolved"
+      >
+        已解决
+      </view>
+      <view 
+        class="filter-tab {{statusFilter === 'cancelled' ? 'active' : ''}}"
+        bindtap="onStatusFilter"
+        data-status="cancelled"
+      >
+        已取消
+      </view>
+    </view>
+  </view>
+
+  <!-- 反馈列表 -->
+  <view class="feedback-list">
+    <view 
+      class="card feedback-item" 
+      wx:for="{{filteredFeedbacks}}" 
+      wx:key="id"
+      style="border-left: 6rpx solid var(--primary-color);"
+    >
+      <view bindtap="onViewFeedback" data-id="{{item.id}}">
+        <view class="feedback-header">
+          <view class="feedback-title-row">
+            <text class="card-title" style="flex: 1;">{{item.title}}</text>
+          </view>
+          <view class="status-tag status-{{item.status}}">
+            {{item.statusText}}
+          </view>
+        </view>
+        
+        <text class="feedback-desc">{{item.description}}</text>
+        
+        <view class="feedback-meta">
+          <view class="meta-left">
+            <text class="feedback-id">#{{item.id}}</text>
+            <text class="feedback-time">{{item.createTime}}</text>
+          </view>
+          <view class="meta-right">
+            <text class="feedback-type">{{item.problemType}}</text>
+          </view>
+        </view>
+        
+        <!-- 处理进度 -->
+        <view class="progress-info" wx:if="{{item.status !== 'pending'}}">
+          <view class="progress-item">
+            <text class="progress-label">处理人：</text>
+            <text class="progress-value">{{item.assignee || '未分配'}}</text>
+          </view>
+          <view class="progress-item" wx:if="{{item.lastUpdateTime}}">
+            <text class="progress-label">更新时间：</text>
+            <text class="progress-value">{{item.lastUpdateTime}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 评价按钮（仅已解决的问题显示） -->
+      <view class="action-buttons" wx:if="{{item.status === 'resolved' && !item.hasRated}}">
+        <button 
+          class="btn btn-secondary btn-small" 
+          catchtap="onRateIssue" 
+          data-id="{{item.id}}"
+        >
+          ⭐ 评价服务
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredFeedbacks.length === 0}}">
+    <text class="empty-icon">🔍</text>
+    <text class="empty-text">暂无相关反馈</text>
+    <text class="empty-tip">尝试调整搜索条件或筛选条件</text>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && filteredFeedbacks.length > 0}}">
+    <button 
+      class="btn btn-outline" 
+      bindtap="onLoadMore"
+      disabled="{{isLoadingMore}}"
+    >
+      {{isLoadingMore ? '加载中...' : '加载更多'}}
+    </button>
+  </view>
+</view>

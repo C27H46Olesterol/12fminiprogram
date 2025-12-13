@@ -1,0 +1,84 @@
+/* pages/client/faq/faq.wxss */
+
+.faq-page {
+  padding-bottom: 120rpx;
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.manual-card {
+  padding: 32rpx;
+}
+
+.icon-box {
+  width: 80rpx;
+  height: 80rpx;
+  background: #e6f7ff;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1677ff;
+}
+
+.arrow-icon {
+  color: #ccc;
+  font-size: 28rpx;
+  transition: transform 0.3s;
+}
+
+.arrow-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.faq-item {
+  padding: 0;
+  overflow: hidden;
+}
+
+.faq-header {
+  padding: 32rpx;
+}
+
+.dot-indicator {
+  width: 12rpx;
+  height: 12rpx;
+  background: #1677ff;
+  border-radius: 50%;
+}
+
+.faq-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4rpx;
+}
+
+.faq-category {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.faq-content {
+  padding: 0 32rpx 32rpx;
+  color: #666;
+  font-size: 28rpx;
+  background: #fff;
+}
+
+.divider {
+  height: 1rpx;
+  background: #f0f0f0;
+  width: 100%;
+}
+
+.footer-btn-container {
+  position: fixed;
+  bottom: 40rpx;
+  left: 32rpx;
+  right: 32rpx;
+}

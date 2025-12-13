@@ -1,0 +1,56 @@
+<!-- pages/worker/start-processing/start-processing.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">开始处理工单</text>
+    <text class="subtitle">任务编号：{{issue.issueId}}</text>
+  </view>
+
+  <view class="issue-info">
+    <view class="info-item">
+      <text class="label">问题标题：</text>
+      <text class="value">{{issue.title}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">客户姓名：</text>
+      <text class="value">{{issue.clientName}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系电话：</text>
+      <text class="value">{{issue.clientPhone}}</text>
+    </view>
+  </view>
+
+  <view class="parts-section">
+    <view class="section-title">配件需求</view>
+    <radio-group class="radio-group" bindchange="onNeedPartsChange">
+      <label class="radio-item {{!needParts ? 'active' : ''}}">
+        <radio value="false" checked="{{!needParts}}" />
+        <text>不需要发件</text>
+      </label>
+      <label class="radio-item {{needParts ? 'active' : ''}}">
+        <radio value="true" checked="{{needParts}}" />
+        <text>需要发件</text>
+      </label>
+    </radio-group>
+  </view>
+
+  <view class="parts-detail" wx:if="{{needParts}}">
+    <view class="section-title">配件详情 *</view>
+    <textarea 
+      class="textarea" 
+      placeholder="请输入需要发送的配件名称、数量等详情..."
+      value="{{partsDetail}}"
+      bindinput="onPartsDetailInput"
+      maxlength="500"
+      show-confirm-bar="{{false}}"
+    ></textarea>
+    <view class="char-count">{{partsDetail.length}}/500</view>
+  </view>
+
+  <view class="action-buttons">
+    <button class="btn-cancel" bindtap="onCancel">取消</button>
+    <button class="btn-confirm" bindtap="onConfirm" disabled="{{needParts && !partsDetail}}">
+      确认开始
+    </button>
+  </view>
+</view>

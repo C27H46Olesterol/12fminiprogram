@@ -1,0 +1,181 @@
+<!--pages/manager/personnel-manager/personnel-manager.wxml-->
+<view class="worker-list-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">维修工列表</text>
+    <text class="page-subtitle">查看所有维修工信息</text>
+  </view>
+
+  <!-- 筛选区域 -->
+  <view class="filter-section">
+    <!-- 地区选择器 - 自定义弹窗 -->
+    <view class="region-selector">
+      <view class="picker-display-full" bindtap="showRegionModal">
+        <text class="picker-label-full">地区选择：</text>
+        <view class="picker-value-full">
+          <text class="region-text">{{displayRegion}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 搜索框 -->
+    <view class="search-box">
+      <text class="search-icon-left">🔍</text>
+      <input 
+        class="search-input" 
+        placeholder="搜索姓名、电话或地区"
+        placeholder-class="search-placeholder"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearch"
+      />
+      <text 
+        class="search-clear {{searchKeyword ? 'show' : ''}}" 
+        bindtap="onClearSearch"
+      >✕</text>
+    </view>
+
+    <!-- 重置按钮 -->
+    <view class="filter-actions">
+      <button class="btn-reset" bindtap="onResetFilter">重置筛选</button>
+      <text class="result-count">共 {{totalCount}} 名维修工</text>
+    </view>
+  </view>
+
+  <!-- 维修工列表 -->
+  <view class="worker-list">
+    <view 
+      class="worker-card" 
+      wx:for="{{workers}}" 
+      wx:key="_id"
+      bindtap="onViewWorkerDetail"
+      data-id="{{item._id}}"
+    >
+      <!-- 维修工基本信息 -->
+      <view class="worker-header">
+        <view class="worker-avatar">
+          <text class="avatar-icon">👷</text>
+        </view>
+        <view class="worker-info">
+          <view class="worker-name-row">
+            <text class="worker-name">{{item.name}}</text>
+            <view class="worker-badge" wx:if="{{item.isOnline}}">
+              <text class="badge-dot">●</text>
+              <text class="badge-text">在线</text>
+            </view>
+          </view>
+          <text class="worker-phone">📱 {{item.phone}}</text>
+        </view>
+      </view>
+
+      <!-- 地区信息 -->
+      <view class="worker-location">
+        <view class="location-item">
+          <text class="location-icon">📍</text>
+          <text class="location-text">{{item.province}} - {{item.city}}</text>
+        </view>
+      </view>
+
+      <!-- 门店信息（如果有） -->
+      <view class="worker-store" wx:if="{{item.storeName}}">
+        <view class="store-item">
+          <text class="store-label">门店：</text>
+          <text class="store-value">{{item.storeName}}</text>
+        </view>
+      </view>
+
+      <!-- 统计信息 -->
+      <view class="worker-stats">
+        <view class="stat-item">
+          <text class="stat-number">{{item.completedCount || 0}}</text>
+          <text class="stat-label">已完成</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{item.processingCount || 0}}</text>
+          <text class="stat-label">处理中</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{item.averageRating || '-'}}</text>
+          <text class="stat-label">平均评分</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{item.registerDays || 0}}</text>
+          <text class="stat-label">注册天数</text>
+        </view>
+      </view>
+
+      <!-- 注册时间 -->
+      <view class="worker-footer">
+        <text class="register-time">注册时间：{{item.registerTimeText}}</text>
+        <text class="view-detail-arrow">查看详情 →</text>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{workers.length === 0 && !loading}}">
+      <text class="empty-icon">👷</text>
+      <text class="empty-text">暂无维修工</text>
+      <text class="empty-tip">{{emptyTip}}</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="loading-state" wx:if="{{loading}}">
+      <text class="loading-icon">⏳</text>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore && !loading && workers.length > 0}}">
+      <button class="btn-load-more" bindtap="onLoadMore">加载更多</button>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && workers.length > 0}}">
+      <text class="no-more-text">没有更多了</text>
+    </view>
+  </view>
+
+  <!-- 地区选择弹窗 -->
+  <view class="region-modal" wx:if="{{showRegionModal}}" catchtap="hideRegionModal">
+    <view class="region-modal-content" catchtap="stopPropagation">
+      <!-- 搜索框 -->
+      <view class="region-search-box">
+        <input 
+          class="region-search-input"
+          placeholder="搜索省份或城市"
+          value="{{regionSearchKeyword}}"
+          bindinput="onRegionSearchInput"
+        />
+        <text class="region-search-icon">🔍</text>
+      </view>
+
+      <!-- 地区列表 -->
+      <scroll-view class="region-list" scroll-y>
+        <view 
+          class="region-item {{selectedRegion === '' ? 'active' : ''}}"
+          bindtap="selectRegion"
+          data-region=""
+        >
+          全国
+        </view>
+        <view 
+          class="region-item {{selectedRegion === item ? 'active' : ''}}"
+          wx:for="{{filteredWorkerRegions}}"
+          wx:key="*this"
+          bindtap="selectRegion"
+          data-region="{{item}}"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+
+      <!-- 底部按钮 -->
+      <view class="region-modal-footer">
+        <button class="region-btn cancel" bindtap="hideRegionModal">取消</button>
+        <button class="region-btn confirm" bindtap="confirmRegion">确定</button>
+      </view>
+    </view>
+  </view>
+</view>

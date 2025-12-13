@@ -1,0 +1,304 @@
+<!--pages/manager/worker-detail/worker-detail.wxml-->
+<view class="worker-detail-page">
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text class="loading-icon">⏳</text>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 维修工信息 -->
+  <view class="worker-info-section" wx:if="{{workerInfo && !loading}}">
+    <!-- 头部卡片 -->
+    <view class="worker-header-card">
+      <view class="worker-avatar-large">
+        <text class="avatar-icon">👷</text>
+      </view>
+      <view class="worker-basic-info">
+        <text class="worker-name-large">{{workerInfo.name}}</text>
+        <text class="worker-phone-large">📱 {{workerInfo.phone}}</text>
+        <view class="worker-location-large">
+          <text class="location-icon">📍</text>
+          <text>{{workerInfo.province}} - {{workerInfo.city}}</text>
+        </view>
+      </view>
+      <button class="btn-call" bindtap="onCallPhone">
+        <text>📞</text>
+      </button>
+    </view>
+
+    <!-- 门店信息 -->
+    <view class="worker-store-card" wx:if="{{workerInfo.storeName || workerInfo.region}}">
+      <view class="card-title">门店信息</view>
+      <view class="store-info-item" wx:if="{{workerInfo.storeName}}">
+        <text class="store-label">门店名称：</text>
+        <text class="store-value">{{workerInfo.storeName}}</text>
+      </view>
+      <view class="store-info-item" wx:if="{{workerInfo.region}}">
+        <text class="store-label">所在地区：</text>
+        <text class="store-value">{{workerInfo.region}}</text>
+      </view>
+    </view>
+
+    <!-- 统计卡片 -->
+    <view class="worker-stats-card">
+      <view class="card-title">工作统计</view>
+      <view class="stats-grid">
+        <view class="stat-box" bindtap="onTabChange" data-tab="completed">
+          <text class="stat-number-large">{{workerInfo.completedCount || 0}}</text>
+          <text class="stat-label-large">已完成</text>
+          <text class="stat-hint">点击查看 →</text>
+        </view>
+        <view class="stat-box" bindtap="onTabChange" data-tab="processing">
+          <text class="stat-number-large">{{workerInfo.processingCount || 0}}</text>
+          <text class="stat-label-large">处理中</text>
+          <text class="stat-hint">点击查看 →</text>
+        </view>
+        <view class="stat-box" bindtap="onTabChange" data-tab="ratings">
+          <text class="stat-number-large">{{workerInfo.averageRating || '-'}}</text>
+          <text class="stat-label-large">平均评分</text>
+          <text class="stat-hint">点击查看 →</text>
+        </view>
+        <view class="stat-box">
+          <text class="stat-number-large">{{workerInfo.registerDays || 0}}</text>
+          <text class="stat-label-large">注册天数</text>
+          <text class="stat-hint">{{workerInfo.registerTimeText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Tab 切换 -->
+    <view class="tab-bar">
+      <view 
+        class="tab-item {{activeTab === 'info' ? 'active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="info"
+      >
+        <text>基本信息</text>
+      </view>
+      <view 
+        class="tab-item {{activeTab === 'completed' ? 'active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="completed"
+      >
+        <text>已完成 ({{workerInfo.completedCount || 0}})</text>
+      </view>
+      <view 
+        class="tab-item {{activeTab === 'processing' ? 'active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="processing"
+      >
+        <text>处理中 ({{workerInfo.processingCount || 0}})</text>
+      </view>
+      <view 
+        class="tab-item {{activeTab === 'ratings' ? 'active' : ''}}"
+        bindtap="onTabChange"
+        data-tab="ratings"
+      >
+        <text>评分详情</text>
+      </view>
+    </view>
+
+    <!-- 内容区域 -->
+    <view class="tab-content">
+      <!-- 基本信息 Tab -->
+      <view class="info-tab" wx:if="{{activeTab === 'info'}}">
+        <view class="info-card">
+          <view class="card-title">注册信息</view>
+          <view class="info-item">
+            <text class="info-label">注册时间：</text>
+            <text class="info-value">{{workerInfo.registerTimeText}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">注册天数：</text>
+            <text class="info-value">{{workerInfo.registerDays}} 天</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">联系电话：</text>
+            <text class="info-value">{{workerInfo.phone}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">所在地区：</text>
+            <text class="info-value">{{workerInfo.province}} - {{workerInfo.city}}</text>
+          </view>
+        </view>
+
+        <view class="info-card" wx:if="{{workerInfo.storeName || workerInfo.region}}">
+          <view class="card-title">门店信息</view>
+          <view class="info-item" wx:if="{{workerInfo.storeName}}">
+            <text class="info-label">门店名称：</text>
+            <text class="info-value">{{workerInfo.storeName}}</text>
+          </view>
+          <view class="info-item" wx:if="{{workerInfo.region}}">
+            <text class="info-label">所在地区：</text>
+            <text class="info-value">{{workerInfo.region}}</text>
+          </view>
+        </view>
+
+        <view class="info-card">
+          <view class="card-title">工作统计</view>
+          <view class="info-item">
+            <text class="info-label">已完成工单：</text>
+            <text class="info-value">{{workerInfo.completedCount || 0}} 个</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">处理中工单：</text>
+            <text class="info-value">{{workerInfo.processingCount || 0}} 个</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">平均评分：</text>
+            <text class="info-value">{{workerInfo.averageRating || '-'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 已完成工单 Tab -->
+      <view class="issues-tab" wx:if="{{activeTab === 'completed'}}">
+        <view 
+          class="issue-card" 
+          wx:for="{{completedIssues}}" 
+          wx:key="_id"
+          bindtap="onViewIssue"
+          data-id="{{item._id}}"
+        >
+          <view class="issue-header">
+            <text class="issue-id">{{item.issueId}}</text>
+            <view class="issue-status resolved">
+              <text>✅ {{item.statusText}}</text>
+            </view>
+          </view>
+          <view class="issue-content">
+            <text class="issue-description">{{item.description}}</text>
+          </view>
+          <view class="issue-info-row">
+            <text class="issue-info-item">📅 {{item.createTimeText}}</text>
+          </view>
+          <view class="issue-info-row" wx:if="{{item.resolvedTime}}">
+            <text class="issue-info-item">✅ {{item.resolvedTimeText}}</text>
+          </view>
+          <view class="issue-info-row" wx:if="{{item.projectType}}">
+            <text class="issue-info-item">🔧 {{item.projectType}}</text>
+          </view>
+          <view class="issue-footer">
+            <text class="view-detail">查看详情 →</text>
+          </view>
+        </view>
+
+        <!-- 空状态 -->
+        <view class="empty-state" wx:if="{{completedIssues.length === 0 && !completedLoading}}">
+          <text class="empty-icon">📋</text>
+          <text class="empty-text">暂无已完成工单</text>
+        </view>
+
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{completedHasMore && !completedLoading && completedIssues.length > 0}}">
+          <button class="btn-load-more" bindtap="onLoadMoreIssues">加载更多</button>
+        </view>
+
+        <!-- 加载状态 -->
+        <view class="loading-more" wx:if="{{completedLoading}}">
+          <text>加载中...</text>
+        </view>
+
+        <!-- 没有更多 -->
+        <view class="no-more" wx:if="{{!completedHasMore && completedIssues.length > 0}}">
+          <text>没有更多了</text>
+        </view>
+      </view>
+
+      <!-- 处理中工单 Tab -->
+      <view class="issues-tab" wx:if="{{activeTab === 'processing'}}">
+        <view 
+          class="issue-card" 
+          wx:for="{{processingIssues}}" 
+          wx:key="_id"
+          bindtap="onViewIssue"
+          data-id="{{item._id}}"
+        >
+          <view class="issue-header">
+            <text class="issue-id">{{item.issueId}}</text>
+            <view class="issue-status processing">
+              <text>⏳ {{item.statusText}}</text>
+            </view>
+          </view>
+          <view class="issue-content">
+            <text class="issue-description">{{item.description}}</text>
+          </view>
+          <view class="issue-info-row">
+            <text class="issue-info-item">📅 {{item.createTimeText}}</text>
+          </view>
+          <view class="issue-footer">
+            <text class="view-detail">查看详情 →</text>
+          </view>
+        </view>
+
+        <!-- 空状态 -->
+        <view class="empty-state" wx:if="{{processingIssues.length === 0 && !processingLoading}}">
+          <text class="empty-icon">📋</text>
+          <text class="empty-text">暂无处理中工单</text>
+        </view>
+
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{processingHasMore && !processingLoading && processingIssues.length > 0}}">
+          <button class="btn-load-more" bindtap="onLoadMoreIssues">加载更多</button>
+        </view>
+
+        <!-- 加载状态 -->
+        <view class="loading-more" wx:if="{{processingLoading}}">
+          <text>加载中...</text>
+        </view>
+
+        <!-- 没有更多 -->
+        <view class="no-more" wx:if="{{!processingHasMore && processingIssues.length > 0}}">
+          <text>没有更多了</text>
+        </view>
+      </view>
+
+      <!-- 评分详情 Tab -->
+      <view class="ratings-tab" wx:if="{{activeTab === 'ratings'}}">
+        <view class="rating-card" wx:for="{{ratings}}" wx:key="_id">
+          <view class="rating-header">
+            <view class="rating-stars">
+              <text class="star {{index < item.rating ? 'active' : ''}}" wx:for="{{[1,2,3,4,5]}}" wx:for-item="star" wx:for-index="index" wx:key="star">⭐</text>
+            </view>
+            <text class="rating-score">{{item.rating}}.0 分</text>
+          </view>
+          
+          <view class="rating-issue-info">
+            <text class="rating-issue-id">工单：{{item.issueId}}</text>
+            <text class="rating-time">{{item.createTimeText}}</text>
+          </view>
+
+          <view class="rating-content" wx:if="{{item.comment}}">
+            <text class="rating-comment">{{item.comment}}</text>
+          </view>
+
+          <view class="rating-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+            <text class="rating-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+          </view>
+        </view>
+
+        <!-- 空状态 -->
+        <view class="empty-state" wx:if="{{ratings.length === 0 && !ratingsLoading}}">
+          <text class="empty-icon">⭐</text>
+          <text class="empty-text">暂无评分记录</text>
+        </view>
+
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{ratingsHasMore && !ratingsLoading && ratings.length > 0}}">
+          <button class="btn-load-more" bindtap="onLoadMoreRatings">加载更多</button>
+        </view>
+
+        <!-- 加载状态 -->
+        <view class="loading-more" wx:if="{{ratingsLoading}}">
+          <text>加载中...</text>
+        </view>
+
+        <!-- 没有更多 -->
+        <view class="no-more" wx:if="{{!ratingsHasMore && ratings.length > 0}}">
+          <text>没有更多了</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+

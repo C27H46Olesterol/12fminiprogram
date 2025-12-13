@@ -1,0 +1,138 @@
+<!--pages/manager/resolved/resolved.wxml-->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header">
+    <text class="title">已解决问题</text>
+    <text class="count">共 {{total}} 个问题</text>
+    <view class="header-actions">
+      <button wx:if="{{!isEditMode}}" class="btn-edit-mode" size="mini" bindtap="toggleEditMode">管理</button>
+      <button wx:if="{{isEditMode}}" class="btn-cancel" size="mini" bindtap="cancelEdit">取消</button>
+      <button wx:if="{{isEditMode && selectedIssues.length > 0}}" class="btn-delete-batch" size="mini" bindtap="batchDelete">删除({{selectedIssues.length}})</button>
+    </view>
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-section">
+    <picker mode="selector" range="{{workers}}" range-key="name" bindchange="onWorkerChange">
+      <view class="filter-item">
+        <text class="filter-label">维修工:</text>
+        <text class="filter-value">{{selectedWorkerId ? workers[selectedWorkerIndex].name : '全部'}}</text>
+      </view>
+    </picker>
+
+    <picker mode="date" bindchange="onDateChange">
+      <view class="filter-item">
+        <text class="filter-label">日期:</text>
+        <text class="filter-value">{{selectedDate || '全部'}}</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 问题列表 -->
+  <scroll-view class="issues-list" scroll-y bindscrolltolower="loadMore" lower-threshold="100">
+    <view wx:if="{{issues.length > 0}}">
+      <view class="issue-card {{isEditMode ? 'edit-mode' : ''}}" wx:for="{{issues}}" wx:key="_id">
+        <!-- 选择框（编辑模式下显示） -->
+        <view wx:if="{{isEditMode}}" class="checkbox-wrapper" catchtap="toggleSelect" data-id="{{item._id}}" data-index="{{index}}">
+          <view class="custom-checkbox {{item.selected ? 'checked' : ''}}">
+            <text wx:if="{{item.selected}}" class="checkmark">✓</text>
+          </view>
+        </view>
+        
+        <!-- 问题内容 -->
+        <view class="issue-content" bindtap="{{isEditMode ? '' : 'viewDetail'}}" data-id="{{item._id}}">
+          <!-- 问题头部 -->
+          <view class="issue-header">
+            <text class="issue-title">{{item.title}}</text>
+            <view class="status-badge">
+              已解决
+            </view>
+          </view>
+
+        <!-- 问题编号 -->
+        <view class="issue-id" wx:if="{{item.issueId}}">
+          <text class="id-label">问题编号:</text>
+          <text class="id-value">{{item.issueId}}</text>
+        </view>
+
+        <!-- 问题描述 -->
+        <text class="issue-description">{{item.description}}</text>
+
+        <!-- 解决方案 -->
+        <view class="solution-section" wx:if="{{item.solution}}">
+          <text class="solution-label">解决方案:</text>
+          <text class="solution-text">{{item.solution}}</text>
+        </view>
+
+        <!-- 问题信息 -->
+        <view class="issue-info">
+          <view class="info-item">
+            <text class="info-label">分类:</text>
+            <text class="info-value">{{item.category}}</text>
+          </view>
+          <view class="info-item">
+            <text class="info-label">设备:</text>
+            <text class="info-value">{{item.deviceName || '未知设备'}}</text>
+          </view>
+        </view>
+
+        <!-- 维修工信息 -->
+        <view class="worker-info">
+          <text class="worker-label">维修工:</text>
+          <text class="worker-name">{{item.resolvedWorkerName || item.assignedWorkerName}}</text>
+        </view>
+
+        <!-- 时间信息 -->
+        <view class="time-info">
+          <view class="time-item">
+            <text class="time-label">报告时间:</text>
+            <text class="time-value">{{item.createTime}}</text>
+          </view>
+          <view class="time-item">
+            <text class="time-label">解决时间:</text>
+            <text class="time-value">{{item.resolvedTime}}</text>
+          </view>
+        </view>
+
+          <!-- 操作按钮 -->
+          <view class="actions" wx:if="{{!isEditMode}}">
+            <button class="btn-detail" size="mini" catchtap="viewDetail" data-id="{{item._id}}">
+              查看详情
+            </button>
+            <button wx:if="{{item.images && item.images.length > 0}}" class="btn-images" size="mini" catchtap="viewImages" data-images="{{item.images}}">
+              查看照片
+            </button>
+          </view>
+          
+          <!-- 单独删除按钮（编辑模式下） -->
+          <view class="actions" wx:if="{{isEditMode}}">
+            <button class="btn-delete-single" size="mini" catchtap="deleteSingle" data-id="{{item._id}}">
+              删除
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!isLoading && issues.length === 0}}" class="empty-state">
+      <view class="empty-icon">📋</view>
+      <text class="empty-text">暂无已解决问题</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view wx:if="{{isLoading}}" class="loading-state">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{!isLoading && hasMore && issues.length > 0}}" class="load-more">
+      <text>上拉加载更多</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view wx:if="{{!hasMore && issues.length > 0}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+</view>

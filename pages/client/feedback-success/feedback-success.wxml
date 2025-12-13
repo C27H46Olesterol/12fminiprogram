@@ -1,0 +1,84 @@
+<!--pages/client/feedback-success/feedback-success.wxml-->
+<view class="container">
+  <view class="success-container">
+    <!-- 成功图标 -->
+    <view class="success-icon">
+      <text class="iconfont icon-success">✓</text>
+    </view>
+    
+    <!-- 成功标题 -->
+    <view class="success-title">反馈提交成功</view>
+    <view class="success-desc">感谢您的反馈，我们会尽快处理</view>
+    
+    <!-- 反馈信息 -->
+    <view class="feedback-info">
+      <view class="info-item">
+        <text class="info-label">反馈单号：</text>
+        <text class="info-value" bindtap="copyFeedbackId">{{feedbackId}}</text>
+        <text class="copy-btn">复制</text>
+      </view>
+      
+      <view class="info-item">
+        <text class="info-label">提交时间：</text>
+        <text class="info-value">{{feedbackTime}}</text>
+      </view>
+    </view>
+    
+    <!-- 温馨提示 -->
+    <view class="tips">
+      <view class="tips-title">温馨提示</view>
+      <view class="tips-content">
+        <text>• 请保存好反馈单号，用于查询处理进度</text>
+        <text>• 我们会在24小时内开始处理您的问题</text>
+        <text>• 如有紧急情况，请拨打客服电话</text>
+      </view>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="btn btn-outline" bindtap="checkProgress">查看进度</button>
+      <button class="btn btn-primary" bindtap="goHome">返回首页</button>
+    </view>
+    
+    <!-- 客服电话 -->
+    <view class="customer-service">
+      <text class="service-label">客服电话：</text>
+      <text class="service-phone" bindtap="callCustomerService">{{customerServicePhone}}</text>
+    </view>
+  </view>
+</view>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

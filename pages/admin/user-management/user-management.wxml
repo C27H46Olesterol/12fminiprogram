@@ -1,0 +1,218 @@
+<!--pages/admin/user-management/user-management.wxml-->
+<wxs module="utils">
+  var getRoleText = function(role) {
+    var roleMap = {
+      'client': '客户',
+      'manager': '主管',
+      'worker': '维修工',
+      'admin': '系统管理员'
+    };
+    return roleMap[role] || '未知';
+  };
+  
+  var getRoleColor = function(role) {
+    var colorMap = {
+      'client': '#1677ff',
+      'manager': '#ff7d00',
+      'worker': '#52C41A',
+      'admin': '#722ED1'
+    };
+    return colorMap[role] || '#666666';
+  };
+  
+  module.exports = {
+    getRoleText: getRoleText,
+    getRoleColor: getRoleColor
+  };
+</wxs>
+
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left">
+      <button class="back-btn" bindtap="goBack">
+        <text class="back-icon">←</text>
+        <text class="back-text">返回</text>
+      </button>
+    </view>
+    <view class="header-center">
+      <view class="header-title">用户管理</view>
+      <view class="header-desc">管理用户角色权限</view>
+    </view>
+    <view class="header-right">
+      <button class="nav-btn" bindtap="goToProfile">
+        <text class="nav-icon">👤</text>
+      </button>
+    </view>
+  </view>
+  
+  <!-- 搜索和筛选 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <input 
+        class="search-input"
+        placeholder="搜索用户昵称或手机号"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
+      <text class="search-icon">🔍</text>
+    </view>
+    
+    <view class="filter-bar">
+      <picker 
+        range="{{roles}}" 
+        range-key="label"
+        value="{{selectedRole === 'all' ? 0 : selectedRole === 'client' ? 1 : selectedRole === 'manager' ? 2 : selectedRole === 'worker' ? 3 : 4}}"
+        bindchange="onRoleChange"
+      >
+        <view class="filter-display">
+          <text class="filter-text">{{selectedRoleText}}</text>
+          <text class="filter-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 地域筛选 - 点击显示弹窗 -->
+    <view class="location-filter">
+      <view class="filter-display" bindtap="showRegionModal">
+        <text class="filter-icon">📍</text>
+        <text class="filter-text">{{selectedRegionText}}</text>
+        <text class="filter-arrow">></text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 用户列表 -->
+  <view class="user-list">
+    <view wx:if="{{loading}}" class="loading-placeholder">
+      <view class="loading-spinner">
+        <view class="spinner-dot"></view>
+        <view class="spinner-dot"></view>
+        <view class="spinner-dot"></view>
+      </view>
+      <text class="loading-text">加载中...</text>
+    </view>
+    
+    <view wx:elif="{{filteredUsers.length === 0}}" class="empty-placeholder">
+      <text class="empty-icon">👥</text>
+      <text class="empty-text">暂无用户数据</text>
+    </view>
+    
+    <view wx:else class="list">
+      <view class="list-item" wx:for="{{filteredUsers}}" wx:key="id" data-debug-id="{{item.id}}">
+        <view class="user-info">
+          <view class="user-name">姓名：{{item.nickname || '未设置昵称'}}</view>
+          <view class="user-meta">
+            <text class="user-phone" wx:if="{{item.phone}}">手机号：{{item.phone}}</text>
+          </view>
+          <view class="user-meta" wx:if="{{item.role === 'worker' && item.region}}">
+            <text class="user-region">注册地区：{{item.region}}</text>
+          </view>
+          <view class="user-meta">
+            <view class="user-role-badge" style="background-color: {{utils.getRoleColor(item.role)}}">
+              身份：{{utils.getRoleText(item.role)}}
+            </view>
+          </view>
+        </view>
+        
+        <view class="user-actions">
+        <button 
+          class="change-role-btn"
+          data-userid="{{item.id}}"
+          data-currentrole="{{item.role}}"
+          bindtap="changeUserRole"
+          disabled="{{submitting}}"
+        >
+          修改角色
+        </button>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 统计信息 -->
+  <view class="stats-section">
+    <view class="stats-item">
+      <view class="stats-number">{{stats.total}}</view>
+      <view class="stats-label">总用户数</view>
+    </view>
+    <view class="stats-item">
+      <view class="stats-number">{{stats.client}}</view>
+      <view class="stats-label">客户</view>
+    </view>
+    <view class="stats-item">
+      <view class="stats-number">{{stats.manager}}</view>
+      <view class="stats-label">主管</view>
+    </view>
+    <view class="stats-item">
+      <view class="stats-number">{{stats.worker}}</view>
+      <view class="stats-label">维修工</view>
+    </view>
+    <view class="stats-item">
+      <view class="stats-number">{{stats.admin}}</view>
+      <view class="stats-label">管理员</view>
+    </view>
+  </view>
+  
+  <!-- 底部导航栏 -->
+  <view class="bottom-nav">
+    <view class="nav-item" bindtap="goToHome">
+      <text class="nav-icon">🏠</text>
+      <text class="nav-text">首页</text>
+    </view>
+    <view class="nav-item" bindtap="goToProfile">
+      <text class="nav-icon">👤</text>
+      <text class="nav-text">个人中心</text>
+    </view>
+    <view class="nav-item active">
+      <text class="nav-icon">👥</text>
+      <text class="nav-text">用户管理</text>
+    </view>
+    <view class="nav-item" bindtap="goToSettings">
+      <text class="nav-icon">⚙️</text>
+      <text class="nav-text">设置</text>
+    </view>
+  </view>
+
+  <!-- 地区选择弹窗 -->
+  <view class="region-modal" wx:if="{{showRegionModal}}" catchtap="hideRegionModal">
+    <view class="region-modal-content" catchtap="stopPropagation">
+      <!-- 搜索框 -->
+      <view class="region-search-box">
+        <input 
+          class="region-search-input"
+          placeholder="搜索省份或城市"
+          value="{{regionSearchKeyword}}"
+          bindinput="onRegionSearchInput"
+        />
+        <text class="region-search-icon">🔍</text>
+      </view>
+
+      <!-- 地区列表 -->
+      <scroll-view class="region-list" scroll-y>
+        <view 
+          class="region-item {{selectedRegion === '' ? 'active' : ''}}"
+          bindtap="selectRegion"
+          data-region=""
+        >
+          全部
+        </view>
+        <view 
+          class="region-item {{selectedRegion === item ? 'active' : ''}}"
+          wx:for="{{filteredWorkerRegions}}"
+          wx:key="*this"
+          bindtap="selectRegion"
+          data-region="{{item}}"
+        >
+          {{item}}
+        </view>
+      </scroll-view>
+
+      <!-- 底部按钮 -->
+      <view class="region-modal-footer">
+        <button class="region-btn cancel" bindtap="hideRegionModal">取消</button>
+        <button class="region-btn confirm" bindtap="confirmRegion">确定</button>
+      </view>
+    </view>
+  </view>
+</view>
