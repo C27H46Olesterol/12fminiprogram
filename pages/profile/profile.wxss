@@ -4,7 +4,7 @@
   width: 120rpx;
   height: 120rpx;
   border-radius: 50%;
-  background: #1677ff;
+  background: #8e9399;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,4 +42,20 @@
   height: 1rpx;
   background: #f0f0f0;
   width: 100%;
+}
+
+.login-btn {
+  margin-left: auto;
+  background-color: #1a73e8;
+  color: #fff;
+  padding: 12rpx 32rpx;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  box-shadow: 0 2rpx 8rpx rgba(26, 115, 232, 0.3);
+  transition: background-color 0.2s;
+}
+
+.login-btn:active {
+  background-color: #1765cc;
 }

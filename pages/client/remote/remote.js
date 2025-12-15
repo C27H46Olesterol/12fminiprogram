@@ -1,11 +1,12 @@
 // pages/client/remote/remote.js
+var timer = require("../../../utils/wxTimer")
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
-    deviceInfo:[],
+    deviceInfo: [],
     deviceStatus: {
       online: true,
       temperature: 25,
@@ -17,6 +18,7 @@ Page({
       signalStrength: 4,
       faultCode: '' // 故障码，空字符串表示无故障
     },
+    wxTimerList: {},
     remoteState: {
       powerOn: false,
       windSpeed: 1,
@@ -32,7 +34,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-
+    
   },
 
   /**
@@ -46,11 +48,32 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow() {
-
+    // this.timerTest();
   },
 
+  // async timerTest(){
+  //   var timerTest = new timer({
+  //     beginTime: '00:00:05',
+  //     name: "timerTest",
+  //     complete: function () {
+  //       wx.showToast({
+  //         title: '定时响应',
+  //       })
+  //       console.log('计时结束')
+  //       await wx.cloud.callFunction({
+  //         name:'onenet',
+  //         data:{
+  //           action:'setTimmer'
+  //         }
+  //       })
+  //     }
+  //   })
+  //   console.log('计时开始')
+  //   timerTest.start(this);
+  // },
+
   //初始化设备信息 获取用户的所有激活的设备
-  async getDeviceInfo(){
+  async getDeviceInfo() {
     //查询用户已激活的产品列表
     const userInfo = wx.getStorageSync('userInfo')
     const userId = userInfo.userId
@@ -65,7 +88,7 @@ Page({
     })
     console.log("测试接口返回结果：", result.data)
   },
-  
+
   // 加载设备状态
   async loadDeviceStatus() {
     try {
@@ -93,22 +116,32 @@ Page({
 
   // 开关机
   togglePower() {
-    const result =wx.cloud.callFunction({
-      name:'onenet',
-      data:{
-        action:'setOn',
-        deviceName:''
+    const result = wx.cloud.callFunction({
+      name: 'onenet',
+      data: {
+        action: 'setOn',
+        deviceName: 'onenet_mqtt'
       }
     })
-    if(result.success === 'success'){
+    if (result.success) {
       this.setData({
         'remoteState.powerOn': true
       });
-      this.showControlToast('已开机');
-    }else{
-      this.showControlToast(result.errMsg);
+      wx.showToast({
+        title: '已开机',
+        icon: 'success',
+        duration: 2000
+      });
+      // this.showControlToast('已开机');
+    } else {
+      wx.showToast({
+        title: '开机失败',
+        icon: 'error',
+        duration: 2000
+      });
+      // this.showControlToast("开机失败");
     }
-    
+
   },
 
   // 增加风速

@@ -10,6 +10,7 @@ Page({
     longPressTimer: null,
     longPressCount: 0,
     showRoleSwitchModal: false,
+    userAvatar: null,
     roleList: [
       {
         value: 'client',
@@ -71,25 +72,25 @@ Page({
   },
 
   async fastAPITest2() {
-    // const result = await wx.cloud.callFunction({
-    //   name: 'huaweicloud',
-    //   data: {
-    //     action: "sendMessagetoDevice"
-    //   }
-    // })
-    // console.log("测试接口返回结果：", result)
+    await wx.cloud.callFunction({
+      name:'onenet',
+      data:{
+        action:'setTimmer',
+        current:30
+      }
+    })
   },
 
   // 加载用户信息
   loadUserInfo() {
-    const userInfo = auth.getUserInfo();
-    const userRole = auth.getUserRole();
-    const isAdmin = app.globalData.isAdmin;
-
+    const userInfo = wx.getStorageSync('userInfo');
+    const userRole = userInfo.role;
+    // const isAdmin = app.globalData.isAdmin;
+    const userAvatar = userInfo.avatar;
     this.setData({
       userInfo,
       userRole,
-      isAdmin
+      userAvatar
     });
   },
 
@@ -245,6 +246,7 @@ Page({
         }
       }
     });
+    wx.navigateBack();
   },
 
   // 获取角色显示文本

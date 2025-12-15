@@ -3,13 +3,14 @@
   <!-- 用户头部 -->
   <view class="user-header flex flex-v-center mb-20" style="padding: 40rpx 0;">
     <view class="user-avatar-large mr-20">
-      <text class="avatar-text"></text>
+      <!-- <text class="avatar-text"></text> -->
+      <image src="/images/tabbar/aboutme.png" mode="aspectFit" wx:if="{{!userAvatar}}"></image>
     </view>
     <view>
       <view class="user-name-large">{{userInfo.nickname || '未登录'}}</view>
       <view class="user-phone-text">{{userInfo.phoneNumber || ''}}</view>
     </view>
-    <view bindtap="goToLogin" wx:if="{{!userInfo}}" >点击登陆</view>
+    <view class="login-btn" bindtap="goToLogin" wx:if="{{!userInfo}}" >点击登陆</view>
   </view>
 
   <!-- 菜单列表 -->
@@ -30,6 +31,7 @@
     </view>
   </view>
 
+  <!-- 测试用入口 -->
   <view class="card menu-list mt-20">
     <view class="menu-item flex flex-between flex-v-center" bindtap="fastAPITest">
       <text class="menu-text text-primary">接口测试1</text>

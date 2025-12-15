@@ -34,7 +34,8 @@ Page({
       // app.globalData.isWorker = userInfo.role === 'worker';
       // app.globalData.isClient = userInfo.role === 'client';
 
-      this.navigateByRole(userInfo.role);
+      // this.navigateByRole(userInfo.role);
+      wx.navigateBack();
     }
   },
 
@@ -92,10 +93,10 @@ Page({
           })
           
           // 延迟跳转
-          setTimeout(() => {
-            this.navigateByRole(res.result.data.userInfo.role);
-          }, 1000);
-
+          // setTimeout(() => {
+          //   this.navigateByRole(res.result.data.userInfo.role);
+          // }, 1000);
+          wx.navigateBack();
         } else {
           wx.hideLoading()
           wx.showToast({
@@ -284,10 +285,10 @@ Page({
         });
 
         //延时根据角色跳转
-        setTimeout(() => {
-          this.navigateByRole(userInfo.role);
-        }, 1500);
-        
+        // setTimeout(() => {
+        //   this.navigateByRole(userInfo.role);
+        // }, 1500);
+        wx.navigateBack();
       } else {
         console.log('登录失败:', result.result);
         wx.showToast({

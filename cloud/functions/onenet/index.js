@@ -13,15 +13,13 @@ const method = 'md5'
 const version = '2022-05-01'
 const product_id = 'OHjh4nsX2f';
 const accessKey = 'E//da1W/C3uPMQfJddk5Y1WX22VrsSGV5XvXr4X5hT0='; // 替换为实际的 API Key
-const et = Math.ceil((Date.now() + 3600000) / 1000);
 const res = 'products/OHjh4nsX2f'
-
-// 生成正确的 Authorization 签名
 const base64Key = Buffer.from(accessKey, 'base64'); // accessKey base64编码
-const StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
-const sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
 const encodeRes = encodeURIComponent(res);
 
+var et=Math.ceil((Date.now() + 3600000) / 1000);
+var StringForSignature =et + '\n' + method + '\n' + res + '\n' + version;
+var sign=encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
 //数据流格式上传（备用）
 // async function setCommand(event){
 //   const {onOff,temp,mode,fanSpeed,swing} = event;
@@ -55,11 +53,41 @@ async function getProductList(event) {
   }
 }
 
+//定时
+async function setTimmer(event){
+  const current = event.current
+  console.log("定时时间",current)
+  console.log("定时功能测试")
+  const timer = setInterval(() => {
+    current--;
+    if (current <= 0) {
+      clearInterval(timer);
+    } else {
+      console.log(`剩余时间：${current}秒`);
+    }
+  }, 1000);
+}
+
+//定时刷新签名
+async function freshSign(event){
+  const current = 3500;
+  setInterval(() => {
+    current--;
+    if(current == 0) {
+      et = Math.ceil((Date.now() + 3600000) / 1000);
+      // 生成正确的 Authorization 签名
+      StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
+      sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
+      console.log(`剩余时间：${current}秒`);
+    }
+  }, 1000);
+}
 /*
 * 开机 powerStatus1
 */
 async function setOn(event) {
-  const deviceName = event
+  const {deviceName} = event
+  console.log("开启设备：",deviceName)
   try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
@@ -72,17 +100,18 @@ async function setOn(event) {
         'product_id': 'OHjh4nsX2f',
         'device_name': deviceName,
         'params': {
-          'powerStatus': 1
+          'powerStatus': true
         }
       },
-      json: true
+      json:true
     });
-    console.log('', res);
+    console.log('开机接口调用结果：', res);
     return {
-      status: 'success',
+      success:true
     }
   } catch (err) {
-    console.log('', err.message,);
+    // if()
+    console.log('开机接口调用结果：', err.message,);
     return err;
   }
 }
@@ -374,7 +403,13 @@ async function getActiveDeviceList(event) {
     }).get()
 
     console.log("activateProduct查询结果:", activateRes.data)
-
+    if(activateRes.data.length <= 0){
+      return{
+        success:false,
+        msg:"用户没有激活产品",
+        code:413
+      }
+    }
     // 存储最终结果的数组
     const deviceList = []
 
@@ -398,7 +433,12 @@ async function getActiveDeviceList(event) {
     }
 
     console.log("最终设备列表:", deviceList)
-
+    if(deviceList.length<=0){
+      return{
+        success:true,
+        msg:"用户没有可以远控的设备"
+      }
+    }
     return {
       success: true,
       data: deviceList,
@@ -425,6 +465,12 @@ exports.main = async (event, context) => {
       return getActiveDeviceList(event);
     case 'setCommand':
       return setCommand(event);
+    case 'setTimmer':
+      return setTimmer(event);  
+    case 'setOn':
+      return setOn(event);  
+    case 'freshSign':
+      return freshSign(event);
     default:
       return {
         errMsg: '未知的操作'

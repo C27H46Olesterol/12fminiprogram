@@ -22,8 +22,21 @@ App({
     // 获取系统信息
     this.getSystemInfo();
 
+    //定时刷新token
+    this.freshSign();
+
     // 不在app.js中检查登录状态，让各页面自己处理
     // 这样可以避免在登录页面被重定向
+  },
+
+  async freshSign(){
+    await wx.cloud.callFunction({
+      name:"onenet",
+      data:{
+        action:"freshSign"
+      }
+    })
+    console.log('启动定时刷新token')
   },
 
   // 初始化云开发
@@ -176,10 +189,11 @@ App({
     });
 
     // 跳转到首页或登录页
-    setTimeout(() => {
-      wx.reLaunch({
-        url: '/pages/client/index/index'
-      });
-    }, 1500);
+    // setTimeout(() => {
+    //   wx.reLaunch({
+    //     url: '/pages/client/index/index'
+    //   });
+    // }, 1500);
+    wx.navigateBack();
   }
 });

@@ -84,7 +84,7 @@
 
   <view class="remote-header">
     <view class="power-btn-wrapper" bindtap="togglePower">
-      <view class="power-btn {{remoteState.powerOn ? 'active' : ''}}">
+      <view class="power-btn {{remoteState.powerOn ? 'active' : 'false'}}">
         <view class="iconfont icon-power"></view>
       </view>
     </view>

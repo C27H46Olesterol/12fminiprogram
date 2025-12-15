@@ -1,5 +1,10 @@
 /* pages/login/login.wxss */
 
+.form-input{
+  min-height: 6vh;
+  border-radius: 6px;
+}
+
 /* ===== 容器 ===== */
 .login-container {
   min-height: 100vh;

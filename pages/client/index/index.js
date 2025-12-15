@@ -175,7 +175,7 @@ Page({
       console.log('设置产品用户专用栏')
       // 加载已激活产品
       const myProductsList = await this.formatActivateProduct()
-      console.log(myProductsList)
+
       this.setData({
         myProducts: myProductsList
       })
