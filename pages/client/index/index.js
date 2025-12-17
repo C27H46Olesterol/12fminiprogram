@@ -20,6 +20,7 @@ Page({
 
   onLoad() {
     console.log('加载页面')
+    wx.showLoading();
     this.UserInfoStorageCheck();
     this.getUser();
     this.initPage();
@@ -29,9 +30,14 @@ Page({
       // 未登录时加载企业动态
       this.loadNewsList();
     }
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 1500)
   },
 
   onShow() {
+    wx.showLoading();
+    console.log("显示client/index")
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 0
@@ -45,6 +51,10 @@ Page({
       // 未登录时加载企业动态
       this.loadNewsList();
     }
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 1500)
+    console.log("client/index加载完毕")
   },
 
   //缓存信息检查
@@ -120,7 +130,7 @@ Page({
       });
 
       //获取当前位置信息
-      // this.getCurrentLocation();
+      this.getCurrentLocation();
     } else {
       this.setData({
         hasUserInfo: false,
@@ -225,7 +235,7 @@ Page({
         // 检查云函数业务逻辑是否成功
         if (cloudResult.success && cloudResult.data) {
           const res = cloudResult.data;
-          console.log('激活产品数据:', res);
+          // console.log('激活产品数据:', res);
 
           // 将云函数返回的数据转换为myProducts格式，只包含必要字段
           return res.map((item, index) => ({
@@ -394,18 +404,36 @@ Page({
   // 获取当前位置
   async getCurrentLocation() {
     try {
-      console.log('📍 开始获取当前位置...');
+      console.log(' 开始获取当前位置...');
       wx.getLocation({
         type: 'gcj02',
         success: async (res) => {
-          console.log('📍 位置获取成功:', res);
-          const locationInfo = await this.reverseGeocode(res.latitude, res.longitude);
+          console.log(' 位置获取成功:', res);
+          // const locationInfo = await this.reverseGeocode(res.latitude, res.longitude);
+          var locationInfo=''
+          try{
+            var locationInfo = await wx.cloud.callFunction({
+              name:"auth",
+              data:{
+                action:"reverseGeocode",
+                latitude:res.latitude,
+                longitude:res.longitude
+              }
+            })
+          }catch(error){
+            wx.showToast({
+              title: '地理解析失败',
+              icon:'error'
+            })
+          }
+          
+
           this.setData({
             userLocation: locationInfo
           });
         },
         fail: (err) => {
-          console.log('📍 位置获取失败:', err);
+          console.log(' 位置获取失败:', err);
           this.setData({
             userLocation: { city: '定位失败', address: '无法获取位置信息' }
           });
@@ -416,46 +444,6 @@ Page({
       this.setData({
         userLocation: { city: '定位异常', address: '位置获取异常' }
       });
-    }
-  },
-
-  // 逆地理编码
-  async reverseGeocode(latitude, longitude) {
-    try {
-      return new Promise((resolve, reject) => {
-        wx.request({
-          url: `https://apis.map.qq.com/ws/geocoder/v1/?location=${latitude},${longitude}&key=your_tencent_map_key`, // 需要替换为实际的腾讯地图API Key
-          success: (res) => {
-            if (res.data && res.data.result) {
-              const result = res.data.result;
-              resolve({
-                address: result.address,
-                city: result.address_component.city,
-                province: result.address_component.province,
-                district: result.address_component.district
-              });
-            } else {
-              resolve({
-                address: '未知地址',
-                city: '未知城市'
-              });
-            }
-          },
-          fail: (err) => {
-            console.error('逆地理编码失败:', err);
-            resolve({
-              address: '定位服务不可用',
-              city: '未知位置'
-            });
-          }
-        });
-      });
-    } catch (error) {
-      console.error('逆地理编码出错:', error);
-      return {
-        address: '定位异常',
-        city: '未知位置'
-      };
     }
   },
 

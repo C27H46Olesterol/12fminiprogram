@@ -144,21 +144,21 @@
         <view class="func-btn circle {{remoteState.mode === 'auto' ? 'active' : ''}}">
           <view class="iconfont icon-auto"></view>
         </view>
-        <text class="func-label">{{remoteState.mode === 'auto' ? '当前模式：自动' : '自动'}}</text>
+        <text class="func-label">{{remoteState.mode === 'auto' ? '当前：自动' : '自动'}}</text>
       </view>
 
       <view class="func-btn-wrapper" bindtap="setStrongMode">
         <view class="func-btn circle {{remoteState.mode === 'strong' ? 'active' : ''}}">
           <view class="iconfont icon-strong"></view>
         </view>
-        <text class="func-label">{{remoteState.mode === 'strong' ? '当前模式：强劲' : '强劲'}}</text>
+        <text class="func-label">{{remoteState.mode === 'strong' ? '当前：强劲' : '强劲'}}</text>
       </view>
 
       <view class="func-btn-wrapper" bindtap="setEcoMode">
         <view class="func-btn circle {{remoteState.mode === 'eco' ? 'active' : ''}}">
           <view class="iconfont icon-eco"></view>
         </view>
-        <text class="func-label">{{remoteState.mode === 'eco' ? '当前模式：节能' : '节能'}}</text>
+        <text class="func-label">{{remoteState.mode === 'eco' ? '当前：节能' : '节能'}}</text>
       </view>
     </view>
 
@@ -169,7 +169,7 @@
           <!-- <text class="iconfont" style="color: {{remoteState.mode === 'heat' ? '#fff' : '#ff4d4f'}};">♨</text> -->
           <view class="iconfont icon-heat"></view>
         </view>
-        <text class="func-label">{{remoteState.mode === 'heat' ? '当前模式：制热' : '制热'}}</text>
+        <text class="func-label">{{remoteState.mode === 'heat' ? '当前：制热' : '制热'}}</text>
       </view>
 
       <view class="func-btn-wrapper" bindtap="toggleSwingUpDown">
@@ -186,7 +186,7 @@
         <text class="func-label">{{remoteState.swingLeftRight ? '左右摆风：开' : '左右摆风：关'}}</text>
       </view>
 
-      <view class="func-btn-wrapper" bindtap="onClock">
+      <view class="func-btn-wrapper" bindtap="timerTest">
         <view class="func-btn circle">
           <view class="iconfont icon-clock"></view>
         </view>

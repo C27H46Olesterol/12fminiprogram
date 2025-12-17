@@ -187,6 +187,7 @@ App({
       icon: 'success',
       duration: 1500
     });
+    console.log("用户已退出")
 
     // 跳转到首页或登录页
     // setTimeout(() => {
@@ -194,6 +195,10 @@ App({
     //     url: '/pages/client/index/index'
     //   });
     // }, 1500);
-    wx.navigateBack();
+
+    setTimeout(() => {
+        wx.navigateBack();
+    }, 1500);
+   
   }
 });

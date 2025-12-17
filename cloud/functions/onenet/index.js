@@ -2,7 +2,7 @@
 const cloud = require('wx-server-sdk')
 var rp = require('request-promise')
 const crypto = require('crypto');
-const buffer = require('../auth/miniprogram_npm/buffer');
+// const buffer = require('../auth/miniprogram_npm/buffer');
 
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV }) // 使用当前云环境
 
@@ -17,9 +17,9 @@ const res = 'products/OHjh4nsX2f'
 const base64Key = Buffer.from(accessKey, 'base64'); // accessKey base64编码
 const encodeRes = encodeURIComponent(res);
 
-var et=Math.ceil((Date.now() + 3600000) / 1000);
-var StringForSignature =et + '\n' + method + '\n' + res + '\n' + version;
-var sign=encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
+var et = Math.ceil((Date.now() + 36000000) / 1000);
+var StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
+var sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
 //数据流格式上传（备用）
 // async function setCommand(event){
 //   const {onOff,temp,mode,fanSpeed,swing} = event;
@@ -54,9 +54,9 @@ async function getProductList(event) {
 }
 
 //定时
-async function setTimmer(event){
+async function setTimmer(event) {
   const current = event.current
-  console.log("定时时间",current)
+  console.log("定时时间", current)
   console.log("定时功能测试")
   const timer = setInterval(() => {
     current--;
@@ -69,16 +69,18 @@ async function setTimmer(event){
 }
 
 //定时刷新签名
-async function freshSign(event){
-  const current = 3500;
-  setInterval(() => {
+async function freshSign(event) {
+  const interval = event.interval || 3599;
+  let current = interval;
+  const timer = setInterval(() => {
     current--;
-    if(current == 0) {
-      et = Math.ceil((Date.now() + 3600000) / 1000);
+    if (current <= 0) {
+      et = Math.ceil((Date.now() + 36000000) / 1000);
       // 生成正确的 Authorization 签名
       StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
       sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
-      console.log(`剩余时间：${current}秒`);
+      console.log(`签名已刷新，et: ${et}`);
+      current = interval;
     }
   }, 1000);
 }
@@ -86,8 +88,8 @@ async function freshSign(event){
 * 开机 powerStatus1
 */
 async function setOn(event) {
-  const {deviceName} = event
-  console.log("开启设备：",deviceName)
+  const { deviceName } = event
+  console.log("开启设备：", deviceName)
   try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
@@ -103,11 +105,11 @@ async function setOn(event) {
           'powerStatus': true
         }
       },
-      json:true
+      json: true
     });
     console.log('开机接口调用结果：', res);
     return {
-      success:true
+      success: true
     }
   } catch (err) {
     // if()
@@ -119,7 +121,7 @@ async function setOn(event) {
 /*
 * 关机 powerStatus 0
 */
-async function setOff(event){
+async function setOff(event) {
   const deviceName = event
   try {
     const res = await rp({
@@ -149,8 +151,8 @@ async function setOff(event){
 }
 
 //设置温度
-async function setTemp(event){
-  const {deviceName,temp} = event
+async function setTemp(event) {
+  const { deviceName, temp } = event
   try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
@@ -179,7 +181,7 @@ async function setTemp(event){
 }
 
 //左右摆风打开
-async function setLefttoRigth(event){
+async function setLefttoRigthOn(event) {
   const deviceName = event
   try {
     const res = await rp({
@@ -209,7 +211,7 @@ async function setLefttoRigth(event){
 }
 
 //左右摆风关闭
-async function setLefttoRigth(event){
+async function setLefttoRigthOff(event) {
   const deviceName = event
   try {
     const res = await rp({
@@ -239,9 +241,9 @@ async function setLefttoRigth(event){
 }
 
 //前后摆风打开
-async function setForwordtoBack(event){
+async function setForwordtoBackOn(event) {
   const deviceName = event
-try {
+  try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
       method: 'POST',
@@ -269,9 +271,9 @@ try {
 }
 
 //前后摆风关闭
-async function setForwordtoBack(event){
+async function setForwordtoBackOff(event) {
   const deviceName = event
-try {
+  try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
       method: 'POST',
@@ -299,39 +301,39 @@ try {
 }
 
 //设置强劲模式
-async function setStrongModel(event){
+async function setStrongModel(event) {
   const deviceName = event
   try {
-      const res = await rp({
-        url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'Authorization': `version=${version}&res=${encodeRes}&et=${et}&method=${method}&sign=${sign}`
-        },
-        body: {
-          'product_id': 'OHjh4nsX2f',
-          'device_name': deviceName,
-          'params': {
-            'setStrongModel': true
-          }
-        },
-        json: true
-      });
-      console.log('', res);
-      return {
-        status: 'success',
-      }
-    } catch (err) {
-      console.log('', err.message,);
-      return err;
+    const res = await rp({
+      url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `version=${version}&res=${encodeRes}&et=${et}&method=${method}&sign=${sign}`
+      },
+      body: {
+        'product_id': 'OHjh4nsX2f',
+        'device_name': deviceName,
+        'params': {
+          'setStrongModel': true
+        }
+      },
+      json: true
+    });
+    console.log('', res);
+    return {
+      status: 'success',
     }
+  } catch (err) {
+    console.log('', err.message,);
+    return err;
+  }
 }
 
 //设置节能模式
-async function setEcoModel(event){
+async function setEcoModel(event) {
   const deviceName = event
-try {
+  try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
       method: 'POST',
@@ -359,9 +361,9 @@ try {
 }
 
 //设置自动模式
-async function setAutoModel(event){
+async function setAutoModel(event) {
   const deviceName = event
-try {
+  try {
     const res = await rp({
       url: `https://iot-api.heclouds.com/thingmodel/set-device-property`,
       method: 'POST',
@@ -384,8 +386,8 @@ try {
     }
   } catch (err) {
     return {
-      code:404,
-      msg:'设置自动模式失败'
+      code: 404,
+      msg: '设置自动模式失败'
     };
   }
 }
@@ -403,11 +405,11 @@ async function getActiveDeviceList(event) {
     }).get()
 
     console.log("activateProduct查询结果:", activateRes.data)
-    if(activateRes.data.length <= 0){
-      return{
-        success:false,
-        msg:"用户没有激活产品",
-        code:413
+    if (activateRes.data.length <= 0) {
+      return {
+        success: false,
+        msg: "用户没有激活产品",
+        code: 413
       }
     }
     // 存储最终结果的数组
@@ -433,10 +435,10 @@ async function getActiveDeviceList(event) {
     }
 
     console.log("最终设备列表:", deviceList)
-    if(deviceList.length<=0){
-      return{
-        success:true,
-        msg:"用户没有可以远控的设备"
+    if (deviceList.length <= 0) {
+      return {
+        success: true,
+        msg: "用户没有可以远控的设备"
       }
     }
     return {
@@ -466,9 +468,9 @@ exports.main = async (event, context) => {
     case 'setCommand':
       return setCommand(event);
     case 'setTimmer':
-      return setTimmer(event);  
+      return setTimmer(event);
     case 'setOn':
-      return setOn(event);  
+      return setOn(event);
     case 'freshSign':
       return freshSign(event);
     default:

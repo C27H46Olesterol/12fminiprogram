@@ -1,6 +1,8 @@
 // utils/request.js - 网络请求工具
 const app = getApp();
 
+const BASEURL = ''
+
 /**
  * 网络请求封装
  * @param {object} options - 请求选项

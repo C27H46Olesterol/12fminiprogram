@@ -14,7 +14,7 @@
   </view>
 
   <!-- 菜单列表 -->
-  <view class="card menu-list">
+  <!-- <view class="card menu-list">
     <view class="menu-item flex flex-between flex-v-center" bindtap="goToUserInfo">
       <text class="menu-text">个人信息</text>
       <text class="arrow-icon">></text>
@@ -29,7 +29,7 @@
       <text class="menu-text">设置</text>
       <text class="arrow-icon">></text>
     </view>
-  </view>
+  </view> -->
 
   <!-- 测试用入口 -->
   <view class="card menu-list mt-20">

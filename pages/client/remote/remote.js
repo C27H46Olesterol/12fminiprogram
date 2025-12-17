@@ -48,29 +48,29 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow() {
-    // this.timerTest();
+  
   },
 
-  // async timerTest(){
-  //   var timerTest = new timer({
-  //     beginTime: '00:00:05',
-  //     name: "timerTest",
-  //     complete: function () {
-  //       wx.showToast({
-  //         title: '定时响应',
-  //       })
-  //       console.log('计时结束')
-  //       await wx.cloud.callFunction({
-  //         name:'onenet',
-  //         data:{
-  //           action:'setTimmer'
-  //         }
-  //       })
-  //     }
-  //   })
-  //   console.log('计时开始')
-  //   timerTest.start(this);
-  // },
+  async timerTest(){
+    var timerTest = new timer({
+      beginTime: '00:00:05',
+      name: "timerTest",
+      complete: function () {
+        wx.showToast({
+          title: '定时响应',
+        })
+        console.log('计时结束')
+        // await wx.cloud.callFunction({
+        //   name:'onenet',
+        //   data:{
+        //     action:'setTimmer'
+        //   }
+        // })
+      }
+    })
+    console.log('计时开始')
+    timerTest.start(this);
+  },
 
   //初始化设备信息 获取用户的所有激活的设备
   async getDeviceInfo() {

@@ -1,5 +1,38 @@
 <!--pages/client/index/index.wxml-->
 <view class="container client-home">
+  <!-- 用户信息选项卡 -->
+  <view class="user-info-card mb-20">
+    <!-- 未登录状态 -->
+    <view class="user-info-unlogin" wx:if="{{!hasUserInfo}}">
+      <view class="unlogin-text">
+        <text class="greeting">您好，请登录</text>
+        <text class="sub-text">登录后享受更多服务</text>
+      </view>
+      <button class="login-btn" bindtap="onGoLogin">登录</button>
+    </view>
+
+    <!-- 已登录状态 -->
+    <view class="user-info-logged" wx:else>
+      <view class="user-avatar-box">
+        <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" binderror="onAvatarError"></image>
+      </view>
+      <view class="user-details">
+        <view class="user-top-row">
+          <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
+          <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
+        </view>
+        <view class="user-address" wx:if="{{userLocation.address}}">
+          <text class="icon-location"></text>
+          <text>{{userLocation.address}}</text>
+        </view>
+        <view class="user-address" wx:else>
+          <text class="icon-location"></text>
+          <text>定位获取中...</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 顶部标题栏 -->
   <view class="header-bar flex flex-between flex-v-center mb-20">
     <text class="page-title">服务中心</text>

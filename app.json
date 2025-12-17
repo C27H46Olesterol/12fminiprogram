@@ -66,12 +66,6 @@
         "text": "遥控器",
         "iconPath": "/images/tabbar/remote2.png",
         "selectedIconPath": "/images/tabbar/remote2.png"
-      },
-      {
-        "pagePath": "pages/profile/profile",
-        "text": "我的",
-        "iconPath": "/images/tabbar/aboutme.png",
-        "selectedIconPath": "/images/tabbar/aboutme.png"
       }
     ]
   },

@@ -237,16 +237,16 @@ Page({
 
   // 退出登录
   logout() {
-    wx.showModal({
-      title: '确认退出',
-      content: '确定要退出登录吗？',
-      success: (res) => {
-        if (res.confirm) {
-          app.logout();
-        }
-      }
-    });
-    wx.navigateBack();
+    wx.showLoading();
+    setTimeout(()=>{
+      wx.hideLoading()
+    },2000)
+    app.logout();
+    setTimeout(()=>{
+      this.onLoad();
+    },1500)
+
+
   },
 
   // 获取角色显示文本

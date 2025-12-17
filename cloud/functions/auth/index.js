@@ -30,9 +30,6 @@ function createErrorResponse(message, code = 400) {
   };
 }
 
-const APPID = 'wxa81a2077330256cf';
-const SECRET = 'c076e35a96b2bee4c67920a47f5d41dc';
-
 /**
  * 检查是否为管理员手机号
  */
@@ -45,7 +42,7 @@ function isAdminPhone(phone) {
     '13700137000', // 测试管理员手机号2
     '15600000000'  // 通用测试手机号
   ];
-  
+
   return adminPhones.includes(phone);
 }
 
@@ -59,7 +56,7 @@ function isWorkerPhone(phone) {
     '13900139001', // 测试维修工2
     '13900139002'  // 测试维修工3
   ];
-  
+
   return workerPhones.includes(phone);
 }
 
@@ -69,7 +66,7 @@ function isWorkerPhone(phone) {
 async function phoneNumberLogin(event) {
   try {
     const { phoneNumber } = event;
-    
+
     if (!phoneNumber) {
       return {
         success: false,
@@ -99,7 +96,7 @@ async function phoneNumberLogin(event) {
       // 用户已存在，从数据库读取角色信息
       const existingUser = userQuery.data[0];
       console.log('找到已存在用户，使用数据库角色:', existingUser.role);
-      
+
       // 更新最后登录时间
       await db.collection('users').doc(existingUser._id).update({
         data: {
@@ -145,14 +142,14 @@ async function phoneNumberLogin(event) {
 
       //新用户 默认为client
       const userRole = 'client';
-      
+
       //通过字符串拼接设置用户ID
       const newUserId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
       userInfo = {
         userId: newUserId,
         phone: phoneNumber,
-        nickname: '用户'+phoneNumber,
+        nickname: '用户' + phoneNumber,
         avatarUrl: '',
         role: userRole,
         status: 'active',
@@ -213,7 +210,7 @@ function assignUserRole(phoneNumber) {
   if (isAdminPhone(phoneNumber)) {
     return 'admin';
   }
-  
+
   // 默认角色为用户
   return 'user';
 }
@@ -224,18 +221,18 @@ function assignUserRole(phoneNumber) {
 async function checkAdminPermission(event) {
   try {
     const { phone } = event;
-    
+
     if (!phone) {
       return createErrorResponse('缺少手机号参数');
     }
-    
+
     const isAdmin = isAdminPhone(phone);
-    
+
     return createSuccessResponse({
       isAdmin: isAdmin,
       phone: phone
     }, isAdmin ? '该手机号具有管理员权限' : '该手机号不是管理员');
-    
+
   } catch (error) {
     console.error('检查管理员权限失败:', error);
     return createErrorResponse('检查管理员权限失败: ' + error.message);
@@ -243,47 +240,47 @@ async function checkAdminPermission(event) {
 }
 
 //获取用户openid and session_key
-async function userLoginCheck(event){
+async function userLoginCheck(event) {
   const code = event.code;
-  try{
+  try {
     const res = rp({
-      url:'https://api.weixin.qq.com/sns/jscode2session?appid='+APPID+'&secret='+SECRET+'&js_code='+code+'&grant_type=authorization_code',
-      method:'GET',
-      success(res){
-        
+      url: 'https://api.weixin.qq.com/sns/jscode2session?appid=' + proccess.env.APPID + '&secret=' + proccess.env.SECRET + '&js_code=' + code + '&grant_type=authorization_code',
+      method: 'GET',
+      success(res) {
+
       },
-      fail(error){
-        console.log('请求失败：',error)
+      fail(error) {
+        console.log('请求失败：', error)
       }
     })
-    console.log('返回数据:',res)
+    console.log('返回数据:', res)
     return res
-  }catch(error){
+  } catch (error) {
     return {
       error
     }
   }
-  
+
 }
 
 //check session_key 
-async function checkSessionKey(event){
+async function checkSessionKey(event) {
   const session_key = event.session_key;
   const openid = event.openid;
   const signature = hmac_sha256(session_key, "")
-  try{
+  try {
     rp({
-      url:'https://api.weixin.qq.com/wxa/checksession?access_token='+cloudbase_access_token+'&signature='+signature+'&openid='+openid+'&sig_method=hmac_sha256',
-      method:'GET',
-      success(res){
-        
+      url: 'https://api.weixin.qq.com/wxa/checksession?access_token=' + cloudbase_access_token + '&signature=' + signature + '&openid=' + openid + '&sig_method=hmac_sha256',
+      method: 'GET',
+      success(res) {
+
       },
-      fail(error){
+      fail(error) {
         return []
       }
     })
     return res
-  }catch(error){
+  } catch (error) {
 
   }
 }
@@ -294,7 +291,7 @@ async function checkSessionKey(event){
 async function updateUserInfo(event) {
   try {
     const { userId, token, phone, department, position } = event;
-    
+
     if (!userId || !token) {
       return createErrorResponse('缺少用户信息');
     }
@@ -330,20 +327,20 @@ async function updateUserInfo(event) {
 async function getUserInfo(event) {
   try {
     const { userId, token } = event;
-    
+
     if (!userId || !token) {
       return createErrorResponse('缺少用户信息');
     }
 
     // 查询用户信息
     const userResult = await db.collection('users').doc(userId).get();
-    
+
     if (!userResult.data) {
       return createErrorResponse('用户不存在');
     }
 
     const user = userResult.data;
-    
+
     const userInfo = {
       userId: user._id,
       openid: user.openid,
@@ -450,11 +447,11 @@ async function getUserList(event) {
     }
 
     let query = {};
-    
+
     if (role) {
       query.role = role;
     }
-    
+
     if (status) {
       query.status = status;
     }
@@ -502,24 +499,24 @@ async function getUserList(event) {
 async function updateUserLocation(event) {
   try {
     const { userId, phoneNumber, region } = event;
-    
+
     console.log('📍 更新用户地区信息:', { userId, phoneNumber, region });
-    
+
     if (!phoneNumber) {
       return createErrorResponse('缺少手机号');
     }
-    
+
     // 查找用户
     const userResult = await db.collection('users').where({
       phone: phoneNumber
     }).get();
-    
+
     if (userResult.data.length === 0) {
       return createErrorResponse('用户不存在');
     }
-    
+
     const user = userResult.data[0];
-    
+
     // 只更新地区信息，不保存经纬度
     await db.collection('users').doc(user._id).update({
       data: {
@@ -527,13 +524,13 @@ async function updateUserLocation(event) {
         updateTime: new Date()
       }
     });
-    
+
     console.log('✅ 用户地区信息更新成功');
-    
+
     return createSuccessResponse({
       message: '地区信息更新成功'
     });
-    
+
   } catch (error) {
     console.error('❌ 更新用户地区失败:', error);
     return createErrorResponse('更新地区信息失败: ' + error.message);
@@ -541,53 +538,53 @@ async function updateUserLocation(event) {
 }
 
 //后台图片管理
-async function getAvtm(event){
+async function getAvtm(event) {
   try {
     const imgType = event.type;
-    
+
     console.log('【getAvtm】开始执行，接收参数:', { type: imgType, event: event });
-    
+
     if (!imgType) {
       console.warn('【getAvtm】缺少图片类型参数');
       return createErrorResponse('缺少图片类型参数');
     }
-    
+
     // 尝试查询数据库
     try {
       console.log('【getAvtm】开始查询数据库，集合: imgURL, 条件: type=' + imgType);
-      
+
       const imgList = await db.collection('imgURL').where({
         type: imgType
       }).get();
-      
+
       console.log('【getAvtm】数据库查询完成，结果数量:', imgList.data.length);
       console.log('【getAvtm】查询结果详情:', JSON.stringify(imgList.data, null, 2));
-      
+
       if (imgList.data.length == 0) {
         console.warn('【getAvtm】该分类没有图片，type:', imgType);
         // 返回空数组而不是错误，让前端可以处理
         return createSuccessResponse([], '该分类暂无图片');
       }
-      
+
       // 使用统一的响应格式返回数据
       return createSuccessResponse(imgList.data, '获取图片列表成功');
-      
+
     } catch (dbError) {
       console.error('【getAvtm】数据库查询失败:', dbError);
-      
+
       // 检查是否是集合不存在的错误
       if (dbError.message && (
-        dbError.message.includes('collection not exists') || 
+        dbError.message.includes('collection not exists') ||
         dbError.message.includes('ResourceNotFound') ||
         dbError.message.includes('不存在')
       )) {
         console.warn('【getAvtm】数据库集合 imgURL 不存在，返回空数组');
         return createSuccessResponse([], '数据库集合不存在，请先创建 imgURL 集合');
       }
-      
+
       throw dbError; // 重新抛出其他错误
     }
-    
+
   } catch (error) {
     console.error('【getAvtm】获取图片列表失败:', error);
     console.error('【getAvtm】错误详情:', {
@@ -596,6 +593,42 @@ async function getAvtm(event){
       code: error.code
     });
     return createErrorResponse('获取图片列表失败: ' + (error.message || '未知错误'));
+  }
+}
+
+/**
+ * 逆地理编码
+ */
+async function reverseGeocode(event) {
+  try {
+    const { latitude, longitude } = event;
+
+    if (!latitude || !longitude) {
+      return createErrorResponse('缺少经纬度参数');
+    }
+
+    const options = {
+      uri: 'http://api.tianditu.gov.cn/geocoder?postStr={\'lon\':'+longitude+',\'lat\':'+latitude+',\'ver\':1}&type=geocode&tk='+process.env.TIANMAPKEY+'',
+      json: true
+    };
+
+    const res = await rp(options);
+
+    if (res.status === 0) {
+      const result = res.result;
+      return createSuccessResponse({
+        address: result.formatted_address,
+        city: result.addressComponent.city,
+        province: result.addressComponent.province,
+        district: result.addressComponent.address,
+      });
+    } else {
+      return createErrorResponse('逆地理编码失败: ' + res.message);
+    }
+
+  } catch (error) {
+    console.error('逆地理编码出错:', error);
+    return createErrorResponse('逆地理编码出错: ' + error.message);
   }
 }
 
@@ -626,7 +659,7 @@ exports.main = async (event, context) => {
       case 'getUserInfo':
         return await getUserInfo(event);
       case 'userLoginCheck':
-        return await userLoginCheck(event);    
+        return await userLoginCheck(event);
       case 'changeUserRole':
         return await changeUserRole(event);
       case 'getUserList':
@@ -637,6 +670,8 @@ exports.main = async (event, context) => {
         return await getAvtm(event);
       case 'phoneNumberLogin':
         return await phoneNumberLogin(event);
+      case 'reverseGeocode':
+        return await reverseGeocode(event);
       default:
         return createErrorResponse('未知的操作');
     }

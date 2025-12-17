@@ -351,7 +351,7 @@
 }
 
 .control-title {
-  font-size: 28rpx;
+  font-size: 34rpx;
   color: #666;
   margin-bottom: 20rpx;
   font-weight: 500;
@@ -466,7 +466,7 @@
 }
 
 .func-label {
-  font-size: 22rpx;
+  font-size: 28rpx;
   color: #666;
 }
 
