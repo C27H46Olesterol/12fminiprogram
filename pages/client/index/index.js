@@ -13,6 +13,7 @@ Page({
     lastUpdateTime: '',
     openid: '', //用户唯一标识
     showDropdown: false, // 下拉菜单显示状态
+    showDeviceModal: false, // 设备选择弹窗显示状态
 
     // Remote Control Data (Moved from remote.js)
     deviceInfo: {
@@ -430,21 +431,50 @@ Page({
     await this.getDeviceInfo(userInfo, savedImei);
   },
 
-  onDeviceChange(e) {
-    const index = e.detail.value;
+  // 切换设备选择弹窗
+  toggleDeviceModal() {
+    if (!this.data.hasUserInfo) {
+      this.onGoLogin();
+      return;
+    }
+    this.setData({
+      showDeviceModal: !this.data.showDeviceModal
+    });
+  },
+
+  // 选择设备
+  onSelectDevice(e) {
+    const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
     this.setData({
       selectedDeviceIndex: index,
-      selectedDevice: device
+      selectedDevice: device,
+      showDeviceModal: false
     });
     wx.setStorageSync('selectedDeviceImei', device.imei);
     wx.showToast({
       title: `已切换至 ${device.sn || '新设备'}`,
       icon: 'none'
     });
-    // 切换设备后可能需要重新加载状态
+    // 切换设备后加载状态
     this.loadDeviceStatus();
   },
+
+  // onDeviceChange(e) {
+  //   const index = e.detail.value;
+  //   const device = this.data.deviceList[index];
+  //   this.setData({
+  //     selectedDeviceIndex: index,
+  //     selectedDevice: device
+  //   });
+  //   wx.setStorageSync('selectedDeviceImei', device.imei);
+  //   wx.showToast({
+  //     title: `已切换至 ${device.sn || '新设备'}`,
+  //     icon: 'none'
+  //   });
+  //   // 切换设备后加载状态
+  //   this.loadDeviceStatus();
+  // },
 
   async timerTest() {
     var timerTest = new timer({

@@ -6,40 +6,66 @@
     <!-- 新的综合头部栏 -->
     <view class="remote-header">
       <!-- 左侧：电源键 -->
-      <view class="power-btn-wrapper" bindtap="togglePower">
-        <view class="power-btn {{remoteState.powerOn ? 'active' : 'false'}}">
+      <view class="header-btn-item" bindtap="togglePower">
+        <view class="power-btn {{remoteState.powerOn ? 'active' : ''}}">
           <view class="iconfont icon-power"></view>
         </view>
+        <text class="btn-label">开关</text>
       </view>
 
       <!-- 中央：设备名称 (点击触发选择) -->
-      <picker 
-        class="device-selector" 
-        bindchange="onDeviceChange" 
-        value="{{selectedDeviceIndex}}" 
-        range="{{deviceList}}" 
-        range-key="sn"
-      >
-        <view class="device-picker-wrap">
-          <text class="device-name">{{selectedDevice.sn || '选择你的设备'}}</text>
-          <text class="picker-arrow">▼</text>
+      <view class="device-selector-container">
+        <view class="device-selector" bindtap="toggleDeviceModal">
+          <view class="device-picker-wrap">
+            <text class="device-name">{{selectedDevice.sn || '选择你的设备'}}</text>
+            <text class="picker-arrow">▼</text>
+          </view>
         </view>
-      </picker>
+        <text class="selector-label">当前设备</text>
+
+        <!-- 设备选择下拉菜单 -->
+        <view class="dropdown-menu device-dropdown {{showDeviceModal ? 'show' : ''}}">
+          <view class="dropdown-grid">
+            <view 
+              class="dropdown-item device-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
+              wx:for="{{deviceList}}" 
+              wx:key="sn" 
+              bindtap="onSelectDevice" 
+              data-index="{{index}}"
+            >
+              <image class="device-img-small" src="{{item.image || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/images/default-device.png'}}" mode="aspectFill"></image>
+              <view class="device-info-small">
+                <text class="device-sn-small">{{item.sn}}</text>
+                <text class="device-status-dot {{item.online ? 'online' : 'offline'}}"></text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
 
       <!-- 右侧：添加设备 & 菜单 -->
       <view class="header-right">
-        <view class="icon-btn" bindtap="onActivateProduct">
-          <text class="iconfont icon-plus-circle"></text>
+        <view class="header-btn-item" bindtap="onActivateProduct">
+          <view class="icon-btn">
+            <text class="iconfont icon-plus-circle"></text>
+          </view>
+          <text class="btn-label">添加</text>
         </view>
-        <view class="icon-btn menu-trigger" bindtap="toggleDropdown">
-          <text class="menu-icon">⋮</text>
+        
+        <view class="header-btn-item menu-trigger" bindtap="toggleDropdown">
+          <view class="icon-btn">
+            <text class="menu-icon">⋮</text>
+          </view>
+          <text class="btn-label">登陆</text>
           
           <!-- 下拉菜单 (集成在头部) -->
           <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
             <!-- 未登录状态 -->
             <block wx:if="{{!hasUserInfo}}">
-              <view class="dropdown-item" bindtap="onGoLogin">
-                <text>立即登录</text>
+              <view class="dropdown-grid">
+                <view class="dropdown-item" bindtap="onGoLogin">
+                  <text>立即登录</text>
+                </view>
               </view>
             </block>
             <!-- 已登录状态 -->
@@ -48,11 +74,13 @@
                 <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
                 <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
               </view>
-              <view class="dropdown-item" bindtap="onApiTest">
-                <text>接口测试</text>
-              </view>
-              <view class="dropdown-item logout" bindtap="onLogout">
-                <text>退出登陆</text>
+              <view class="dropdown-grid">
+                <view class="dropdown-item" bindtap="onApiTest">
+                  <text>接口测试</text>
+                </view>
+                <view class="dropdown-item logout" bindtap="onLogout">
+                  <text>退出登陆</text>
+                </view>
               </view>
             </block>
           </view>
@@ -222,3 +250,4 @@
     </view>
   </view>
 </view>
+
