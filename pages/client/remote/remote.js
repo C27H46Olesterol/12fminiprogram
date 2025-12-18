@@ -42,6 +42,7 @@ Page({
   onLoad(options) {
     this.initDeviceSelection();
   },
+
   async initDeviceSelection() {
     const userInfo = wx.getStorageSync('userInfo');
     const savedImei = wx.getStorageSync('selectedDeviceImei');
@@ -153,13 +154,13 @@ Page({
       // 这里可以调用云函数获取真实设备状态
       const device = this.data.deviceList[index];
       const result = wx.cloud.callFunction({
-        name:'onenet',
-        data:{
-          action:'getDviceStatus',
-          deviceName:device.imei
+        name: 'onenet',
+        data: {
+          action: 'getDviceStatus',
+          deviceName: device.imei
         }
       })
-      console.log("设备状态返回",result.message);
+      console.log("设备状态返回", result.message);
       // 暂时使用模拟数据
       const mockStatus = {
         online: Math.random() > 0.1, // 90%概率在线

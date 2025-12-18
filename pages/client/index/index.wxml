@@ -1,110 +1,224 @@
 <!--pages/client/index/index.wxml-->
 <view class="container client-home">
-  <!-- 用户信息选项卡 -->
-  <view class="user-info-card mb-20">
-    <!-- 未登录状态 -->
-    <view class="user-info-unlogin" wx:if="{{!hasUserInfo}}">
-      <view class="unlogin-text">
-        <text class="greeting">您好，请登录</text>
-        <text class="sub-text">登录后享受更多服务</text>
+  <!-- 远程遥控界面 -->
+  <view class="section remote-control-section">
+    
+    <!-- 新的综合头部栏 -->
+    <view class="remote-header">
+      <!-- 左侧：电源键 -->
+      <view class="power-btn-wrapper" bindtap="togglePower">
+        <view class="power-btn {{remoteState.powerOn ? 'active' : 'false'}}">
+          <view class="iconfont icon-power"></view>
+        </view>
       </view>
-      <button class="login-btn" bindtap="onGoLogin">登录</button>
+
+      <!-- 中央：设备名称 (点击触发选择) -->
+      <picker 
+        class="device-selector" 
+        bindchange="onDeviceChange" 
+        value="{{selectedDeviceIndex}}" 
+        range="{{deviceList}}" 
+        range-key="sn"
+      >
+        <view class="device-picker-wrap">
+          <text class="device-name">{{selectedDevice.sn || '选择你的设备'}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+
+      <!-- 右侧：添加设备 & 菜单 -->
+      <view class="header-right">
+        <view class="icon-btn" bindtap="onActivateProduct">
+          <text class="iconfont icon-plus-circle"></text>
+        </view>
+        <view class="icon-btn menu-trigger" bindtap="toggleDropdown">
+          <text class="menu-icon">⋮</text>
+          
+          <!-- 下拉菜单 (集成在头部) -->
+          <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
+            <!-- 未登录状态 -->
+            <block wx:if="{{!hasUserInfo}}">
+              <view class="dropdown-item" bindtap="onGoLogin">
+                <text>立即登录</text>
+              </view>
+            </block>
+            <!-- 已登录状态 -->
+            <block wx:else>
+              <view class="dropdown-user-info">
+                <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
+                <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
+              </view>
+              <view class="dropdown-item" bindtap="onApiTest">
+                <text>接口测试</text>
+              </view>
+              <view class="dropdown-item logout" bindtap="onLogout">
+                <text>退出登陆</text>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <!-- 已登录状态 -->
-    <view class="user-info-logged" wx:else>
-      <view class="user-avatar-box">
-        <image class="user-avatar" src="{{userInfo.avatarUrl || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/icon/avatar.svg'}}" binderror="onAvatarError"></image>
-      </view>
-      <view class="user-details">
-        <view class="user-top-row">
-          <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
-          <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
+    <!-- 综合显示框 (Consolidated Display) -->
+    <view class="display-screen">
+      <!-- 第一行：基本状态 -->
+      <view class="display-row">
+        <view class="display-item">
+          <text class="display-label">A/C</text>
+          <text class="display-value {{remoteState.powerOn ? 'active' : ''}}">{{remoteState.powerOn ? 'ON' : 'OFF'}}</text>
         </view>
-        <view class="user-address" wx:if="{{userLocation.address}}">
-          <text class="icon-location"></text>
-          <text>{{userLocation.address}}</text>
+        <view class="display-item">
+          <text class="display-label">照明</text>
+          <text class="display-value {{remoteState.lightingOn ? 'active' : ''}}">{{remoteState.lightingOn ? 'ON' : 'OFF'}}</text>
         </view>
-        <view class="user-address" wx:else>
-          <text class="icon-location"></text>
-          <text></text>
+        <view class="display-item">
+          <text class="display-label">故障码</text>
+          <text class="display-value error">{{deviceStatus.faultCode || '--'}}</text>
         </view>
       </view>
-      <!-- 菜单按钮 -->
-      <view class="menu-btn" bindtap="toggleDropdown">
-        <text class="menu-icon">⋮</text>
-      </view>
-      <!-- 下拉菜单 -->
-      <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
-        <view class="dropdown-item" bindtap="onApiTest">
-          <text>接口测试</text>
+
+      <!-- 中间：核心显示 (温度 & 模式) -->
+      <view class="display-main">
+        <view class="temp-display">
+          <text class="temp-value">{{remoteState.targetTemperature}}</text>
+          <text class="temp-unit">°C</text>
+          <text class="temp-label">设置温度</text>
         </view>
-        <view class="dropdown-item" bindtap="onLogout">
-          <text>退出登陆</text>
+        <view class="mode-display">
+          <text class="mode-text">{{remoteState.mode === 'auto' ? '自动' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'heat' ? '制热' : '制冷')))}}</text>
+        </view>
+      </view>
+
+      <!-- 第三行：环境信息 -->
+      <view class="display-row">
+        <view class="display-item">
+          <text class="display-label">风速</text>
+          <text class="display-value">{{remoteState.windSpeed}}档</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">出风温度</text>
+          <text class="display-value">{{deviceStatus.outletTemp}}°C</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">进风温度</text>
+          <text class="display-value">{{deviceStatus.inletTemp}}°C</text>
+        </view>
+      </view>
+
+      <!-- 第四行：更多状态 -->
+      <view class="display-row">
+        <view class="display-item">
+          <text class="display-label">上下摆风</text>
+          <text class="display-value">{{remoteState.swingUpDown ? 'ON' : 'OFF'}}</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">左右摆风</text>
+          <text class="display-value">{{remoteState.swingLeftRight ? 'ON' : 'OFF'}}</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">电压</text>
+          <text class="display-value">{{deviceStatus.voltage}}V</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 中间控制区域 (Split Layout) -->
+    <view class="control-panel-split">
+      <!-- 左侧：风速控制 -->
+      <view class="control-column">
+        <view class="control-pill">
+          <view class="control-btn" bindtap="increaseWindSpeed">
+            <view class="iconfont icon-plus"></view>
+          </view>
+          <view class="control-icon-area">
+            <view class="control-title">风速</view>
+          </view>
+          <view class="control-btn" bindtap="decreaseWindSpeed">
+            <view class="iconfont icon-minus"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 右侧：温度控制 -->
+      <view class="control-column">
+        <view class="control-pill">
+          <view class="control-btn" bindtap="increaseTemperature">
+            <view class="iconfont icon-plus"></view>
+          </view>
+          <view class="control-icon-area">
+            <view class="control-title">温度</view>
+          </view>
+          <view class="control-btn" bindtap="decreaseTemperature">
+            <view class="iconfont icon-minus"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功能按钮区域 -->
+    <view class="function-area">
+      <!-- 第一排：功能键 -->
+      <view class="func-grid">
+        <view class="func-btn-wrapper" bindtap="toggleLighting">
+          <view class="func-btn circle {{remoteState.lightingOn ? 'active' : ''}}">
+            <view class="iconfont icon-sun"></view>
+          </view>
+          <text class="func-label"> {{remoteState.lightingOn ? '照明：开' : '照明：关'}} </text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="setAutoMode">
+          <view class="func-btn circle {{remoteState.mode === 'auto' ? 'active' : ''}}">
+            <view class="iconfont icon-auto"></view>
+          </view>
+          <text class="func-label">{{remoteState.mode === 'auto' ? '当前：自动' : '自动'}}</text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="setStrongMode">
+          <view class="func-btn circle {{remoteState.mode === 'strong' ? 'active' : ''}}">
+            <view class="iconfont icon-strong"></view>
+          </view>
+          <text class="func-label">{{remoteState.mode === 'strong' ? '当前：强劲' : '强劲'}}</text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="setEcoMode">
+          <view class="func-btn circle {{remoteState.mode === 'eco' ? 'active' : ''}}">
+            <view class="iconfont icon-eco"></view>
+          </view>
+          <text class="func-label">{{remoteState.mode === 'eco' ? '当前：节能' : '节能'}}</text>
+        </view>
+      </view>
+
+      <!-- 第二排：功能键 -->
+      <view class="func-grid">
+        <view class="func-btn-wrapper" bindtap="toggleHeating">
+          <view class="func-btn circle {{remoteState.mode === 'heat' ? 'active' : ''}}">
+            <view class="iconfont icon-heat"></view>
+          </view>
+          <text class="func-label">{{remoteState.mode === 'heat' ? '当前：制热' : '制热'}}</text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="toggleSwingUpDown">
+          <view class="func-btn circle {{remoteState.swingUpDown ? 'active' : ''}}">
+            <view class="iconfont icon-swing-ud"></view>
+          </view>
+          <text class="func-label">{{remoteState.swingUpDown ? '上下摆风：开' : '上下摆风：关'}}</text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="toggleSwingLeftRight">
+          <view class="func-btn circle {{remoteState.swingLeftRight ? 'active' : ''}}">
+            <view class="iconfont icon-swing-lr"></view>
+          </view>
+          <text class="func-label">{{remoteState.swingLeftRight ? '左右摆风：开' : '左右摆风：关'}}</text>
+        </view>
+
+        <view class="func-btn-wrapper" bindtap="timerTest">
+          <view class="func-btn circle">
+            <view class="iconfont icon-clock"></view>
+          </view>
+          <text class="func-label">定时</text>
         </view>
       </view>
     </view>
   </view>
-
-  <!-- 功能栏 -->
-  <view class="header-bar flex flex-between flex-v-center mb-20">
-    <text class="page-title">服务中心</text>
-  </view>
-
-  <!-- 我的设备区域 -->
-  <view class="section-header mb-20">
-    <text class="section-title">我的设备</text>
-    <view class="section-add-btn" bindtap="onActivateProduct">
-      <text class="section-plus-icon">+</text>
-    </view>
-  </view>
-  
-  <!-- 有设备时显示列表 -->
-  <scroll-view scroll-x="true" class="my-product-scroll" enable-flex="true" wx:if="{{myProducts && myProducts.length > 0}}">
-    <view class="my-product-list">
-      <view class="my-product-item card" wx:for="{{myProducts}}" wx:key="id" bindtap="onProductDetail" data-id="{{item.id}}" data-product-code="{{item.name}}" data-image="{{item.image}}">
-        <image class="my-product-img" src="{{item.image || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/default_img/device.png'}}" mode="aspectFit" bindtap="" data-product-code="{{item.name}}" data-image="{{item.image}}"></image>
-        <view class="my-product-info">
-          <text class="my-product-name" bindtap="" data-product-code="{{item.name}}">{{item.name}}</text>
-          <text class="my-product-status {{item.status === 'active' ? 'status-success' : 'status-error'}}" bindtap="onProductStatusTap" data-product-code="{{item.name}}" data-status="{{item.status}}">
-            {{item.status === 'active' ? '质保中' : '已过保'}}
-          </text>
-        </view>
-      </view>
-    </view>
-  </scroll-view>
-
-  <!-- 无设备时显示虚线占位 -->
-  <view class="empty-device-box" bindtap="onActivateProduct" wx:else>
-    <view class="plus-large">+</view>
-    <text class="empty-text">点击激活您的第一台设备</text>
-  </view>
-
-  <!-- 服务进度区域 -->
-  <!-- <view class="section-header mt-20 mb-20">
-    <text class="section-title">服务进度</text>
-    <view class="section-add-btn" bindtap="onAddService">
-      <text class="section-plus-icon">+</text>
-    </view>
-  </view>
-   -->
-  <!-- 有进度时显示 -->
-  <!-- <view class="progress-list" wx:if="{{recentFeedbacks && recentFeedbacks.length > 0}}">
-    <view class="card progress-card" wx:for="{{recentFeedbacks}}" wx:key="id" bindtap="onViewFeedback" data-id="{{item.id}}">
-      <image class="progress-icon" src="cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/icon/issues.svg" mode="aspectFit"></image>
-      <view class="progress-content">
-        <view class="flex flex-between mb-20">
-          <text class="progress-title">{{item.title}}</text>
-          <text class="status-text text-primary">{{item.statusText}}</text>
-        </view>
-        <text class="progress-desc text-secondary">{{item.description}}</text>
-      </view>
-    </view>
-  </view> -->
-
-  <!-- 无进度时显示空状态 -->
-  <!-- <view class="empty-progress-card card flex flex-center" wx:else>
-    <text class="text-secondary">暂无正在进行的服务</text>
-  </view> -->
-
 </view>

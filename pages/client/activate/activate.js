@@ -121,7 +121,7 @@ Page({
       sizeType: ['compressed'],
       sourceType: ['camera', 'album'],
       success: (res) => {
-        const newImages = [...currentImages, ...res.tempFilePaths];
+        const newImages = currentImages.concat(res.tempFilePaths);
         if (type === 'process') {
           this.setData({ 'formData.processImages': newImages });
         } else {
@@ -165,7 +165,7 @@ Page({
       content: '确定要删除这张照片吗？',
       success: (res) => {
         if (res.confirm) {
-          const images = type === 'process' ? [...this.data.formData.processImages] : [...this.data.formData.finishImages];
+          const images = type === 'process' ? this.data.formData.processImages.slice() : this.data.formData.finishImages.slice();
           images.splice(index, 1);
 
           if (type === 'process') {

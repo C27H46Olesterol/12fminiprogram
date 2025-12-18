@@ -1,14 +1,12 @@
 {
   "pages": [
-    "pages/client/remote/remote",
     "pages/client/index/index",
-    "pages/login/login",
+    "pages/client/remote/remote",
+    "pages/login/login", 
     "pages/client/feedback/feedback",
     "pages/client/progress/progress",
-    "pages/client/faq/faq",
     "pages/client/feedback-success/feedback-success",
     "pages/processing-info/processing-info",
-    "pages/profile/profile",
     "pages/client/activate/activate",
     "pages/client/product-detail/product-detail"
   ],
@@ -18,27 +16,6 @@
     "navigationBarTitleText": "颐尔福售后",
     "navigationBarTextStyle": "white",
     "backgroundColor": "#F5F5F5"
-  },
-  "tabBar": {
-    "custom": false,
-    "color": "#999999",
-    "selectedColor": "#1677ff",
-    "backgroundColor": "#FFFFFF",
-    "borderStyle": "white",
-    "list": [
-      {
-        "pagePath": "pages/client/remote/remote",
-        "text": "遥控器",
-        "iconPath": "/images/tabbar/remote.png",
-        "selectedIconPath": "/images/tabbar/remote.png"
-      },
-      {
-        "pagePath": "pages/client/index/index",
-        "text": "我的",
-        "iconPath": "/images/avatar.png",
-        "selectedIconPath": "/images/avatar.png"
-      }
-    ]
   },
   "permission": {
     "scope.userLocation": {

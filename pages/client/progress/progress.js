@@ -30,7 +30,7 @@ Page({
       // 清除存储，避免下次进入时仍然应用该筛选
       wx.removeStorageSync('progressFilter');
     }
-    
+
     // 刷新数据
     this.setData({
       currentPage: 1,
@@ -59,15 +59,15 @@ Page({
 
       // 获取真实的反馈数据
       const result = await this.getFeedbacksFromCloud();
-      
+
       const newFeedbacks = result.data;
       const allFeedbacks = this.data.currentPage === 1 ? newFeedbacks : [...this.data.feedbacks, ...newFeedbacks];
-      
+
       this.setData({
         feedbacks: allFeedbacks,
         hasMore: result.hasMore
       });
-      
+
       this.filterFeedbacks();
     } catch (error) {
       console.error('加载反馈失败:', error);
@@ -82,12 +82,12 @@ Page({
   async getFeedbacksFromCloud() {
     try {
       const { currentPage, pageSize } = this.data;
-      
+
       // 【改造】获取当前登录用户信息
       const userInfo = wx.getStorageSync('userInfo') || {};
       const userPhone = userInfo.phone || userInfo.phoneNumber;
       const userId = userInfo._id || userInfo.userId;
-      
+
       const result = await wx.cloud.callFunction({
         name: 'issues',
         data: {
@@ -103,14 +103,14 @@ Page({
 
       if (result.result && result.result.success && result.result.data && result.result.data.length > 0) {
         const issues = result.result.data;
-        
+
         console.log('【进度查询】获取到工单总数:', issues.length);
-        
+
         // 转换为页面需要的格式
         const formattedIssues = issues.map(issue => {
           const hasRated = issue.satisfaction > 0;
           console.log('【进度查询】转换工单:', issue.issueId, 'status:', issue.status, 'satisfaction:', issue.satisfaction, 'hasRated:', hasRated);
-          
+
           return {
             id: issue.issueId || issue._id, // 确保使用issueId字段
             title: issue.issueId || issue._id,
@@ -135,7 +135,7 @@ Page({
           hasMore: formattedIssues.length === pageSize
         };
       }
-      
+
       console.log('云函数返回空数据');
       return { data: [], hasMore: false };
     } catch (error) {
@@ -204,7 +204,7 @@ Page({
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const pageData = mockData.slice(startIndex, endIndex);
-    
+
     return {
       data: pageData,
       hasMore: endIndex < mockData.length
@@ -281,10 +281,10 @@ Page({
   // 筛选反馈
   filterFeedbacks() {
     const { feedbacks, searchKeyword, statusFilter } = this.data;
-    
+
     console.log('开始筛选，statusFilter:', statusFilter);
     console.log('feedbacks 数量:', feedbacks.length);
-    
+
     let filtered = feedbacks.filter(item => {
       // 待评价筛选：已解决且未评价
       if (statusFilter === 'rating') {
@@ -299,19 +299,19 @@ Page({
       else if (statusFilter !== 'all' && item.status !== statusFilter) {
         return false;
       }
-      
+
       // 关键词搜索
       if (searchKeyword.trim() !== '') {
         const keyword = searchKeyword.toLowerCase();
         return item.id.toLowerCase().includes(keyword) ||
-               item.title.toLowerCase().includes(keyword) ||
-               item.description.toLowerCase().includes(keyword) ||
-               item.problemType.toLowerCase().includes(keyword);
+          item.title.toLowerCase().includes(keyword) ||
+          item.description.toLowerCase().includes(keyword) ||
+          item.problemType.toLowerCase().includes(keyword);
       }
-      
+
       return true;
     });
-    
+
     console.log('筛选后 filtered 数量:', filtered.length);
     this.setData({ filteredFeedbacks: filtered });
   },
@@ -337,12 +337,12 @@ Page({
     if (this.data.isLoadingMore || !this.data.hasMore) {
       return;
     }
-    
-    this.setData({ 
+
+    this.setData({
       isLoadingMore: true,
       currentPage: this.data.currentPage + 1
     });
-    
+
     this.loadFeedbacks();
   },
 
