@@ -69,28 +69,34 @@
     </view>
   </view>
 
-  <!-- 信号状态栏 -->
-  <view class="signal-status-bar">
-    <view class="signal-group">
-      <view class="signal-icon">
-        <view class="s-bar b1 {{deviceStatus.signalStrength >= 1 ? 'active' : ''}}"></view>
-        <view class="s-bar b2 {{deviceStatus.signalStrength >= 2 ? 'active' : ''}}"></view>
-        <view class="s-bar b3 {{deviceStatus.signalStrength >= 3 ? 'active' : ''}}"></view>
-        <view class="s-bar b4 {{deviceStatus.signalStrength >= 4 ? 'active' : ''}}"></view>
-      </view>
-      <text class="signal-text">设备在线</text>
-    </view>
-  </view>
-
   <view class="remote-header">
     <view class="power-btn-wrapper" bindtap="togglePower">
       <view class="power-btn {{remoteState.powerOn ? 'active' : 'false'}}">
         <view class="iconfont icon-power"></view>
       </view>
     </view>
-    <view class="remote-title">智能遥控</view>
+    <picker 
+      class="device-selector" 
+      bindchange="onDeviceChange" 
+      value="{{selectedDeviceIndex}}" 
+      range="{{deviceList}}" 
+      range-key="sn"
+    >
+      <view class="device-picker-wrap">
+        <text class="device-name">{{selectedDevice.sn || '选择设备'}}</text>
+        <text class="picker-arrow">▼</text>
+      </view>
+    </picker>
     <view class="more-btn">
-      <view class="iconfont icon-more"></view>
+      <text class="signal-text">{{deviceStatus.online ? '在线' : '离线'}}</text>
+      <view class="signal-group">
+        <view class="signal-icon">
+          <view class="s-bar b1 {{deviceStatus.signalStrength >= 1 ? 'active' : ''}}"></view>
+          <view class="s-bar b2 {{deviceStatus.signalStrength >= 2 ? 'active' : ''}}"></view>
+          <view class="s-bar b3 {{deviceStatus.signalStrength >= 3 ? 'active' : ''}}"></view>
+          <view class="s-bar b4 {{deviceStatus.signalStrength >= 4 ? 'active' : ''}}"></view>
+        </view>
+      </view>
     </view>
   </view>
 
@@ -98,13 +104,14 @@
   <view class="control-panel-split">
     <!-- 左侧：风速控制 -->
     <view class="control-column">
-      <view class="control-title">风速</view>
+      <!-- <view class="control-title">风速</view> -->
       <view class="control-pill">
         <view class="control-btn" bindtap="increaseWindSpeed">
           <view class="iconfont icon-plus"></view>
         </view>
         <view class="control-icon-area">
-          <view class="iconfont icon-wind"></view>
+          <view class="control-title">风速</view>
+          <!-- <view class="iconfont icon-wind"></view> -->
         </view>
         <view class="control-btn" bindtap="decreaseWindSpeed">
           <view class="iconfont icon-minus"></view>
@@ -114,13 +121,14 @@
 
     <!-- 右侧：温度控制 -->
     <view class="control-column">
-      <view class="control-title">温度</view>
+      
       <view class="control-pill">
         <view class="control-btn" bindtap="increaseTemperature">
           <view class="iconfont icon-plus"></view>
         </view>
         <view class="control-icon-area">
-          <view class="iconfont icon-temp"></view>
+          <view class="control-title">温度</view>
+          <!-- <view class="iconfont icon-temp"></view> -->
         </view>
         <view class="control-btn" bindtap="decreaseTemperature">
           <view class="iconfont icon-minus"></view>

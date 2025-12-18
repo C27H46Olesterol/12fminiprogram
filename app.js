@@ -103,6 +103,16 @@ App({
     wx.hideLoading();
   },
 
+  //连接mysql数据库
+  touchMysql(){
+    const mysqlDb = mysql.createConnection({
+      host:'',
+      user:'',
+      password:'',
+      database:''
+    })
+  },
+
   // 显示成功提示
   showSuccess(title = '操作成功') {
     wx.showToast({

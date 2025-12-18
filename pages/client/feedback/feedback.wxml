@@ -1,5 +1,48 @@
 <!--pages/client/feedback/feedback.wxml-->
 <view class="feedback-container {{showBackupNav ? 'has-backup-nav' : ''}}">
+  <wxs module="utils">
+    // 辅助函数
+    var includes = function(arr, item) {
+      return arr && arr.indexOf(item) > -1;
+    }
+    
+    var getStatusText = function(status) {
+      var map = {
+        'pending': '待处理',
+        'assigned': '已分配',
+        'processing': '处理中',
+        'parts_sent': '待收件',
+        'parts_received': '已收件',
+        'resolved': '已完成',
+        'closed': '已关闭',
+        'cancelled': '已取消'
+      };
+      return map[status] || '未知';
+    };
+
+    var formatTime = function(timestamp) {
+      if (!timestamp) return '';
+      var date = getDate(timestamp);
+      var year = date.getFullYear();
+      var month = (date.getMonth() + 1).toString();
+      var day = date.getDate().toString();
+      var hours = date.getHours().toString();
+      var minutes = date.getMinutes().toString();
+      
+      if (month.length < 2) month = '0' + month;
+      if (day.length < 2) day = '0' + day;
+      if (hours.length < 2) hours = '0' + hours;
+      if (minutes.length < 2) minutes = '0' + minutes;
+      
+      return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
+    };
+
+    module.exports = {
+      includes: includes,
+      getStatusText: getStatusText,
+      formatTime: formatTime
+    };
+  </wxs>
   <!-- 备用导航栏 - 仅在特殊情况下显示 -->
   <view class="backup-navbar" wx:if="{{showBackupNav}}">
     <view class="nav-left" bindtap="onSmartBack">
@@ -12,102 +55,116 @@
   </view>
 
   <!-- 创建模式 -->
+  <!-- 创建模式 -->
   <view class="feedback-form" wx:if="{{mode === 'create'}}">
     
-    <!-- 核心信息卡片 -->
-    <view class="form-section">
-       <view class="section-title">核心信息</view>
-       
-       <!-- 产品码输入 -->
-       <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">产品识别码</text>
-          <text class="label-tag optional">选填</text>
-        </view>
-        <view class="product-code-input-wrapper">
-          <input 
-            class="form-input" 
-            type="text" 
-            placeholder="请输入产品S/N码" 
-            value="{{formData.productCode}}" 
-            bindinput="onProductCodeInput"
-          />
-          <button 
-            class="scan-btn" 
-            bindtap="onScanQRCode"
-            hover-class="btn-hover"
-          >
-            <text class="scan-icon">📷</text>
-            <text>扫码</text>
-          </button>
-        </view>
+    <!-- 头部 -->
+    <view class="header-section">
+      <view class="header-bg"></view>
+      <view class="header-content">
+        <view class="header-title">售后申请</view>
+        <view class="header-desc">请描述您遇到的问题，我们将尽快为您处理</view>
       </view>
+    </view>
 
-      <!-- 常见故障 -->
-      <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">故障类型</text>
-          <text class="label-tag optional">多选</text>
-        </view>
-        <checkbox-group 
-          class="fault-checkbox-group"
-          bindchange="onFaultOptionsChange"
-        >
-          <label 
-            class="fault-checkbox-item {{utils.includes(formData.faultTypes, item) ? 'checked' : ''}}" 
-            wx:for="{{faultOptions}}" 
-            wx:key="item"
-          >
-            <checkbox 
-              class="fault-checkbox"
-              value="{{item}}"
-              checked="{{utils.includes(formData.faultTypes, item)}}"
+    <view class="form-container">
+      <!-- 核心信息卡片 -->
+      <view class="form-card">
+        <view class="card-title">核心信息</view>
+        
+        <!-- 产品码输入 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>产品识别码</text>
+            <text class="option-mark">(选填)</text>
+          </view>
+          <view class="code-input-wrap">
+            <input 
+              class="form-input code-input" 
+              type="text" 
+              placeholder="请输入产品S/N码" 
+              placeholder-class="input-placeholder"
+              value="{{formData.productCode}}" 
+              bindinput="onProductCodeInput"
             />
-            <text class="fault-text">{{item}}</text>
-          </label>
-        </checkbox-group>
+            <button 
+              class="scan-btn" 
+              bindtap="onScanQRCode"
+              hover-class="btn-hover"
+            >
+              <text class="scan-icon">📷</text>
+            </button>
+          </view>
+        </view>
+
+        <!-- 常见故障 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>故障类型</text>
+            <text class="label-desc">(多选)</text>
+          </view>
+          <checkbox-group 
+            class="fault-checkbox-group"
+            bindchange="onFaultOptionsChange"
+          >
+            <label 
+              class="fault-checkbox-item {{utils.includes(formData.faultTypes, item) ? 'checked' : ''}}" 
+              wx:for="{{faultOptions}}" 
+              wx:key="item"
+            >
+              <checkbox 
+                class="fault-checkbox"
+                value="{{item}}"
+                checked="{{utils.includes(formData.faultTypes, item)}}"
+              />
+              <text class="fault-text">{{item}}</text>
+            </label>
+          </checkbox-group>
+        </view>
+
+        <!-- 详细描述 -->
+        <view class="form-group no-border">
+          <view class="form-label">
+            <text>故障描述</text>
+            <text class="label-desc">(建议填写)</text>
+          </view>
+          <view class="textarea-container">
+            <textarea 
+              class="form-textarea" 
+              placeholder="请描述故障现象，例如：开机无反应、制冷效果差等..." 
+              placeholder-class="input-placeholder"
+              value="{{formData.description}}" 
+              bindinput="onDescriptionInput"
+              maxlength="200"
+            ></textarea>
+            <view class="char-count">{{formData.description.length}}/200</view>
+          </view>
+        </view>
       </view>
 
-      <!-- 详细描述 -->
-      <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">故障描述</text>
-          <text class="label-tag optional">建议填写</text>
-        </view>
-        <view class="textarea-container">
-          <textarea 
-            class="form-textarea" 
-            placeholder="请描述故障现象，例如：开机无反应、制冷效果差等..." 
-            value="{{formData.description}}" 
-            bindinput="onDescriptionInput"
-            maxlength="200"
-          ></textarea>
-          <view class="char-count">{{formData.description.length}}/200</view>
-        </view>
-      </view>
-
-      <!-- 图片上传 -->
-      <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">故障图片</text>
-          <text class="label-tag optional">最多6张</text>
-        </view>
-        <view class="image-upload">
-          <view class="image-list">
+      <!-- 故障图片卡片 -->
+      <view class="form-card">
+        <view class="card-title">故障图片</view>
+        <view class="form-group no-border">
+          <view class="form-label">
+            <text>上传照片</text>
+            <text class="label-desc">(最多6张)</text>
+          </view>
+          <view class="image-upload-area">
             <view 
-              class="image-item" 
+              class="uploaded-item" 
               wx:for="{{formData.images}}" 
               wx:key="index"
             >
               <image 
-                class="uploaded-image" 
+                class="uploaded-img" 
                 src="{{item}}" 
                 mode="aspectFill"
                 bindtap="onPreviewImage"
                 data-url="{{item}}"
               ></image>
               <view 
-                class="image-delete" 
+                class="delete-btn" 
                 catchtap="onDeleteImage"
                 data-index="{{index}}"
               >
@@ -116,121 +173,83 @@
             </view>
             
             <view 
-              class="image-upload-btn" 
+              class="upload-btn" 
               bindtap="onChooseImage"
               wx:if="{{formData.images.length < 6}}"
             >
-              <text class="upload-icon">+</text>
-              <text class="upload-text">上传</text>
+              <view class="upload-icon-wrap">
+                <text class="upload-icon">+</text>
+              </view>
+              <text class="upload-text">上传照片</text>
             </view>
           </view>
         </view>
       </view>
-    </view>
 
-    <!-- 联系信息卡片 -->
-    <view class="form-section">
-      <view class="section-title">联系信息</view>
-      
-      <!-- 联系电话 -->
-      <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">联系电话</text>
-          <text class="label-tag required">必填</text>
-        </view>
-        <input 
-          class="form-input" 
-          type="number" 
-          placeholder="请输入有效手机号" 
-          value="{{formData.contactPhone}}" 
-          bindinput="onContactPhoneInput"
-          maxlength="11"
-        />
-      </view>
-
-      <!-- 当前位置 -->
-      <view class="form-group">
-        <view class="form-label-row">
-          <text class="form-label">服务地址</text>
-          <text class="label-tag optional">定位</text>
-        </view>
+      <!-- 联系信息卡片 -->
+      <view class="form-card">
+        <view class="card-title">联系信息</view>
         
-        <view class="location-selector-wrapper">
-          <view class="location-picker" bindtap="onGetLocation">
-            <text class="location-icon">📍</text>
-            <text class="location-text">{{formData.fullLocation || '点击获取当前位置'}}</text>
+        <!-- 联系电话 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>联系电话</text>
+            <text class="required-mark">*</text>
           </view>
-        </view>
-        
-        <view class="location-detail-wrapper">
           <input 
-            class="form-input location-detail-input" 
-            type="text" 
-            placeholder="详细地址（如：道路/门牌号）" 
-            value="{{formData.locationDetail}}" 
-            bindinput="onLocationDetailInput"
+            class="form-input" 
+            type="number" 
+            placeholder="请输入有效手机号" 
+            placeholder-class="input-placeholder"
+            value="{{formData.contactPhone}}" 
+            bindinput="onContactPhoneInput"
+            maxlength="11"
           />
         </view>
-      </view>
-    </view>
 
-    <!-- 提交按钮 -->
-    <view class="form-actions">
-      <button 
-        class="btn btn-primary btn-block submit-btn" 
-        bindtap="onSubmit"
-        disabled="{{!canSubmit || isSubmitting}}"
-      >
-        {{isSubmitting ? '提交中...' : '提交申请'}}
-      </button>
+        <!-- 服务地址 -->
+        <view class="form-group no-border">
+          <view class="form-label">
+            <text>服务地址</text>
+            <text class="required-mark">*</text>
+          </view>
+          
+          <view class="location-selector-wrapper" bindtap="onGetLocation">
+            <view class="location-picker">
+              <text class="location-text">{{formData.fullLocation || '点击获取当前位置'}}</text>
+              <text class="location-icon">📍</text>
+            </view>
+          </view>
+          
+          <view class="location-detail-wrapper">
+            <input 
+              class="form-input" 
+              type="text" 
+              placeholder="详细地址（如：道路/门牌号）" 
+              placeholder-class="input-placeholder"
+              value="{{formData.locationDetail}}" 
+              bindinput="onLocationDetailInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
+      <view class="submit-area">
+        <button 
+          class="btn-submit" 
+          hover-class="btn-hover"
+          bindtap="onSubmit"
+          disabled="{{!canSubmit || isSubmitting}}"
+        >
+          {{isSubmitting ? '提交中...' : '提交申请'}}
+        </button>
+      </view>
     </view>
   </view>
 
   <!-- 查看模式 -->
   <view class="issue-detail" wx:if="{{mode === 'view'}}">
-    <wxs module="utils">
-      // 辅助函数
-      var includes = function(arr, item) {
-        return arr && arr.indexOf(item) > -1;
-      }
-      
-      var getStatusText = function(status) {
-        var map = {
-          'pending': '待处理',
-          'assigned': '已分配',
-          'processing': '处理中',
-          'parts_sent': '待收件',
-          'parts_received': '已收件',
-          'resolved': '已完成',
-          'closed': '已关闭',
-          'cancelled': '已取消'
-        };
-        return map[status] || '未知';
-      };
-
-      var formatTime = function(timestamp) {
-        if (!timestamp) return '';
-        var date = getDate(timestamp);
-        var year = date.getFullYear();
-        var month = (date.getMonth() + 1).toString();
-        var day = date.getDate().toString();
-        var hours = date.getHours().toString();
-        var minutes = date.getMinutes().toString();
-        
-        if (month.length < 2) month = '0' + month;
-        if (day.length < 2) day = '0' + day;
-        if (hours.length < 2) hours = '0' + hours;
-        if (minutes.length < 2) minutes = '0' + minutes;
-        
-        return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes;
-      };
-
-      module.exports = {
-        includes: includes,
-        getStatusText: getStatusText,
-        formatTime: formatTime
-      };
-    </wxs>
 
     <!-- 状态概览卡片 -->
     <view class="status-card status-{{feedbackDetail.status}}">

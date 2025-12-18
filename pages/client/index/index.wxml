@@ -14,7 +14,7 @@
     <!-- 已登录状态 -->
     <view class="user-info-logged" wx:else>
       <view class="user-avatar-box">
-        <image class="user-avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" binderror="onAvatarError"></image>
+        <image class="user-avatar" src="{{userInfo.avatarUrl || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/icon/avatar.svg'}}" binderror="onAvatarError"></image>
       </view>
       <view class="user-details">
         <view class="user-top-row">
@@ -27,29 +27,43 @@
         </view>
         <view class="user-address" wx:else>
           <text class="icon-location"></text>
-          <text>定位获取中...</text>
+          <text></text>
+        </view>
+      </view>
+      <!-- 菜单按钮 -->
+      <view class="menu-btn" bindtap="toggleDropdown">
+        <text class="menu-icon">⋮</text>
+      </view>
+      <!-- 下拉菜单 -->
+      <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
+        <view class="dropdown-item" bindtap="onApiTest">
+          <text>接口测试</text>
+        </view>
+        <view class="dropdown-item" bindtap="onLogout">
+          <text>退出登陆</text>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 顶部标题栏 -->
+  <!-- 功能栏 -->
   <view class="header-bar flex flex-between flex-v-center mb-20">
     <text class="page-title">服务中心</text>
-    <view class="add-device-btn" bindtap="onActivateProduct">
-      <text class="icon">+</text>
-      <text>添加设备</text>
-    </view>
   </view>
 
   <!-- 我的设备区域 -->
-  <view class="section-title mb-20">我的设备</view>
+  <view class="section-header mb-20">
+    <text class="section-title">我的设备</text>
+    <view class="section-add-btn" bindtap="onActivateProduct">
+      <text class="section-plus-icon">+</text>
+    </view>
+  </view>
   
   <!-- 有设备时显示列表 -->
   <scroll-view scroll-x="true" class="my-product-scroll" enable-flex="true" wx:if="{{myProducts && myProducts.length > 0}}">
     <view class="my-product-list">
       <view class="my-product-item card" wx:for="{{myProducts}}" wx:key="id" bindtap="onProductDetail" data-id="{{item.id}}" data-product-code="{{item.name}}" data-image="{{item.image}}">
-        <image class="my-product-img" src="{{item.image}}" mode="aspectFill" bindtap="" data-product-code="{{item.name}}" data-image="{{item.image}}"></image>
+        <image class="my-product-img" src="{{item.image || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/default_img/device.png'}}" mode="aspectFit" bindtap="" data-product-code="{{item.name}}" data-image="{{item.image}}"></image>
         <view class="my-product-info">
           <text class="my-product-name" bindtap="" data-product-code="{{item.name}}">{{item.name}}</text>
           <text class="my-product-status {{item.status === 'active' ? 'status-success' : 'status-error'}}" bindtap="onProductStatusTap" data-product-code="{{item.name}}" data-status="{{item.status}}">
@@ -67,16 +81,24 @@
   </view>
 
   <!-- 服务进度区域 -->
-  <!-- <view class="section-title mt-20 mb-20">服务进度</view> -->
-  
+  <!-- <view class="section-header mt-20 mb-20">
+    <text class="section-title">服务进度</text>
+    <view class="section-add-btn" bindtap="onAddService">
+      <text class="section-plus-icon">+</text>
+    </view>
+  </view>
+   -->
   <!-- 有进度时显示 -->
   <!-- <view class="progress-list" wx:if="{{recentFeedbacks && recentFeedbacks.length > 0}}">
     <view class="card progress-card" wx:for="{{recentFeedbacks}}" wx:key="id" bindtap="onViewFeedback" data-id="{{item.id}}">
-      <view class="flex flex-between mb-20">
-        <text class="progress-title">{{item.title}}</text>
-        <text class="status-text text-primary">{{item.statusText}}</text>
+      <image class="progress-icon" src="cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/icon/issues.svg" mode="aspectFit"></image>
+      <view class="progress-content">
+        <view class="flex flex-between mb-20">
+          <text class="progress-title">{{item.title}}</text>
+          <text class="status-text text-primary">{{item.statusText}}</text>
+        </view>
+        <text class="progress-desc text-secondary">{{item.description}}</text>
       </view>
-      <text class="progress-desc text-secondary">{{item.description}}</text>
     </view>
   </view> -->
 

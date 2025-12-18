@@ -134,6 +134,13 @@ input{
   font-weight: normal;
 }
 
+.option-mark {
+  font-size: 24rpx;
+  color: #4CAF50;
+  margin-left: 16rpx;
+  font-weight: normal;
+}
+
 .form-input {
   font-size: 30rpx;
   color: #333333;

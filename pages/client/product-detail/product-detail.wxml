@@ -3,11 +3,11 @@
   <!-- 顶部产品信息区域 -->
   <view class="product-header">
     <view class="product-image-container">
-      <image class="product-image" src="{{productInfo.image}}" mode="aspectFill"></image>
+      <image class="product-image" src="{{productInfo.image||'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/default_img/device.png'}}" mode="aspectFit"></image>
     </view>
     <view class="product-basic-info">
-      <text class="product-name">{{productInfo.name}}</text>
-      <text class="product-code">产品编码：{{productInfo.productCode}}</text>
+      <text class="product-name">{{productInfo.name || '驻车空调'}}</text>
+      <text class="product-code">产品型号：{{productInfo.productCode}}</text>
       <text class="product-status {{productInfo.status === 'active' ? 'status-active' : 'status-inactive'}}">
         {{productInfo.status === 'active' ? '质保中' : '已过保'}}
       </text>
@@ -28,11 +28,11 @@
       </view>
       <view class="info-item">
         <text class="info-label">安装位置：</text>
-        <text class="info-value">{{productInfo.location}}</text>
+        <text class="info-value">{{productInfo.location|| '未上传'}}</text>
       </view>
       <view class="info-item">
         <text class="info-label">序列号：</text>
-        <text class="info-value">{{productInfo.serialNumber}}</text>
+        <text class="info-value">{{productInfo.productCode}}</text>
       </view>
     </view>
   </view>

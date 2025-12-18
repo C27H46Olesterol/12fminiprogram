@@ -29,7 +29,36 @@
 .section-title {
   font-size: 30rpx;
   color: #666;
-  margin-left: 10rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10rpx;
+}
+
+.section-add-btn {
+  width: 48rpx;
+  height: 48rpx;
+  background: #1677ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.section-add-btn:active {
+  background: #0958d9;
+  transform: scale(0.9);
+}
+
+.section-plus-icon {
+  font-size: 32rpx;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1;
 }
 
 /* 虚线添加设备框 */
@@ -101,11 +130,47 @@
   color: #52c41a;
 }
 
+/* 服务进度样式 */
+.progress-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.progress-icon {
+  width: 64rpx;
+  height: 64rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.progress-content {
+  flex: 1;
+}
+
+.progress-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.progress-desc {
+  font-size: 26rpx;
+  display: block;
+  line-height: 1.6;
+}
+
+.status-text {
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
 /* 服务进度空状态 */
 .empty-progress-card {
   height: 160rpx;
   border-radius: 24rpx;
-  box-shadow: none; /* 图片中看起来很平 */
+  box-shadow: none;
   border: none;
 }
 
@@ -156,6 +221,7 @@
 .user-info-logged {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .user-avatar-box {
@@ -207,4 +273,67 @@
 .icon-location {
   margin-right: 6rpx;
   font-size: 24rpx;
+}
+
+/* 菜单按钮 */
+.menu-btn {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5f5f5;
+  margin-left: 16rpx;
+  transition: all 0.3s;
+}
+
+.menu-btn:active {
+  background: #e8e8e8;
+}
+
+.menu-icon {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #666;
+  line-height: 1;
+}
+
+/* 下拉菜单 */
+.dropdown-menu {
+  position: absolute;
+  top: 70rpx;
+  right: 0;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10rpx);
+  transition: all 0.3s;
+  z-index: 100;
+  min-width: 200rpx;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  padding: 24rpx 32rpx;
+  font-size: 28rpx;
+  color: #333;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: background 0.2s;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:active {
+  background: #f5f5f5;
 }

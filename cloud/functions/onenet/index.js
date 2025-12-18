@@ -53,6 +53,37 @@ async function getProductList(event) {
   }
 }
 
+//获取设备状态
+async function getDeviceStatus(event){
+  const { deviceName } = event
+  console.log("开启设备：", deviceName)
+  try {
+    const res = await rp({
+      url: `https://iot-api.heclouds.com/thingmodel/query-device-property-detail`,
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `version=${version}&res=${encodeRes}&et=${et}&method=${method}&sign=${sign}`
+      },
+      body: {
+        'product_id': 'OHjh4nsX2f',
+        'device_name': deviceName,
+        'params': ["powerStatus","setupTemper"]
+      },
+      json: true
+    });
+    console.log('接口调用结果：', res);
+    return {
+      success: true,
+      message: "接口调用成功"
+    }
+  } catch (err) {
+    // if()
+    console.log('开机接口调用结果：', err.message,);
+    return err;
+  }
+}
+
 //定时
 async function setTimmer(event) {
   const current = event.current
@@ -392,7 +423,6 @@ async function setAutoModel(event) {
   }
 }
 
-
 //获取用户已激活的设备列表
 async function getActiveDeviceList(event) {
   const { userId, phone } = event
@@ -401,7 +431,7 @@ async function getActiveDeviceList(event) {
     // 第一步：从 activateProduct 表中查询数据
     const activateRes = await db.collection('activateProduct').where({
       userId: userId,
-      phone: phone
+      userPhone: phone
     }).get()
 
     console.log("activateProduct查询结果:", activateRes.data)

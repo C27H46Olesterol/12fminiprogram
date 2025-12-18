@@ -55,7 +55,7 @@ Page({
         const data = result.result.data;
         this.setData({
           productInfo: {
-            name: data.productName || '未知产品',
+            name: data.productName || '驻车空调',
             productCode: data.productCode,
             image: data.finishImages && data.finishImages.length > 0 ? data.finishImages[0] : '',
             status: 'active',
@@ -92,10 +92,10 @@ Page({
         name: 'activateProduct',
         data: {
           action: 'getActivationByPhoneNumber',
-          phoneNumber: userInfo.phoneNumber
+          phoneNumber: userInfo.phone
         }
       });
-
+      console.log(result.result)
       if (result.result && result.result.success) {
         const activations = result.result.data || [];
         const targetActivation = activations.find(item => item.productCode === productCode);
@@ -104,7 +104,7 @@ Page({
           this.setData({
             productId: targetActivation._id,
             productInfo: {
-              name: targetActivation.product_name || '未知产品',
+              name: targetActivation.product_name || '驻车空调',
               productCode: targetActivation.productCode,
               image: targetActivation.finishImages && targetActivation.finishImages.length > 0 ? targetActivation.finishImages[0] : '',
               status: 'active',

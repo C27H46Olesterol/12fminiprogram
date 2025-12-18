@@ -1,9 +1,0 @@
-图片数据库字段
-传入type到云函数查表
-{
-  id:,
-  url:,
-  title:,
-  desc:,
-  isAvailable:,
-}

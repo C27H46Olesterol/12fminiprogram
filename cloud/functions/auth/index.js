@@ -65,9 +65,9 @@ function isWorkerPhone(phone) {
  */
 async function phoneNumberLogin(event) {
   try {
-    const { phoneNumber } = event;
+    const { phone } = event;
 
-    if (!phoneNumber) {
+    if (!phone) {
       return {
         success: false,
         message: '手机号不能为空'
@@ -75,18 +75,18 @@ async function phoneNumberLogin(event) {
     }
 
     // 验证手机号格式
-    if (!/^1[3-9]\d{9}$/.test(phoneNumber)) {
+    if (!/^1[3-9]\d{9}$/.test(phone)) {
       return {
         success: false,
         message: '手机号格式不正确'
       };
     }
 
-    console.log('手机号登录请求:', phoneNumber);
+    console.log('手机号登录请求:', phone);
 
     // 先查询数据库，看用户是否已存在
     const userQuery = await db.collection('users').where({
-      phone: phoneNumber
+      phone: phone
     }).get();
 
     let userInfo;
@@ -107,7 +107,7 @@ async function phoneNumberLogin(event) {
 
       userInfo = {
         userId: existingUser._id,
-        phoneNumber: existingUser.phone,
+        phone: existingUser.phone,
         nickname: existingUser.nickname,
         avatarUrl: existingUser.avatar || '',
         role: existingUser.role, // 使用数据库中的角色
@@ -148,8 +148,8 @@ async function phoneNumberLogin(event) {
 
       userInfo = {
         userId: newUserId,
-        phone: phoneNumber,
-        nickname: '用户' + phoneNumber,
+        phone: phone,
+        nickname: '用户' + phone,
         avatarUrl: '',
         role: userRole,
         status: 'active',
@@ -163,7 +163,7 @@ async function phoneNumberLogin(event) {
         await db.collection('users').add({
           data: {
             _id: newUserId,
-            phone: phoneNumber,
+            phone: phone,
             nickname: userInfo.nickname,
             avatar: '',
             role: userRole,

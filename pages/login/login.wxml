@@ -37,7 +37,7 @@
         <button 
           class="btn btn-primary btn-block" 
           bindtap="phoneNumberLogin"
-          disabled="{{loading || !phoneNumber}}"
+          disabled="{{loading || !phone}}"
         >
           {{loading ? '登录中...' : '手机号登录'}}
         </button>

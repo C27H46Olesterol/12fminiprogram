@@ -136,7 +136,7 @@ const wechatLogin = async (event, wxContext) => {
 
       userInfo = {
         userId: existingUser._id,
-        phoneNumber: existingUser.phone,
+        phone: existingUser.phone,
         nickname: existingUser.nickname,
         avatarUrl: existingUser.avatar || '',
         role: existingUser.role, // 使用数据库中的角色
@@ -154,8 +154,8 @@ const wechatLogin = async (event, wxContext) => {
       const addResult = await db.collection('users').add({
         data: {
           userId: newUserId,
-          phone: phoneNumber,
-          nickname: '用户'+phoneNumber,
+          phone: phone,
+          nickname: '用户'+phone,
           avatarUrl: '',
           role: userRole,
           status: 'active',
@@ -340,11 +340,11 @@ const getPhoneNumber = async (event, wxContext) => {
       };
     }
 
-    const phoneNumber = result.phoneInfo.phoneNumber;
-    console.log('成功获取手机号:', phoneNumber);
+    const phone = result.phoneInfo.purePhoneNumber;
+    console.log('成功获取手机号:', phone);
 
     const userQuery = await db.collection('users').where({
-      phone: phoneNumber
+      phone: phone
     }).get();
 
     let userInfo;

@@ -79,7 +79,7 @@
       <view class="form-group">
         <view class="form-label">
           <text>安装师傅手机号</text>
-          <text class="required-mark">*</text>
+          <text class="option-mark">(选填)</text>
         </view>
         <input 
           class="form-input" 
@@ -101,7 +101,7 @@
       <view class="form-group">
         <view class="form-label">
           <text>安装过程照片</text>
-          <text class="required-mark">*</text>
+          <text class="option-mark">(选填)</text>
           <text class="label-desc">展示关键安装步骤</text>
         </view>
         <view class="image-upload-area">
@@ -135,7 +135,7 @@
       <view class="form-group no-border">
         <view class="form-label">
           <text>安装完成照片</text>
-          <text class="required-mark">*</text>
+          <text class="option-mark">(选填)</text>
           <text class="label-desc">展示安装后的整体效果</text>
         </view>
         <view class="image-upload-area">

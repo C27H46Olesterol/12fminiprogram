@@ -1,45 +1,16 @@
 {
   "pages": [
+    "pages/client/remote/remote",
     "pages/client/index/index",
     "pages/login/login",
-    "pages/client/product-news/product-news",
     "pages/client/feedback/feedback",
     "pages/client/progress/progress",
-    "pages/client/rate-issue/rate-issue",
     "pages/client/faq/faq",
     "pages/client/feedback-success/feedback-success",
-    "pages/manager/index/index",
-    "pages/manager/pending/pending",
-    "pages/manager/assigned/assigned",
-    "pages/manager/resolved/resolved",
-    "pages/manager/statistics/statistics",
-    "pages/manager/issue-detail/issue-detail",
-    "pages/manager/start-processing/start-processing",
-    "pages/manager/complete-task/complete-task",
-    "pages/manager/send-parts/send-parts",
-    "pages/manager/return-parts/return-parts",
-    "pages/manager/feedback/feedback",
-    "pages/manager/rating-feedback/rating-feedback",
-    "pages/manager/rate-issue/rate-issue",
-    "pages/manager/worker-applications/worker-applications",
-    "pages/manager/personnel-manager/personnel-manager",
-    "pages/manager/worker-detail/worker-detail",
-    "pages/client/apply-worker/apply-worker",
-    "pages/worker/index/index",
-    "pages/worker/tasks/tasks",
-    "pages/worker/history/history",
-    "pages/worker/task-detail/task-detail",
-    "pages/worker/start-processing/start-processing",
-    "pages/worker/send-parts/send-parts",
-    "pages/worker/request-parts/request-parts",
-    "pages/worker/return-parts/return-parts",
     "pages/processing-info/processing-info",
     "pages/profile/profile",
-    "pages/admin/user-management/user-management",
     "pages/client/activate/activate",
-    "pages/client/news-detail/news-detail",
-    "pages/client/product-detail/product-detail",
-    "pages/client/remote/remote"
+    "pages/client/product-detail/product-detail"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -56,16 +27,16 @@
     "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/client/index/index",
-        "text": "首页",
-        "iconPath": "/images/tabbar/homes.png",
-        "selectedIconPath": "/images/tabbar/homes.png"
-      },
-      {
         "pagePath": "pages/client/remote/remote",
         "text": "遥控器",
-        "iconPath": "/images/tabbar/remote2.png",
-        "selectedIconPath": "/images/tabbar/remote2.png"
+        "iconPath": "/images/tabbar/remote.png",
+        "selectedIconPath": "/images/tabbar/remote.png"
+      },
+      {
+        "pagePath": "pages/client/index/index",
+        "text": "我的",
+        "iconPath": "/images/avatar.png",
+        "selectedIconPath": "/images/avatar.png"
       }
     ]
   },

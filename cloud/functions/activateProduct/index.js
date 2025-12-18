@@ -313,7 +313,7 @@ async function submitProductActivation(db, event, wxContext) {
   } = event
 
   // 参数校验
-  if (!productCode || !licensePlate || !userPhone || !installerPhone) {
+  if (!productCode || !licensePlate || !userPhone) {
     return {
       success: false,
       message: '缺少必要参数',
@@ -323,7 +323,7 @@ async function submitProductActivation(db, event, wxContext) {
 
   // 手机号格式校验
   const phoneRegex = /^1[3-9]\d{9}$/
-  if (!phoneRegex.test(userPhone) || !phoneRegex.test(installerPhone)) {
+  if (!phoneRegex.test(userPhone)) {
     return {
       success: false,
       message: '手机号格式不正确',

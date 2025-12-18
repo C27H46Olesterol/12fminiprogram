@@ -6,7 +6,13 @@ Page({
    * 页面的初始数据
    */
   data: {
-    deviceInfo: [],
+    deviceInfo: {
+      sn: '',
+      imei: ''
+    },
+    deviceList: [],
+    selectedDeviceIndex: -1,
+    selectedDevice: null,
     deviceStatus: {
       online: true,
       temperature: 25,
@@ -15,7 +21,7 @@ Page({
       runtime: 245,
       outletTemp: 22,
       inletTemp: 28,
-      signalStrength: 4,
+      signalStrength: 0,
       faultCode: '' // 故障码，空字符串表示无故障
     },
     wxTimerList: {},
@@ -34,7 +40,28 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    
+    this.initDeviceSelection();
+  },
+  async initDeviceSelection() {
+    const userInfo = wx.getStorageSync('userInfo');
+    const savedImei = wx.getStorageSync('selectedDeviceImei');
+    await this.getDeviceInfo(userInfo, savedImei);
+  },
+
+  onDeviceChange(e) {
+    const index = e.detail.value;
+    const device = this.data.deviceList[index];
+    this.setData({
+      selectedDeviceIndex: index,
+      selectedDevice: device
+    });
+    wx.setStorageSync('selectedDeviceImei', device.imei);
+    wx.showToast({
+      title: `已切换至 ${device.sn || '新设备'}`,
+      icon: 'none'
+    });
+    // 切换设备后可能需要重新加载状态
+    this.loadDeviceStatus();
   },
 
   /**
@@ -48,10 +75,10 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow() {
-  
+
   },
 
-  async timerTest(){
+  async timerTest() {
     var timerTest = new timer({
       beginTime: '00:00:05',
       name: "timerTest",
@@ -73,26 +100,66 @@ Page({
   },
 
   //初始化设备信息 获取用户的所有激活的设备
-  async getDeviceInfo() {
-    //查询用户已激活的产品列表
-    const userInfo = wx.getStorageSync('userInfo')
-    const userId = userInfo.userId
-    const phone = userInfo.phone
-    const result = await wx.cloud.callFunction({
-      name: 'onenet',
-      data: {
-        action: "getActiveDeviceList",
-        userId: userId,
-        phone: phone
-      },
-    })
-    console.log("测试接口返回结果：", result.data)
+  async getDeviceInfo(userInfo, savedImei) {
+    try {
+      wx.showLoading({ title: '加载设备中...' });
+      if (!userInfo) {
+        wx.hideLoading();
+        return;
+      }
+      const userId = userInfo.userId;
+      const phone = userInfo.phone;
+
+      const res = await wx.cloud.callFunction({
+        name: 'onenet',
+        data: {
+          action: "getActiveDeviceList",
+          userId: userId,
+          phone: phone
+        },
+      });
+
+      if (res.result && res.result.data) {
+        const deviceList = res.result.data;
+        let selectedIndex = -1;
+        console.log("deviceList:", deviceList)
+        if (savedImei) {
+          selectedIndex = deviceList.findIndex(d => d.imei === savedImei);
+        }
+
+        // 如果没找到之前的设备，默认选第一个
+        if (selectedIndex === -1 && deviceList.length > 0) {
+          selectedIndex = 0;
+          wx.setStorageSync('selectedDeviceImei', deviceList[0].imei);
+        }
+
+        this.setData({
+          deviceList: deviceList,
+          selectedDeviceIndex: selectedIndex,
+          selectedDevice: selectedIndex !== -1 ? deviceList[selectedIndex] : null
+        });
+      }
+    } catch (error) {
+      console.error("获取设备列表失败：", error);
+      wx.showToast({ title: '获取设备失败', icon: 'none' });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 加载设备状态
   async loadDeviceStatus() {
     try {
       // 这里可以调用云函数获取真实设备状态
+      const device = this.data.deviceList[index];
+      const result = wx.cloud.callFunction({
+        name:'onenet',
+        data:{
+          action:'getDviceStatus',
+          deviceName:device.imei
+        }
+      })
+      console.log("设备状态返回",result.message);
       // 暂时使用模拟数据
       const mockStatus = {
         online: Math.random() > 0.1, // 90%概率在线
@@ -332,4 +399,4 @@ Page({
   onShareAppMessage() {
 
   }
-})  
+})

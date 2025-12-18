@@ -694,43 +694,7 @@ Page({
     }
   },
 
-  // 逆地理编码（将经纬度转换为地址）
-  async reverseGeocode(latitude, longitude) {
-    try {
-      // 使用腾讯地图API进行逆地理编码
-      // 这里可以调用云函数或直接使用API
-      // 示例：调用云函数
-      const result = await wx.cloud.callFunction({
-        name: 'auth', // 假设在auth云函数中有逆地理编码功能
-        data: {
-          action: 'reverseGeocode',
-          latitude: latitude,
-          longitude: longitude
-        }
-      });
-      
-      if (result.result && result.result.success) {
-        return result.result.data;
-      }
-      
-      // 如果云函数不可用，返回基础信息
-      return {
-        address: '未知地址',
-        province: '',
-        city: '',
-        district: ''
-      };
-    } catch (error) {
-      console.error('逆地理编码失败:', error);
-      // 返回基础信息
-      return {
-        address: '未知地址',
-        province: '',
-        city: '',
-        district: ''
-      };
-    }
-  },
+
 
   // 解析地址字符串，提取省市区信息
   parseAddress(address) {

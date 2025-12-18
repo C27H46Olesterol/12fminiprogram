@@ -3,7 +3,7 @@ Page({
   data: {
     loading: false,
     userInfo: null,
-    phoneNumber: ''
+    phone: ''
   },
 
   onLoad() {
@@ -14,7 +14,6 @@ Page({
       this.checkLoginStatus();
     }, 500);
   },
-
 
   // 检查登录状态
   checkLoginStatus() {
@@ -35,7 +34,11 @@ Page({
       // app.globalData.isClient = userInfo.role === 'client';
 
       // this.navigateByRole(userInfo.role);
-      wx.navigateBack();
+      wx.navigateBack({
+        success:function(){
+          prevPage.onLoad();
+        }
+      });
     }
   },
 
@@ -93,10 +96,9 @@ Page({
           })
           
           // 延迟跳转
-          // setTimeout(() => {
-          //   this.navigateByRole(res.result.data.userInfo.role);
-          // }, 1000);
-          wx.navigateBack();
+          setTimeout(() => {
+            this.navigateByRole(res.result.data.userInfo.role);
+          }, 1000);
         } else {
           wx.hideLoading()
           wx.showToast({
@@ -208,7 +210,7 @@ Page({
   // 手机号输入处理
   onPhoneInput(e) {
     this.setData({
-      phoneNumber: e.detail.value
+      phone: e.detail.value
     });
   },
 
@@ -219,9 +221,9 @@ Page({
 
   // 手机号登录
   async phoneNumberLogin() {
-    const { phoneNumber } = this.data;
+    const { phone } = this.data;
     
-    if (!phoneNumber) {
+    if (!phone) {
       wx.showToast({
         title: '请输入手机号',
         icon: 'none'
@@ -229,7 +231,7 @@ Page({
       return;
     }
 
-    if (!phoneNumber.match(/^1[3456789]\d{9}$/)) {
+    if (!phone.match(/^1[3456789]\d{9}$/)) {
       wx.showToast({
         title: '请输入正确的手机号',
         icon: 'none'
@@ -240,13 +242,13 @@ Page({
     this.setData({ loading: true });
 
     try {
-      console.log('开始手机号登录:', phoneNumber);
+      console.log('开始手机号登录:', phone);
       
       const result = await wx.cloud.callFunction({
         name: 'auth',
         data: {
           action: 'phoneNumberLogin',
-          phoneNumber: phoneNumber
+          phone: phone
         }
       });
 

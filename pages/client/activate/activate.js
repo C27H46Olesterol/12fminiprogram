@@ -195,11 +195,10 @@ Page({
     const isValid =
       formData.productCode.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
-      phoneRegex.test(formData.userPhone) &&
-      phoneRegex.test(formData.installerPhone)
-      // formData.processImages.length < 0 &&
-      // formData.finishImages.length < 0;
-
+      phoneRegex.test(formData.userPhone)
+    // && phoneRegex.test(formData.installerPhone)
+    // formData.processImages.length < 0 &&
+    // formData.finishImages.length < 0;
     this.setData({ canSubmit: isValid });
   },
 
