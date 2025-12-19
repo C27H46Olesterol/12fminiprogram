@@ -9,7 +9,7 @@
         "preloadBackgroundData": false,
         "autoAudits": false,
         "showShadowRootInWxmlPanel": true,
-        "compileHotReLoad": false,
+        "compileHotReLoad": true,
         "lazyCodeLoading": "requiredComponents",
         "useApiHook": true,
         "useApiHostProcess": true,

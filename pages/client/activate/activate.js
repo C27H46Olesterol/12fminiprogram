@@ -8,8 +8,10 @@ Page({
       licensePlate: '',
       userPhone: '',
       installerPhone: '',
+      installAddress: '',
       processImages: [],
-      finishImages: []
+      finishImages: [],
+      address:''
     },
 
     // 状态
@@ -49,27 +51,64 @@ Page({
   },
 
   // 获取位置信息
-  getCurrentLocation() {
+  async getCurrentLocation() {
+    wx.showLoading({ title: '正在获取定位...' });
     wx.getLocation({
       type: 'gcj02',
-      success: (res) => {
+      success: async (res) => {
         console.log('定位成功:', res);
-        this.setData({
-          location: {
-            latitude: res.latitude,
-            longitude: res.longitude,
-            timestamp: new Date().toISOString() // 记录定位时间
+        try {
+          // 调用云函数进行逆地理编码
+          const locationInfo = await wx.cloud.callFunction({
+            name: "auth",
+            data: {
+              action: "reverseGeocode",
+              latitude: res.latitude,
+              longitude: res.longitude
+            }
+          });
+
+          console.log('地理解析结果:', locationInfo);
+
+          if (locationInfo.result && locationInfo.result.success) {
+            const address = locationInfo.result.data.address;
+            this.setData({
+              'formData.installAddress': address,
+              location: {
+                latitude: res.latitude,
+                longitude: res.longitude,
+                address: address,
+                timestamp: new Date().toISOString()
+              }
+            });
+          } else {
+            throw new Error('解析地址失败');
           }
-        });
+        } catch (error) {
+          console.error('地理解析失败:', error);
+          wx.showToast({
+            title: '地理解析失败，请手动输入',
+            icon: 'none'
+          });
+        } finally {
+          wx.hideLoading();
+          this.checkCanSubmit();
+        }
       },
       fail: (err) => {
         console.error('定位失败:', err);
+        wx.hideLoading();
         wx.showToast({
-          title: '请授权位置信息以便记录安装地点',
+          title: '定位失败，请手动输入',
           icon: 'none'
         });
       }
     });
+  },
+
+  onInstallAddressInput(e) {
+    this.setData({ 'formData.installAddress': e.detail.value });
+    this.checkCanSubmit();
   },
 
   // 输入处理
@@ -195,6 +234,7 @@ Page({
     const isValid =
       formData.productCode.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
+      formData.installAddress.trim() !== '' &&
       phoneRegex.test(formData.userPhone)
     // && phoneRegex.test(formData.installerPhone)
     // formData.processImages.length < 0 &&
@@ -271,6 +311,7 @@ Page({
           licensePlate: this.data.formData.licensePlate,
           userPhone: this.data.formData.userPhone,
           installerPhone: this.data.formData.installerPhone,
+          installAddress: this.data.formData.installAddress,
 
           processImages: processImageIds,
           finishImages: finishImageIds,
@@ -302,6 +343,15 @@ Page({
       }
 
     } catch (error) {
+      wx.hideLoading();
+      wx.showModal({
+        title: '提交失败',
+        content: error + '',
+        showCancel: false,
+        confirmText: '确定',
+        success() {
+        }
+      })
       console.error('提交失败:', error);
     } finally {
       this.setData({ isSubmitting: false });

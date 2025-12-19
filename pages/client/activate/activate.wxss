@@ -183,6 +183,36 @@ input{
   font-size: 40rpx;
 }
 
+/* 定位输入框 */
+.location-input-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.location-input {
+  flex: 1;
+}
+
+.location-btn {
+  width: 80rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.location-btn::after {
+  border: none;
+}
+
+.location-icon {
+  font-size: 40rpx;
+}
+
 /* 图片上传 */
 .image-upload-area {
   margin-top: 20rpx;

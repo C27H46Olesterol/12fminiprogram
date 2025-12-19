@@ -342,7 +342,7 @@ async function submitProductActivation(db, event, wxContext) {
   if (!productRecord.data || productRecord.data.length === 0) {
     return {
       success: false,
-      message: '该机器不存在',
+      message: '该机器不存在\n检查输入的产品序列号',
       code: 404
     }
   }

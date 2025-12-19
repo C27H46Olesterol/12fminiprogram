@@ -42,8 +42,8 @@
 }
 
 .logo {
-  width: 160rpx;
-  height: 160rpx;
+  width: 320rpx;
+  height: 320rpx;
   margin: 0 auto 32rpx;
   background: #FFFFFF;
   border-radius: 32rpx;

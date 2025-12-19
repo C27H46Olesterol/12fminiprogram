@@ -91,6 +91,26 @@
           bindinput="onInstallerPhoneInput"
         />
       </view>
+      <!-- 安装地点 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>安装地点</text>
+          <text class="required-mark">*</text>
+        </view>
+        <view class="location-input-wrap">
+          <input 
+            class="form-input location-input" 
+            type="text" 
+            placeholder="正在获取定位..." 
+            placeholder-class="input-placeholder"
+            value="{{formData.installAddress}}" 
+            bindinput="onInstallAddressInput"
+          />
+          <button class="location-btn" bindtap="getCurrentLocation" hover-class="btn-hover">
+            <text class="location-icon">📍</text>
+          </button>
+        </view>
+      </view>
     </view>
 
     <!-- 安装记录卡片 -->

@@ -607,14 +607,25 @@ async function reverseGeocode(event) {
       return createErrorResponse('缺少经纬度参数');
     }
 
+    // 从数据库获取天地图密钥
+    const keyRes = await db.collection('key').where({ name: 'tianditu' }).get();
+
+    if (!keyRes.data || keyRes.data.length === 0) {
+      console.error('未找到天地图密钥配置');
+      return createErrorResponse('未找到天地图密钥配置');
+    }
+
+    const ak = keyRes.data[0].access_key;
+
     const options = {
-      uri: 'http://api.tianditu.gov.cn/geocoder?postStr={\'lon\':'+longitude+',\'lat\':'+latitude+',\'ver\':1}&type=geocode&tk='+process.env.TIANMAPKEY+'',
+      uri: `http://api.tianditu.gov.cn/geocoder?postStr={'lon':${longitude},'lat':${latitude},'ver':1}&type=geocode&tk=${ak}`,
       json: true
     };
 
+    console.log('请求天地图 API:', options.uri);
     const res = await rp(options);
 
-    if (res.status === 0) {
+    if (res.status === '0') {
       const result = res.result;
       return createSuccessResponse({
         address: result.formatted_address,
@@ -623,7 +634,8 @@ async function reverseGeocode(event) {
         district: result.addressComponent.address,
       });
     } else {
-      return createErrorResponse('逆地理编码失败: ' + res.message);
+      console.error('天地图 API 返回错误:', res);
+      return createErrorResponse('逆地理编码失败: ' + (res.msg || '未知错误'));
     }
 
   } catch (error) {
@@ -652,10 +664,6 @@ exports.main = async (event, context) => {
         };
       case 'updateUserInfo':
         return await updateUserInfo(event);
-      case 'getUserInfo':
-        return await getUserInfo(event);
-      case 'getUserInfo':
-        return await getUserInfo(event);
       case 'getUserInfo':
         return await getUserInfo(event);
       case 'userLoginCheck':
