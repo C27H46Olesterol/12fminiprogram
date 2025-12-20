@@ -143,7 +143,8 @@
     <view class="func-grid">
       <view class="func-btn-wrapper" bindtap="toggleLighting">
         <view class="func-btn circle {{remoteState.lightingOn ? 'active' : ''}}">
-          <view class="iconfont icon-sun"></view>
+          <view class="iconfont icon-lighton" hidden="{{!remoteState.lightingOn}}"></view>
+          <view class="iconfont icon-lightoff" hidden="{{remoteState.lightingOn}}"></view>
         </view>
         <text class="func-label"> {{remoteState.lightingOn ? '照明：开' : '照明：关'}} </text>
       </view>
@@ -194,13 +195,34 @@
         <text class="func-label">{{remoteState.swingLeftRight ? '左右摆风：开' : '左右摆风：关'}}</text>
       </view>
 
-      <view class="func-btn-wrapper" bindtap="timerTest">
+      <view class="func-btn-wrapper" bindtap="timerTests">
         <view class="func-btn circle">
           <view class="iconfont icon-clock"></view>
         </view>
-        <text class="func-label">定时</text>
+        <text class="func-label">定时工具</text>
       </view>
     </view>
 
   </view>
 </view>
+
+  <!-- 定时弹窗 -->
+  <view wx:if="{{showTimerModal}}" class="timer-modal-overlay">
+    <view class="timer-modal">
+      <text class="timer-title">{{formatTimer(timerMinutes)}}</text>
+      <text class="timer-base">基础：{{formatBaseHours(timerMinutes)}}</text>
+
+      <view class="timer-selected">{{formatTimer(timerMinutes)}}</view>
+
+      <view class="timer-controls">
+        <view class="timer-arrow" bindtap="changeTimer" data-delta="-30">-</view>
+        <view class="timer-step">30 分钟</view>
+        <view class="timer-arrow" bindtap="changeTimer" data-delta="30">+</view>
+      </view>
+
+      <view class="timer-actions">
+        <button class="action-btn cancel" bindtap="closeTimerModal">取消</button>
+        <button class="action-btn confirm" bindtap="confirmTimer">确定</button>
+      </view>
+    </view>
+  </view>

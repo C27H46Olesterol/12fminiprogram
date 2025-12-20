@@ -5,85 +5,98 @@
     
     <!-- 新的综合头部栏 -->
     <view class="remote-header">
-      <!-- 左侧：电源键 -->
+      <!-- 1. 开关 -->
       <view class="header-btn-item" bindtap="togglePower">
         <view class="power-btn {{remoteState.powerOn ? 'active' : ''}}">
-          <view class="iconfont icon-power"></view>
+          <image class="btn-icon-img" src="/images/icons/power.png" mode="aspectFit"></image>
         </view>
         <text class="btn-label">开关</text>
       </view>
 
-      <!-- 中央：设备名称 (点击触发选择) -->
+      <!-- 2. 设备选择 -->
       <view class="device-selector-container">
         <view class="device-selector" bindtap="toggleDeviceModal">
           <view class="device-picker-wrap">
-            <text class="device-name">{{selectedDevice.sn || '选择你的设备'}}</text>
-            <text class="picker-arrow">▼</text>
+            <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
+            <text class="picker-arrow-large">▼</text>
           </view>
         </view>
-        <text class="selector-label">当前设备</text>
+        <text class="device-name-footer">{{selectedDevice.name || selectedDevice.sn || '未选择'}}</text>
 
         <!-- 设备选择下拉菜单 -->
         <view class="dropdown-menu device-dropdown {{showDeviceModal ? 'show' : ''}}">
-          <view class="dropdown-grid">
-            <view 
-              class="dropdown-item device-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
-              wx:for="{{deviceList}}" 
-              wx:key="sn" 
-              bindtap="onSelectDevice" 
-              data-index="{{index}}"
-            >
-              <image class="device-img-small" src="{{item.image || 'cloud://cloud1-5ga6xyav93b12d47.636c-cloud1-5ga6xyav93b12d47-1386774416/images/default-device.png'}}" mode="aspectFill"></image>
-              <view class="device-info-small">
-                <text class="device-sn-small">{{item.sn}}</text>
-                <text class="device-status-dot {{item.online ? 'online' : 'offline'}}"></text>
+          <block wx:if="{{!hasUserInfo}}">
+            <view class="dropdown-grid">
+              <view class="dropdown-item" bindtap="onGoLogin" style="justify-content: center; padding: 20rpx;">
+                <text>请先登录后选择您的设备</text>
               </view>
             </view>
-          </view>
+          </block>
+          <block wx:elif="{{deviceList.length === 0}}">
+            <view class="dropdown-grid">
+              <view class="dropdown-item" bindtap="onActivateProduct" style="justify-content: center; padding: 20rpx;">
+                <text>请先点击激活设备</text>
+              </view>
+            </view>
+          </block>
+          <block wx:else>
+            <view class="dropdown-grid">
+              <view 
+                class="dropdown-item device-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
+                wx:for="{{deviceList}}" 
+                wx:key="sn" 
+                bindtap="onSelectDevice" 
+                data-index="{{index}}"
+              >
+                <image class="device-img-small" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
+                <view class="device-info-small">
+                  <text class="device-sn-small">{{item.name || item.sn}}</text>
+                  <text class="device-status-dot {{item.online ? 'online' : 'offline'}}"></text>
+                </view>
+              </view>
+            </view>
+          </block>
         </view>
       </view>
 
-      <!-- 右侧：添加设备 & 菜单 -->
-      <view class="header-right">
-        <view class="header-btn-item" bindtap="onActivateProduct">
-          <view class="icon-btn">
-            <text class="iconfont icon-plus-circle"></text>
-          </view>
-          <text class="btn-label">添加</text>
+      <!-- 3. 添加设备 -->
+      <view class="header-btn-item" bindtap="onActivateProduct">
+        <view class="icon-btn">
+          <image class="btn-icon-img" src="/images/icons/add.png" mode="aspectFit"></image>
         </view>
+        <text class="btn-label">激活设备</text>
+      </view>
+      
+      <!-- 4. 登陆菜单 -->
+      <view class="header-btn-item menu-trigger" bindtap="toggleDropdown">
+        <view class="icon-btn">
+          <image class="btn-icon-img" src="/images/icons/menu.png" mode="aspectFit"></image>
+        </view>
+        <text class="btn-label">登陆</text>
         
-        <view class="header-btn-item menu-trigger" bindtap="toggleDropdown">
-          <view class="icon-btn">
-            <text class="menu-icon">⋮</text>
-          </view>
-          <text class="btn-label">登陆</text>
-          
-          <!-- 下拉菜单 (集成在头部) -->
-          <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
-            <!-- 未登录状态 -->
-            <block wx:if="{{!hasUserInfo}}">
-              <view class="dropdown-grid">
-                <view class="dropdown-item" bindtap="onGoLogin">
-                  <text>立即登录</text>
-                </view>
+        <!-- 下拉菜单 -->
+        <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
+          <block wx:if="{{!hasUserInfo}}">
+            <view class="dropdown-grid">
+              <view class="dropdown-item" bindtap="onGoLogin">
+                <text>立即登录</text>
               </view>
-            </block>
-            <!-- 已登录状态 -->
-            <block wx:else>
-              <view class="dropdown-user-info">
-                <text class="user-name">{{userInfo.nickName || '微信用户'}}</text>
-                <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
+            </view>
+          </block>
+          <block wx:else>
+            <view class="dropdown-user-info">
+              <text class="user-name">{{userInfo.userName || '微信用户'}}</text>
+              <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
+            </view>
+            <view class="dropdown-grid">
+              <view class="dropdown-item" bindtap="onApiTest">
+                <text>接口测试</text>
               </view>
-              <view class="dropdown-grid">
-                <view class="dropdown-item" bindtap="onApiTest">
-                  <text>接口测试</text>
-                </view>
-                <view class="dropdown-item logout" bindtap="onLogout">
-                  <text>退出登陆</text>
-                </view>
+              <view class="dropdown-item logout" bindtap="onLogout">
+                <text>退出登陆</text>
               </view>
-            </block>
-          </view>
+            </view>
+          </block>
         </view>
       </view>
     </view>
@@ -108,12 +121,12 @@
 
       <!-- 中间：核心显示 (温度 & 模式) -->
       <view class="display-main">
-        <view class="temp-display">
+        <view class="display-item"></view> <!-- 左侧占位 -->
+        <view class="display-item temp-display">
           <text class="temp-value">{{remoteState.targetTemperature}}</text>
           <text class="temp-unit">°C</text>
-          <text class="temp-label">设置温度</text>
         </view>
-        <view class="mode-display">
+        <view class="display-item mode-display">
           <text class="mode-text">{{remoteState.mode === 'auto' ? '自动' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'heat' ? '制热' : '制冷')))}}</text>
         </view>
       </view>
@@ -157,13 +170,13 @@
       <view class="control-column">
         <view class="control-pill">
           <view class="control-btn" bindtap="increaseWindSpeed">
-            <view class="iconfont icon-plus"></view>
+            <image class="control-icon-img" src="/images/icons/plus.png" mode="aspectFit"></image>
           </view>
           <view class="control-icon-area">
             <view class="control-title">风速</view>
           </view>
           <view class="control-btn" bindtap="decreaseWindSpeed">
-            <view class="iconfont icon-minus"></view>
+            <image class="control-icon-img" src="/images/icons/minus.png" mode="aspectFit"></image>
           </view>
         </view>
       </view>
@@ -172,13 +185,13 @@
       <view class="control-column">
         <view class="control-pill">
           <view class="control-btn" bindtap="increaseTemperature">
-            <view class="iconfont icon-plus"></view>
+            <image class="control-icon-img" src="/images/icons/plus.png" mode="aspectFit"></image>
           </view>
           <view class="control-icon-area">
             <view class="control-title">温度</view>
           </view>
           <view class="control-btn" bindtap="decreaseTemperature">
-            <view class="iconfont icon-minus"></view>
+            <image class="control-icon-img" src="/images/icons/minus.png" mode="aspectFit"></image>
           </view>
         </view>
       </view>
@@ -189,65 +202,92 @@
       <!-- 第一排：功能键 -->
       <view class="func-grid">
         <view class="func-btn-wrapper" bindtap="toggleLighting">
-          <view class="func-btn circle {{remoteState.lightingOn ? 'active' : ''}}">
-            <view class="iconfont icon-sun"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.lightingOn) ? 'active' : ''}}">
+            <image class="func-icon-img" src="{{(remoteState.powerOn && remoteState.lightingOn) ? '/images/icons/light_on.png' : '/images/icons/light_off.png'}}" mode="aspectFit"></image>
           </view>
-          <text class="func-label"> {{remoteState.lightingOn ? '照明：开' : '照明：关'}} </text>
+          <text class="func-label"> {{(remoteState.powerOn && remoteState.lightingOn) ? '照明：开' : '照明：关'}} </text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="setAutoMode">
-          <view class="func-btn circle {{remoteState.mode === 'auto' ? 'active' : ''}}">
-            <view class="iconfont icon-auto"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'auto') ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/auto.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.mode === 'auto' ? '当前：自动' : '自动'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'auto') ? '当前：自动' : '自动'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="setStrongMode">
-          <view class="func-btn circle {{remoteState.mode === 'strong' ? 'active' : ''}}">
-            <view class="iconfont icon-strong"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'strong') ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/strong.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.mode === 'strong' ? '当前：强劲' : '强劲'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'strong') ? '当前：强劲' : '强劲'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="setEcoMode">
-          <view class="func-btn circle {{remoteState.mode === 'eco' ? 'active' : ''}}">
-            <view class="iconfont icon-eco"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'eco') ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/eco.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.mode === 'eco' ? '当前：节能' : '节能'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'eco') ? '当前：节能' : '节能'}}</text>
         </view>
       </view>
 
       <!-- 第二排：功能键 -->
       <view class="func-grid">
         <view class="func-btn-wrapper" bindtap="toggleHeating">
-          <view class="func-btn circle {{remoteState.mode === 'heat' ? 'active' : ''}}">
-            <view class="iconfont icon-heat"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'heat') ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/sun.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.mode === 'heat' ? '当前：制热' : '制热'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'heat') ? '当前：制热' : '制热'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="toggleSwingUpDown">
-          <view class="func-btn circle {{remoteState.swingUpDown ? 'active' : ''}}">
-            <view class="iconfont icon-swing-ud"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.swingUpDown) ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/uptodown.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.swingUpDown ? '上下摆风：开' : '上下摆风：关'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.swingUpDown) ? '上下摆风：开' : '上下摆风：关'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="toggleSwingLeftRight">
-          <view class="func-btn circle {{remoteState.swingLeftRight ? 'active' : ''}}">
-            <view class="iconfont icon-swing-lr"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.swingLeftRight) ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/sidetoside.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{remoteState.swingLeftRight ? '左右摆风：开' : '左右摆风：关'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.swingLeftRight) ? '左右摆风：开' : '左右摆风：关'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="timerTest">
-          <view class="func-btn circle">
-            <view class="iconfont icon-clock"></view>
+          <view class="func-btn circle {{(remoteState.powerOn && remoteState.clock) ? 'active' : ''}}" >
+            <image class="func-icon-img" src="/images/icons/clock.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">定时</text>
+          <text class="func-label">{{(remoteState.powerOn && wxTimerList.timerBtn.wxTimer) ? wxTimerList.timerBtn.wxTimer : '定时'}}</text>
         </view>
       </view>
     </view>
+
+  <!-- 定时弹窗 -->
+  <view wx:if="{{showTimerModal}}" class="timer-modal-overlay">
+    <view class="timer-modal">
+      <text class="timer-title">设置定时</text>
+
+      <view class="timer-selected">{{formattedTimer}}</view>
+
+      <view class="timer-controls">
+        <view class="timer-btn-wrap" bindtap="changeTimer" data-delta="-30">
+          <view class="timer-arrow">-</view>
+          <text class="timer-tip">减少30分钟</text>
+        </view>
+        
+        <view class="timer-btn-wrap" bindtap="changeTimer" data-delta="30">
+          <view class="timer-arrow">+</view>
+          <text class="timer-tip">增加30分钟</text>
+        </view>
+      </view>
+
+      <view class="timer-actions">
+        <button class="action-btn cancel" bindtap="closeTimerModal">取消</button>
+        <button class="action-btn confirm" bindtap="confirmTimer">确定</button>
+      </view>
+    </view>
+  </view>
+
   </view>
 </view>
 

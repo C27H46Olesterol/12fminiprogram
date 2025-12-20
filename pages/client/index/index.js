@@ -1,6 +1,7 @@
 // pages/client/index/index.js
 const app = getApp();
 var timer = require("../../../utils/wxTimer")
+// const rp = require("request-promise")
 
 Page({
   data: {
@@ -40,10 +41,16 @@ Page({
       windSpeed: 1,
       lightingOn: false,
       targetTemperature: 26,
-      mode: 'auto', // auto, strong, eco, heat
+      mode: 'off', // auto, strong, eco, heat,off
       swingUpDown: false,
-      swingLeftRight: false
+      swingLeftRight: false,
+      clock: false
     }
+    ,
+    // 定时弹窗相关
+    showTimerModal: false,
+    timerMinutes: 60, // 初始为 60 分钟
+    formattedTimer: '1 小时'
   },
 
   onLoad() {
@@ -55,11 +62,12 @@ Page({
     this.initPage();
     if (this.data.hasUserInfo) {
       this.loadRoleData(); // 加载角色专属数据
-      this.initDeviceSelection(); // 初始化设备选择
+      // this.initDeviceSelection(); // 初始化设备选择
     }
     setTimeout(() => {
       wx.hideLoading();
     }, 1500)
+    // this.freshSign();
   },
 
   onShow() {
@@ -71,14 +79,33 @@ Page({
     this.UserInfoStorageCheck();
     if (this.data.hasUserInfo) {
       this.loadRoleData(); // 加载角色专属数据
-      this.initDeviceSelection(); // 初始化设备选择
+      // this.initDeviceSelection(); // 初始化设备选择
     }
     setTimeout(() => {
       wx.hideLoading();
     }, 800)
     console.log("client/index加载完毕")
+
   },
 
+
+  async testAPI() {
+    app.apiRequest({
+      api: '/pro/banding/bind',
+      method: 'POST',
+      data: { 'sn': "123" }
+    })
+  },
+
+  async freshSign() {
+    await wx.cloud.callFunction({
+      name: "onenet",
+      data: {
+        action: "freshSign"
+      }
+    })
+    console.log('刷新token')
+  },
   //缓存信息检查
   UserInfoStorageCheck() {
     const userInfo = wx.getStorageSync('userInfo');
@@ -110,55 +137,73 @@ Page({
   // 加载角色专属数据
   async loadRoleData() {
     const userInfo = wx.getStorageSync('userInfo')
-    const role = userInfo.role;
-    console.log('检测用户身份', role)
-    if (role === 'client') {
-      console.log('设置产品用户专用栏')
+    if (userInfo) {
+      console.log('加载已激活产品')
       // 加载已激活产品
       const myProductsList = await this.formatActivateProduct()
 
       this.setData({
         myProducts: myProductsList
       })
-      this.loadRecentFeedbacks()
+
+      // 更新设备列表 (用于下拉菜单和遥控)
+      if (myProductsList && myProductsList.length > 0) {
+        const savedImei = wx.getStorageSync('selectedDeviceImei');
+        let selectedIndex = -1;
+        if (savedImei) {
+          selectedIndex = myProductsList.findIndex(d => d.imei === savedImei);
+        }
+
+        // 如果没找到之前的设备，默认选第一个
+        if (selectedIndex === -1) {
+          selectedIndex = 0;
+          if (myProductsList[0].imei) {
+            wx.setStorageSync('selectedDeviceImei', myProductsList[0].imei);
+          }
+        }
+
+        this.setData({
+          deviceList: myProductsList,
+          selectedDeviceIndex: selectedIndex,
+          selectedDevice: myProductsList[selectedIndex]
+        });
+
+        // 加载设备状态
+        this.loadDeviceStatus();
+      } else {
+        this.setData({
+          deviceList: [],
+          selectedDeviceIndex: -1,
+          selectedDevice: null
+        });
+      }
+
+      // this.loadRecentFeedbacks()
 
     }
   },
+
 
   //加载用户已激活产品
   async formatActivateProduct() {
     const userInfo = wx.getStorageSync('userInfo') || {};
     try {
-      const result = await wx.cloud.callFunction({
-        name: 'activateProduct',
-        data: {
-          action: 'getActivationByPhoneNumber',
-          phoneNumber: userInfo.phone,
-        }
-      })
+      const result = await app.apiRequest('/pro/banding/my', 'GET');
+      console.log("返回数据", result);
 
-      console.log('云函数返回结果:', result);
-
-      // 检查云函数调用是否成功
-      if (result && result.result) {
-        const cloudResult = result.result;
-
-        // 检查云函数业务逻辑是否成功
-        if (cloudResult.success && cloudResult.data) {
-          const res = cloudResult.data;
-          // 将云函数返回的数据转换为myProducts格式，只包含必要字段
-          return res.map((item, index) => ({
-            id: index + 1,
-            name: item.productCode,
-            image: item.finishImages && item.finishImages.length > 0 ? item.finishImages[0] : '',
-            status: 'active'
-          }));
-        } else {
-          console.log('云函数业务逻辑失败或无数据:', cloudResult.message);
-          return [];
-        }
+      // 检查调用是否成功
+      if (result && result.data) {
+        const res = result.data;
+        return res.map((item, index) => ({
+          id: index + 1,
+          name: item.sn,
+          sn: item.sn, // 兼容现有逻辑
+          imei: item.imei, // 兼容现有逻辑
+          image: item.finishImages && item.finishImages.length > 0 ? item.finishImages[0] : '',
+          status: 'active'
+        }));
       } else {
-        console.error('云函数调用失败');
+        console.error('API调用失败或无数据');
         return [];
       }
     } catch (error) {
@@ -433,10 +478,10 @@ Page({
 
   // 切换设备选择弹窗
   toggleDeviceModal() {
-    if (!this.data.hasUserInfo) {
-      this.onGoLogin();
-      return;
-    }
+    // if (!this.data.hasUserInfo) {
+    //   this.onGoLogin();
+    //   return;
+    // }
     this.setData({
       showDeviceModal: !this.data.showDeviceModal
     });
@@ -477,18 +522,96 @@ Page({
   // },
 
   async timerTest() {
-    var timerTest = new timer({
-      beginTime: '00:00:05',
-      name: "timerTest",
-      complete: function () {
-        wx.showToast({
-          title: '定时响应',
-        })
-        console.log('计时结束')
+    // 打开定时弹窗（前端）
+    if (!this.checkPower()) {
+      this.setData({
+        'remoteState.clock': false
+      })
+      return
+    };
+    this.setData({
+      showTimerModal: true,
+      timerMinutes: 60, // 默认 1 小时
+      'remoteState.clock': true
+    });
+  },
+
+  // 增减定时（步长 30 分钟），限制在 60 - 480
+  changeTimer(e) {
+    const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
+    let m = this.data.timerMinutes + delta;
+    if (m < 60) m = 60;
+    if (m > 480) m = 480;
+
+    this.setData({
+      timerMinutes: m,
+      formattedTimer: this.formatTimer(m)
+    });
+  },
+
+  closeTimerModal() {
+    this.setData({ showTimerModal: false });
+  },
+
+  async confirmTimer() {
+    const minutes = this.data.timerMinutes;
+
+    // 格式化为 HH:mm:ss 供 wxTimer 使用
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    const formattedHMS = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+
+    // 停止之前的计时器（如果存在）
+    if (this.timerInstance) {
+      this.timerInstance.stop();
+      this.timerInstance = null;
+    }
+
+    // 先清除 UI 展示，防止旧数据闪烁
+    let wxTimerList = this.data.wxTimerList;
+    delete wxTimerList['timerBtn'];
+    this.setData({ wxTimerList });
+
+    // 初始化计时器
+    const timerInstance = new timer({
+      beginTime: formattedHMS,
+      name: 'timerBtn',
+      complete: () => {
+        wx.showToast({ title: '定时结束', icon: 'none' });
+        // 清理状态
+        let list = this.data.wxTimerList;
+        delete list['timerBtn'];
+        this.setData({
+          wxTimerList: list,
+          'remoteState.clock': false
+        });
+        this.timerInstance = null;
       }
-    })
-    console.log('计时开始')
-    timerTest.start(this);
+    });
+
+    timerInstance.start(this);
+    this.timerInstance = timerInstance;
+
+    this.setData({
+      showTimerModal: false
+    });
+
+    wx.showToast({ title: `已设置定时 ${this.data.formattedTimer}`, icon: 'none' });
+  },
+
+  formatTimer(mins) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (m === 0) return `${h} 小时`;
+    return `${h} 小时 ${m} 分钟`;
+  },
+
+  // 返回基础小时数（1 - 8 小时）字符串
+  formatBaseHours(mins) {
+    let h = Math.ceil((mins || 0) / 60);
+    if (h < 1) h = 1;
+    if (h > 8) h = 8;
+    return `${h} 小时`;
   },
 
   //初始化设备信息 获取用户的所有激活的设备
@@ -575,29 +698,41 @@ Page({
 
   // 开关机
   togglePower() {
-    const result = wx.cloud.callFunction({
-      name: 'onenet',
-      data: {
-        action: 'setOn',
-        deviceName: 'onenet_mqtt'
+    const isPowerOn = this.data.remoteState.powerOn;
+    const newPowerState = !isPowerOn;
+
+    // 立即更新UI状态
+    this.setData({
+      'remoteState.powerOn': newPowerState
+    });
+
+    if (!newPowerState) {
+      // 如果关机，停止并清除定时器 (UI逻辑)
+      if (this.timerInstance) {
+        this.timerInstance.stop();
+        this.timerInstance = null;
       }
-    })
-    if (result.success) {
+      let wxTimerList = this.data.wxTimerList;
+      if (wxTimerList.timerBtn) {
+        delete wxTimerList.timerBtn;
+      }
+
+      // 重置所有功能开关至关闭/默认状态
       this.setData({
-        'remoteState.powerOn': true
+        wxTimerList,
+        'remoteState.clock': false,
+        'remoteState.lightingOn': false,
+        'remoteState.mode': 'off',
+        'remoteState.swingUpDown': false,
+        'remoteState.swingLeftRight': false
       });
-      wx.showToast({
-        title: '已开机',
-        icon: 'success',
-        duration: 2000
-      });
+      wx.showToast({ title: '已关机', icon: 'none' });
     } else {
-      wx.showToast({
-        title: '开机失败',
-        icon: 'error',
-        duration: 2000
-      });
+      wx.showToast({ title: '已开机', icon: 'success' });
     }
+
+    // 使用 bufferCommand 发送指令，key为 setPower，value为目标状态(true/false)
+    // this.bufferCommand('setPower', newPowerState);
   },
 
   // 增加风速
@@ -605,9 +740,15 @@ Page({
     if (!this.checkPower()) return;
     let speed = this.data.remoteState.windSpeed;
     if (speed < 5) {
+      const newSpeed = speed + 1;
       this.setData({
-        'remoteState.windSpeed': speed + 1
+        'remoteState.windSpeed': newSpeed
       });
+      wx.showToast({
+        title:'风速'+newSpeed+'档',
+        icon:'none'
+      })
+      this.bufferCommand('setWindSpeed', newSpeed);
     } else {
       wx.showToast({ title: '已是最大风速', icon: 'none' });
     }
@@ -618,9 +759,15 @@ Page({
     if (!this.checkPower()) return;
     let speed = this.data.remoteState.windSpeed;
     if (speed > 1) {
+      const newSpeed = speed - 1;
       this.setData({
-        'remoteState.windSpeed': speed - 1
+        'remoteState.windSpeed': newSpeed
       });
+      wx.showToast({
+        title:'风速'+newSpeed+'档',
+        icon:'none'
+      })
+      this.bufferCommand('setWindSpeed', newSpeed);
     } else {
       wx.showToast({ title: '已是最小风速', icon: 'none' });
     }
@@ -630,10 +777,16 @@ Page({
   increaseTemperature() {
     if (!this.checkPower()) return;
     let temp = this.data.remoteState.targetTemperature;
-    if (temp < 30) {
+    if (temp < 40) {
+      const newTemp = temp + 1;
       this.setData({
-        'remoteState.targetTemperature': temp + 1
+        'remoteState.targetTemperature': newTemp
       });
+      wx.showToast({
+        title:'设置'+newTemp+'°C',
+        icon:'none'
+      })
+      this.bufferCommand('setTemperature', newTemp);
     } else {
       wx.showToast({ title: '已是最高温度', icon: 'none' });
     }
@@ -643,10 +796,16 @@ Page({
   decreaseTemperature() {
     if (!this.checkPower()) return;
     let temp = this.data.remoteState.targetTemperature;
-    if (temp > 16) {
+    if (temp > 5) {
+      const newTemp = temp - 1;
       this.setData({
-        'remoteState.targetTemperature': temp - 1
+        'remoteState.targetTemperature': newTemp
       });
+      wx.showToast({
+        title:'设置'+newTemp+'°C',
+        icon:'none'
+      })
+      this.bufferCommand('setTemperature', newTemp);
     } else {
       wx.showToast({ title: '已是最低温度', icon: 'none' });
     }
@@ -660,6 +819,7 @@ Page({
       'remoteState.lightingOn': newStatus
     });
     this.showControlToast(newStatus ? '照明已开启' : '照明已关闭');
+    this.bufferCommand('setLighting', newStatus);
   },
 
   // 强劲模式
@@ -673,6 +833,7 @@ Page({
         'remoteState.windSpeed': 5 // 强劲模式自动最大风速
       });
       this.showControlToast('强劲模式');
+      this.bufferCommand('setMode', 'strong');
     }
   },
 
@@ -684,6 +845,7 @@ Page({
       'remoteState.windSpeed': 3 // 自动模式默认中等风速
     });
     this.showControlToast('自动模式');
+    this.bufferCommand('setMode', 'auto');
   },
 
   // 节能模式
@@ -697,6 +859,7 @@ Page({
         'remoteState.windSpeed': 1 // 节能模式默认最小风速
       });
       this.showControlToast('节能模式');
+      this.bufferCommand('setMode', 'eco');
     }
   },
 
@@ -710,6 +873,7 @@ Page({
         'remoteState.mode': 'heat'
       });
       this.showControlToast('制热模式');
+      this.bufferCommand('setMode', 'heat');
     }
   },
 
@@ -721,6 +885,7 @@ Page({
       'remoteState.swingUpDown': newStatus
     });
     this.showControlToast(newStatus ? '上下摆风已开启' : '上下摆风已关闭');
+    this.bufferCommand('setSwingUpDown', newStatus);
   },
 
   // 左右摆风开关
@@ -731,6 +896,68 @@ Page({
       'remoteState.swingLeftRight': newStatus
     });
     this.showControlToast(newStatus ? '左右摆风已开启' : '左右摆风已关闭');
+    this.bufferCommand('setSwingLeftRight', newStatus);
+  },
+
+  // 指令缓存（防抖）
+  bufferCommand(action, value) {
+    if (!this.commandTimers) {
+      this.commandTimers = {};
+    }
+
+    // 清除该动作类型的现有定时器
+    if (this.commandTimers[action]) {
+      clearTimeout(this.commandTimers[action]);
+      delete this.commandTimers[action];
+    }
+
+    // “所有功能按钮只有设定值为true时才会向设备发送命令”
+    // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
+    const restrictedActions = ['setLighting', 'setSwingUpDown', 'setSwingLeftRight'];
+
+    if (restrictedActions.includes(action) && value !== true) {
+      // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
+      console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
+      return;
+    }
+
+    // 设置新定时器
+    this.commandTimers[action] = setTimeout(() => {
+      this.sendControlCommand(action, value);
+      delete this.commandTimers[action];
+    }, 1000); // 1秒内的连续操作只发送最后一次
+  },
+
+  // 发送控制指令
+  async sendControlCommand(action, value) {
+    const device = this.data.selectedDevice;
+    // 优先使用选中设备的imei，否则使用默认
+    const deviceName = device && device.imei ? device.imei : 'onenet_mqtt';
+
+    console.log(`[Debounce] 发送指令 -> ${deviceName}: ${action} = ${value}`);
+
+    try {
+      let finalAction = action;
+      let finalData = {
+        action: action,
+        value: value,
+        deviceName: deviceName
+      };
+
+      // 特殊处理：电源开关兼容旧逻辑
+      if (action === 'setPower') {
+        finalData.action = value ? 'setOn' : 'setOff';
+        delete finalData.value;
+      }
+
+      const res = await wx.cloud.callFunction({
+        name: 'onenet',
+        data: finalData
+      });
+      console.log('指令发送结果:', res);
+    } catch (err) {
+      console.error('指令发送失败:', err);
+    }
   },
 
   // 辅助函数：检查电源状态

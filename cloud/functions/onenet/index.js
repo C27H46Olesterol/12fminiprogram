@@ -100,26 +100,30 @@ async function setTimmer(event) {
 }
 
 //定时刷新签名
-async function freshSign(event) {
+async function freshSignOld(event) {
   const interval = event.interval || 3599;
   let current = interval;
   const timer = setInterval(() => {
     current--;
     if (current <= 0) {
-      et = Math.ceil((Date.now() + 36000000) / 1000);
-      // 生成正确的 Authorization 签名
-      StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
-      sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
-      console.log(`签名已刷新，et: ${et}`);
-      current = interval;
+      
     }
   }, 1000);
+}
+//启动刷新签名
+async function freshSign(event){
+  et = Math.ceil((Date.now() + 360000000000) / 1000);
+  // 生成正确的 Authorization 签名
+  StringForSignature = et + '\n' + method + '\n' + res + '\n' + version;
+  sign = encodeURIComponent(crypto.createHmac(method, base64Key).update(StringForSignature).digest('base64'));
+  console.log(`签名已刷新，et: ${et}`);
+  current = interval;
 }
 /*
 * 开机 powerStatus1
 */
 async function setOn(event) {
-  const { deviceName } = event
+  const { deviceName,value } = event
   console.log("开启设备：", deviceName)
   try {
     const res = await rp({
@@ -131,16 +135,17 @@ async function setOn(event) {
       },
       body: {
         'product_id': 'OHjh4nsX2f',
-        'device_name': deviceName,
+        'device_name': '3211',
         'params': {
-          'powerStatus': true
+          'powerStatus': value
         }
       },
       json: true
     });
     console.log('开机接口调用结果：', res);
     return {
-      success: true
+      success: true,
+      msg:res.msg
     }
   } catch (err) {
     // if()
@@ -150,6 +155,9 @@ async function setOn(event) {
 }
 
 /*
+
+
+
 * 关机 powerStatus 0
 */
 async function setOff(event) {

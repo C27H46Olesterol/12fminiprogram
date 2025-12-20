@@ -4,20 +4,12 @@ const app = getApp();
 Page({
   data: {
     formData: {
-      productCode: '',
-      licensePlate: '',
-      userPhone: '',
-      installerPhone: '',
-      installAddress: '',
-      processImages: [],
-      finishImages: [],
-      address:''
+      productCode: ''
     },
 
     // 状态
     canSubmit: false,
-    isSubmitting: false,
-    location: null // 存储定位信息
+    isSubmitting: false
   },
 
   onLoad() {
@@ -25,110 +17,12 @@ Page({
   },
 
   initPage() {
-    // 自动获取定位
-    this.getCurrentLocation();
-
-    // 自动填充手机号逻辑
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
-    const userPhone = userInfo && (userInfo.phone || userInfo.phoneNumber);
-    const userRole = userInfo && userInfo.role; // 假设role字段存在
-
-    if (userPhone) {
-      if (userRole === 'worker') {
-        // 如果是维修工提交，自动填充安装师傅手机号
-        this.setData({
-          'formData.installerPhone': userPhone
-        });
-      } else {
-        // 默认为普通用户/产品用户提交，填充用户手机号
-        this.setData({
-          'formData.userPhone': userPhone
-        });
-      }
-    }
-
-    this.checkCanSubmit();
-  },
-
-  // 获取位置信息
-  async getCurrentLocation() {
-    wx.showLoading({ title: '正在获取定位...' });
-    wx.getLocation({
-      type: 'gcj02',
-      success: async (res) => {
-        console.log('定位成功:', res);
-        try {
-          // 调用云函数进行逆地理编码
-          const locationInfo = await wx.cloud.callFunction({
-            name: "auth",
-            data: {
-              action: "reverseGeocode",
-              latitude: res.latitude,
-              longitude: res.longitude
-            }
-          });
-
-          console.log('地理解析结果:', locationInfo);
-
-          if (locationInfo.result && locationInfo.result.success) {
-            const address = locationInfo.result.data.address;
-            this.setData({
-              'formData.installAddress': address,
-              location: {
-                latitude: res.latitude,
-                longitude: res.longitude,
-                address: address,
-                timestamp: new Date().toISOString()
-              }
-            });
-          } else {
-            throw new Error('解析地址失败');
-          }
-        } catch (error) {
-          console.error('地理解析失败:', error);
-          wx.showToast({
-            title: '地理解析失败，请手动输入',
-            icon: 'none'
-          });
-        } finally {
-          wx.hideLoading();
-          this.checkCanSubmit();
-        }
-      },
-      fail: (err) => {
-        console.error('定位失败:', err);
-        wx.hideLoading();
-        wx.showToast({
-          title: '定位失败，请手动输入',
-          icon: 'none'
-        });
-      }
-    });
-  },
-
-  onInstallAddressInput(e) {
-    this.setData({ 'formData.installAddress': e.detail.value });
     this.checkCanSubmit();
   },
 
   // 输入处理
   onProductCodeInput(e) {
     this.setData({ 'formData.productCode': e.detail.value });
-    this.checkCanSubmit();
-  },
-
-  onLicensePlateInput(e) {
-    this.setData({ 'formData.licensePlate': e.detail.value });
-    this.checkCanSubmit();
-  },
-
-  onUserPhoneInput(e) {
-    this.setData({ 'formData.userPhone': e.detail.value });
-    this.checkCanSubmit();
-  },
-
-  onInstallerPhoneInput(e) {
-    this.setData({ 'formData.installerPhone': e.detail.value });
     this.checkCanSubmit();
   },
 
@@ -148,140 +42,40 @@ Page({
     });
   },
 
-  // 选择图片通用方法
-  chooseImage(type) {
-    const currentImages = type === 'process' ? this.data.formData.processImages : this.data.formData.finishImages;
-    const maxCount = 3 - currentImages.length;
-
-    if (maxCount <= 0) return;
-
-    wx.chooseImage({
-      count: maxCount,
-      sizeType: ['compressed'],
-      sourceType: ['camera', 'album'],
-      success: (res) => {
-        const newImages = currentImages.concat(res.tempFilePaths);
-        if (type === 'process') {
-          this.setData({ 'formData.processImages': newImages });
-        } else {
-          this.setData({ 'formData.finishImages': newImages });
-        }
-        this.checkCanSubmit();
-      }
-    });
-  },
-
-  // 选择安装过程照片
-  onChooseProcessImage() {
-    this.chooseImage('process');
-  },
-
-  // 选择安装完成照片
-  onChooseFinishImage() {
-    this.chooseImage('finish');
-  },
-
-  // 预览图片
-  previewImage(url, images) {
-    wx.previewImage({
-      current: url,
-      urls: images
-    });
-  },
-
-  onPreviewProcessImage(e) {
-    this.previewImage(e.currentTarget.dataset.url, this.data.formData.processImages);
-  },
-
-  onPreviewFinishImage(e) {
-    this.previewImage(e.currentTarget.dataset.url, this.data.formData.finishImages);
-  },
-
-  // 删除图片
-  deleteImage(index, type) {
-    wx.showModal({
-      title: '确认删除',
-      content: '确定要删除这张照片吗？',
-      success: (res) => {
-        if (res.confirm) {
-          const images = type === 'process' ? this.data.formData.processImages.slice() : this.data.formData.finishImages.slice();
-          images.splice(index, 1);
-
-          if (type === 'process') {
-            this.setData({ 'formData.processImages': images });
-          } else {
-            this.setData({ 'formData.finishImages': images });
-          }
-          this.checkCanSubmit();
-        }
-      }
-    });
-  },
-
-  onDeleteProcessImage(e) {
-    this.deleteImage(e.currentTarget.dataset.index, 'process');
-  },
-
-  onDeleteFinishImage(e) {
-    this.deleteImage(e.currentTarget.dataset.index, 'finish');
-  },
-
   // 验证表单
   checkCanSubmit() {
     const { formData } = this.data;
-    const phoneRegex = /^1[3-9]\d{9}$/;
-
-    const isValid =
-      formData.productCode.trim() !== '' &&
-      formData.licensePlate.trim() !== '' &&
-      formData.installAddress.trim() !== '' &&
-      phoneRegex.test(formData.userPhone)
-    // && phoneRegex.test(formData.installerPhone)
-    // formData.processImages.length < 0 &&
-    // formData.finishImages.length < 0;
+    const isValid = formData.productCode.trim() !== '';
     this.setData({ canSubmit: isValid });
-  },
-
-  // 上传多张图片到云存储
-  async uploadImages(imagePaths, folder) {
-    const uploadPromises = imagePaths.map(async (filePath) => {
-      const cloudPath = `activations/${folder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
-      const result = await wx.cloud.uploadFile({
-        cloudPath: cloudPath,
-        filePath: filePath
-      });
-      return result.fileID;
-    });
-    return Promise.all(uploadPromises);
   },
 
   // 提交表单
   async onSubmit() {
     if (!this.data.canSubmit) return;
 
-    // 再次检查定位，如果之前失败了
-    if (!this.data.location) {
-      wx.showToast({
-        title: '正在获取定位...',
-        icon: 'loading'
-      });
-      this.getCurrentLocation();
-      // 给定位一点时间，或者直接允许提交但标记无定位
-      // 这里选择必须有定位才能提交
-      setTimeout(() => {
-        if (!this.data.location) {
-          wx.showToast({
-            title: '无法获取定位，请检查权限',
-            icon: 'none'
-          });
-        } else {
-          this.startSubmit();
-        }
-      }, 1000);
-      return;
-    }
-
     this.startSubmit();
+  },
+
+  //绑定设备
+  async bindDevice(){
+    const sn = this.data.formData.productCode
+    console.log(sn)
+    const result = await app.apiRequest('/pro/banding/bind','POST',{sn:sn})
+    if(result.code != 200){
+      wx.showToast({
+        title: result.msg,
+        icon:"none"
+      })
+    }else{
+      wx.showToast({
+        title:result.msg,
+        icon:'none'
+      })
+      wx.navigateBack()
+    }
+    
+    console.log('result123',result)
+
   },
 
   async startSubmit() {
@@ -289,15 +83,11 @@ Page({
     wx.showLoading({ title: '提交中...' });
 
     try {
-      // 1. 上传图片
-      const processImageIds = await this.uploadImages(this.data.formData.processImages, 'process');
-      const finishImageIds = await this.uploadImages(this.data.formData.finishImages, 'finish');
-
-      // 2. 准备提交数据
+      // 准备提交数据
       const userInfo = wx.getStorageSync('userInfo') || {};
       const submitTime = new Date().toISOString(); // 提交时间
 
-      // 3. 调用云函数
+      // 调用云函数
       const result = await wx.cloud.callFunction({
         name: 'activateProduct',
         data: {
@@ -308,23 +98,21 @@ Page({
           submitterRole: userInfo.role || 'user',
 
           productCode: this.data.formData.productCode,
-          licensePlate: this.data.formData.licensePlate,
-          userPhone: this.data.formData.userPhone,
-          installerPhone: this.data.formData.installerPhone,
-          installAddress: this.data.formData.installAddress,
 
-          processImages: processImageIds,
-          finishImages: finishImageIds,
-
-          location: this.data.location, // 包含 latitude, longitude, timestamp
-          submitTime: submitTime // 记录提交时间
+          // 其他字段留空或根据后端要求调整，这里只发送保留的字段
+          licensePlate: '',
+          userPhone: '',
+          installerPhone: '',
+          installAddress: '',
+          processImages: [],
+          finishImages: [],
+          location: null,
+          submitTime: submitTime
         }
 
       });
       console.log('云函数返回:', result);
 
-      // wx.cloud.callFunction 返回的对象结构为 { result: { ... }, requestID: ... }
-      // 实际的业务返回值在 result.result 中
       const res = result.result;
 
       if (res && res.success) {
@@ -346,11 +134,9 @@ Page({
       wx.hideLoading();
       wx.showModal({
         title: '提交失败',
-        content: error + '',
+        content: error.message || error + '',
         showCancel: false,
-        confirmText: '确定',
-        success() {
-        }
+        confirmText: '确定'
       })
       console.error('提交失败:', error);
     } finally {

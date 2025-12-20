@@ -125,7 +125,8 @@ Page({
     
     // 检查是否有登录后需要跳转的目标页面
     // const redirectUrl = wx.getStorageSync('redirectAfterLogin');
-    const redirectUrl = 'pages/client/index/index';
+    // const redirectUrl = 'pages/client/index/index';
+    wx.navigateBack();
     
     if (redirectUrl) {
       // 清除重定向标记
@@ -307,5 +308,55 @@ Page({
     } finally {
       this.setData({ loading: false });
     }
-  }
+  },
+  
+
+  async wxLogin(){
+    console.log("登陆开始");
+    wx.login({
+      success: res => {
+        console.log("成功获取code",res.code);
+        if (res.code) {
+          // 获取用户信息
+          wx.request({
+            url: 'https://ha.musenyu.cn/auth/login',
+            method: 'POST',
+            data: {
+              clientId: '2aeeae6eada0ddca866d775707cc5b11',
+              grantType: 'xcx',
+              xcxCode: res.code,
+              appid: 'wxa81a2077330256cf',
+              tenantId: "000000"
+            },
+            success: loginRes => {
+              // 登录成功，保存 token
+              console.log("res",loginRes)
+              const userInfo ={
+                userName:''
+              }
+              userInfo.userName = '用户'+loginRes.data.data.openid.slice(0, 5)
+              wx.setStorageSync('token', 'Bearer '+loginRes.data.data.access_token)
+              wx.setStorageSync('userInfo',userInfo)
+              wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
+              console.log("token",wx.getStorageSync('token'))
+              console.log("clientid",wx.getStorageSync('clientid'))
+              console.log("userInfo",wx.getStorageSync('userInfo'))
+              wx.navigateBack({
+                success:function(){
+                  prevPage.onLoad();
+                }
+              })
+            },
+            fail: err=>{
+              wx.showToast({
+                title:"网络问题，请检查网络或者联系服务人员",
+                icon:"error"
+              })
+            }
+
+          })
+        }
+      }
+    })
+  },
 });

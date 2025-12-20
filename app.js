@@ -21,22 +21,8 @@ App({
 
     // 获取系统信息
     this.getSystemInfo();
-
-    //定时刷新token
-    this.freshSign();
-
     // 不在app.js中检查登录状态，让各页面自己处理
     // 这样可以避免在登录页面被重定向
-  },
-
-  async freshSign(){
-    await wx.cloud.callFunction({
-      name:"onenet",
-      data:{
-        action:"freshSign"
-      }
-    })
-    console.log('启动定时刷新token')
   },
 
   // 初始化云开发
@@ -57,6 +43,33 @@ App({
     } catch (error) {
       console.error('云开发初始化失败:', error);
     }
+  },
+
+  async apiRequest(api, method = 'GET', data = {}){
+    return new Promise((resolve, reject) => {
+      const baseURL="https://ha.musenyu.cn"
+      wx.request({
+        url:baseURL+api,
+        method:method,
+        data:data,
+        header:{
+          'Authorization':wx.getStorageSync("token"),
+          'clientid':wx.getStorageSync("clientid")
+        },
+        success:(res)=>{
+          console.log("调用api成功",baseURL+api)
+          console.log("res1",res)
+          resolve(res.data);
+        },
+        fail:(err)=>{
+          reject(err.msg);
+        },
+        complete:(res)=>{
+          // console.log("url",baseURL+api)
+          // console.log("data",data)
+        }
+      })
+    })
   },
 
 
@@ -101,16 +114,6 @@ App({
   // 隐藏加载提示
   hideLoading() {
     wx.hideLoading();
-  },
-
-  //连接mysql数据库
-  touchMysql(){
-    const mysqlDb = mysql.createConnection({
-      host:'',
-      user:'',
-      password:'',
-      database:''
-    })
   },
 
   // 显示成功提示

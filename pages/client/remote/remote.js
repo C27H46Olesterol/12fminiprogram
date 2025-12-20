@@ -34,6 +34,10 @@ Page({
       swingUpDown: false,
       swingLeftRight: false
     }
+    ,
+    // 定时弹窗相关
+    showTimerModal: false,
+    timerMinutes: 60 // 初始为 60 分钟，最小 60，最大 480，步长 30
   },
 
   /**
@@ -79,25 +83,55 @@ Page({
 
   },
 
-  async timerTest() {
-    var timerTest = new timer({
-      beginTime: '00:00:05',
-      name: "timerTest",
-      complete: function () {
-        wx.showToast({
-          title: '定时响应',
-        })
-        console.log('计时结束')
-        // await wx.cloud.callFunction({
-        //   name:'onenet',
-        //   data:{
-        //     action:'setTimmer'
-        //   }
-        // })
-      }
-    })
-    console.log('计时开始')
-    timerTest.start(this);
+  async timerTests() {
+    // 打开定时弹窗（前端部分）
+    this.setData({
+      showTimerModal: true,
+      timerMinutes: 60 // 每次打开默认 1 小时
+    });
+  },
+
+  // 增减定时（步长 30 分钟），限制在 60 - 480
+  changeTimer(e) {
+    const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
+    let m = this.data.timerMinutes + delta;
+    if (m < 60) m = 60;
+    if (m > 480) m = 480;
+    this.setData({ timerMinutes: m });
+  },
+
+  closeTimerModal() {
+    this.setData({ showTimerModal: false });
+  },
+
+  async confirmTimer() {
+    const minutes = this.data.timerMinutes;
+    // 这里留空供你实现云函数调用：例如 wx.cloud.callFunction({...})
+    // 我目前只做前端处理：关闭弹窗并提示
+    this.setData({ showTimerModal: false });
+    wx.showToast({ title: `已设置定时 ${this.formatTimer(minutes)}`, icon: 'none' });
+
+    // 占位：调用云函数发送定时指令（请替换为你自己的实现）
+    // await wx.cloud.callFunction({
+    //   name: 'your-timer-fn',
+    //   data: { action: 'setTimer', device: this.data.selectedDevice, minutes }
+    // })
+  },
+
+  // 辅助：页面表达式中无法直接调用复杂函数，这是用于 WXML 显示
+  formatTimer(mins) {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (m === 0) return `${h} 小时`;
+    return `${h} 小时 ${m} 分钟`;
+  },
+
+  // 返回基础小时数（1 - 8 小时）字符串
+  formatBaseHours(mins) {
+    let h = Math.ceil((mins || 0) / 60);
+    if (h < 1) h = 1;
+    if (h > 8) h = 8;
+    return `${h} 小时`;
   },
 
   //初始化设备信息 获取用户的所有激活的设备
