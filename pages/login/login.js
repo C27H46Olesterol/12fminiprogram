@@ -118,72 +118,9 @@ Page({
     })
   },
 
-  // 根据用户角色跳转页面
-  navigateByRole(role) {
-    console.log('=== 开始角色跳转 ===');
-    console.log('用户角色:', role);
-    
-    // 检查是否有登录后需要跳转的目标页面
-    // const redirectUrl = wx.getStorageSync('redirectAfterLogin');
-    // const redirectUrl = 'pages/client/index/index';
-    wx.navigateBack();
-    
-    if (redirectUrl) {
-      // 清除重定向标记
-      wx.removeStorageSync('redirectAfterLogin');
-      
-      console.log('检测到登录后跳转目标:', redirectUrl);
-      wx.navigateTo({
-        url: redirectUrl,
-        success: () => {
-          console.log('跳转到目标页面成功:', redirectUrl);
-        },
-        fail: (error) => {
-          console.error('跳转到目标页面失败:', error);
-          // 失败时回退到角色默认页面
-          this.navigateToDefaultPage(role);
-        }
-      });
-      return;
-    }
-    
-    // 没有重定向目标，按角色跳转
-    this.navigateToDefaultPage(role);
-  },
 
-  // 跳转到角色默认页面
-  navigateToDefaultPage(role) {
-    switch (role) {
-      case 'admin':
-        console.log('跳转到超级管理员页面');
-        wx.navigateTo({
-          url: '/pages/admin/user-management/user-management'
-        });
-        break;
-      case 'manager':
-        console.log('跳转到主管页面');
-        wx.switchTab({
-          url: '/pages/client/index/index'
-        });
-        break;
-      case 'worker':
-        console.log('跳转到维修工页面');
-        wx.switchTab({
-          url: '/pages/client/index/index'
-        });
-        break;
-      case 'client':
-      case 'user':
-      default:
-        console.log('跳转到客户页面');
-        wx.switchTab({
-          url: '/pages/client/index/index'
-        });
-        break;
-    }
-    console.log('=== 角色跳转结束 ===');
-  },
 
+  
   // 退出登录
   logout() {
     wx.showModal({
@@ -208,17 +145,6 @@ Page({
     });
   },
 
-  // 手机号输入处理
-  onPhoneInput(e) {
-    this.setData({
-      phone: e.detail.value
-    });
-  },
-
-  // 输入框聚焦事件
-  onInputFocus(e) {
-    // 阻止事件冒泡
-  },
 
   // 手机号登录
   async phoneNumberLogin() {
@@ -310,8 +236,17 @@ Page({
     }
   },
   
-
-  async wxLogin(){
+  
+  //后端连接登陆逻辑
+  async wxLogin(e){
+    const code = e.detail.code;
+    if(!code){
+      wx.showToast({
+        title:"请确认授权登陆",
+        icon:"error"
+      })
+      return
+    }
     console.log("登陆开始");
     wx.login({
       success: res => {
@@ -325,6 +260,7 @@ Page({
               clientId: '2aeeae6eada0ddca866d775707cc5b11',
               grantType: 'xcx',
               xcxCode: res.code,
+              phoneCode:code,
               appid: 'wxa81a2077330256cf',
               tenantId: "000000"
             },

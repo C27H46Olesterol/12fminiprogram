@@ -50,16 +50,17 @@
         <view class="divider-line"></view>
       </view> -->
 
+      <!-- open-type="getPhoneNumber" -->
       <!-- 微信授权获取手机号登录按钮 -->
       <button 
         class="btn btn-block" 
         open-type="getPhoneNumber"
         bindgetphonenumber="wxLogin"
         disabled="{{loading}}"
-        style="background-color: #07C160; color: white;"
+        style="background-color: #07C160; color: rgba(255, 255, 255, 0);"
       >
         <view class="btn-content flex flex-center">
-          <image class="wechat-icon" src="/images/wechat-icon.svg" mode="aspectFit" style="width: 40rpx; height: 40rpx; margin-right: 16rpx; filter: brightness(0) invert(1);"></image>
+          <image class="wechat-icon" src="/images/wx.png" mode="aspectFit" style="width: 40rpx; height: 40rpx; margin-right: 16rpx; filter: brightness(0) invert(1);"></image>
           <text class="btn-text">{{loading ? '登录中...' : '微信授权获取手机号登录'}}</text>
         </view>
       </button>

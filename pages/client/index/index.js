@@ -50,13 +50,22 @@ Page({
     // 定时弹窗相关
     showTimerModal: false,
     timerMinutes: 60, // 初始为 60 分钟
+    // 定时刷新的状态
+    showRefreshNotify: false,
     formattedTimer: '1 小时'
   },
 
   onLoad() {
     console.log('加载页面')
+    console.log("hasUserInfo", this.data.hasUserInfo)
     if (this.data.hasUserInfo) {
       wx.showLoading();
+    }
+    else {
+      console.log('没有信息 开始跳转')
+      wx.navigateTo({
+        url: '/pages/login/login',
+      })
     }
     this.UserInfoStorageCheck();
     this.initPage();
@@ -68,6 +77,14 @@ Page({
       wx.hideLoading();
     }, 1500)
     // this.freshSign();
+    wx.stopPullDownRefresh()
+
+    // 启动定时任务
+    this.resetInactivityTimer();
+  },
+
+  onPullDownRefresh: function () {
+    this.onLoad();
   },
 
   onShow() {
@@ -86,6 +103,16 @@ Page({
     }, 800)
     console.log("client/index加载完毕")
 
+    // 页面显示时重置计时
+    this.resetInactivityTimer();
+  },
+
+  onHide() {
+    this.clearAllTimers();
+  },
+
+  onUnload() {
+    this.clearAllTimers();
   },
 
 
@@ -199,6 +226,8 @@ Page({
           name: item.sn,
           sn: item.sn, // 兼容现有逻辑
           imei: item.imei, // 兼容现有逻辑
+          activationDate: this.formatTime(item.createTime) || '--',
+          warrantyDate: this.formatTime(item.expireTime) || '--',
           image: item.finishImages && item.finishImages.length > 0 ? item.finishImages[0] : '',
           status: 'active'
         }));
@@ -395,16 +424,40 @@ Page({
 
   // 切换下拉菜单显示状态
   toggleDropdown() {
+    this.resetInactivityTimer();
     this.setData({
-      showDropdown: !this.data.showDropdown
+      showDropdown: !this.data.showDropdown,
+      showDeviceModal: false // 互斥显示
     });
   },
 
+  // 关闭所有下拉菜单 (点击外部时触发)
+  closeAllDropdowns() {
+    this.resetInactivityTimer();
+    if (this.data.showDropdown || this.data.showDeviceModal) {
+      this.setData({
+        showDropdown: false,
+        showDeviceModal: false
+      });
+    }
+  },
+
+  // 空操作，仅用于阻止冒泡
+  noOp() { },
+
   onActivateProduct() {
+
     if (!this.data.hasUserInfo) {
       // 未登录，存储目标页面后跳转登录
       wx.setStorageSync('redirectAfterLogin', '/pages/client/activate/activate');
-      wx.navigateTo({ url: '/pages/login/login' });
+      wx.showToast({
+        title: '请先登陆',
+        icon: 'error'
+      })
+      setTimeout(() => {
+        wx.navigateTo({ url: '/pages/login/login' });
+      }, 500)
+
       return;
     }
     wx.navigateTo({ url: '/pages/client/activate/activate' });
@@ -450,6 +503,7 @@ Page({
 
   // 接口测试
   onApiTest() {
+    wx.vibrateShort({ type: 'heavy' });
     this.setData({
       showDropdown: false
     });
@@ -478,17 +532,16 @@ Page({
 
   // 切换设备选择弹窗
   toggleDeviceModal() {
-    // if (!this.data.hasUserInfo) {
-    //   this.onGoLogin();
-    //   return;
-    // }
+    this.resetInactivityTimer();
     this.setData({
-      showDeviceModal: !this.data.showDeviceModal
+      showDeviceModal: !this.data.showDeviceModal,
+      showDropdown: false // 互斥显示
     });
   },
 
   // 选择设备
   onSelectDevice(e) {
+
     const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
     this.setData({
@@ -503,6 +556,7 @@ Page({
     });
     // 切换设备后加载状态
     this.loadDeviceStatus();
+    this.resetInactivityTimer();
   },
 
   // onDeviceChange(e) {
@@ -522,6 +576,7 @@ Page({
   // },
 
   async timerTest() {
+    wx.vibrateShort({ type: 'heavy' });
     // 打开定时弹窗（前端）
     if (!this.checkPower()) {
       this.setData({
@@ -538,6 +593,7 @@ Page({
 
   // 增减定时（步长 30 分钟），限制在 60 - 480
   changeTimer(e) {
+    wx.vibrateShort({ type: 'heavy' });
     const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
     let m = this.data.timerMinutes + delta;
     if (m < 60) m = 60;
@@ -547,13 +603,16 @@ Page({
       timerMinutes: m,
       formattedTimer: this.formatTimer(m)
     });
+    this.resetInactivityTimer();
   },
 
   closeTimerModal() {
+
     this.setData({ showTimerModal: false });
   },
 
   async confirmTimer() {
+
     const minutes = this.data.timerMinutes;
 
     // 格式化为 HH:mm:ss 供 wxTimer 使用
@@ -596,6 +655,7 @@ Page({
       showTimerModal: false
     });
 
+    this.resetInactivityTimer();
     wx.showToast({ title: `已设置定时 ${this.data.formattedTimer}`, icon: 'none' });
   },
 
@@ -696,8 +756,70 @@ Page({
     }
   },
 
+  // --- 自动刷新与不活跃计时逻辑 ---
+
+  // 启动/重置不活跃计时器 (10秒 - 测试用)
+  resetInactivityTimer() {
+    this.setData({ showRefreshNotify: false });
+
+    // 清除旧的计时器
+    if (this.inactivityTimeoutId) {
+      clearTimeout(this.inactivityTimeoutId);
+    }
+
+    // 启动新的不活跃计时器
+    this.inactivityTimeoutId = setTimeout(() => {
+      this.stopAutoRefresh();
+    }, 10 * 1000); // 10秒 (测试用)
+
+    // 如果刷新定时器没启动，则启动它
+    if (!this.refreshIntervalId) {
+      this.startAutoRefresh();
+    }
+  },
+
+  // 开启自动刷新 (每30秒)
+  startAutoRefresh() {
+    if (this.refreshIntervalId) return;
+
+    console.log('开启自动刷新设备状态');
+    this.refreshIntervalId = setInterval(() => {
+      this.loadDeviceStatus();
+    }, 30 * 1000); // 30秒刷新一次
+  },
+
+  // 停止自动刷新并弹出提示
+  stopAutoRefresh() {
+    console.log('超过10秒未操作，停止自动刷新');
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+      this.refreshIntervalId = null;
+    }
+    this.setData({ showRefreshNotify: true });
+  },
+
+  // 清除所有定时器 (用于生命周期注销)
+  clearAllTimers() {
+    if (this.inactivityTimeoutId) {
+      clearTimeout(this.inactivityTimeoutId);
+      this.inactivityTimeoutId = null;
+    }
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+      this.refreshIntervalId = null;
+    }
+  },
+
+  // 点击通知恢复刷新
+  resumeRefresh() {
+    wx.vibrateShort({ type: 'light' });
+    this.resetInactivityTimer();
+  },
+
   // 开关机
   togglePower() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     const isPowerOn = this.data.remoteState.powerOn;
     const newPowerState = !isPowerOn;
 
@@ -737,6 +859,8 @@ Page({
 
   // 增加风速
   increaseWindSpeed() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     let speed = this.data.remoteState.windSpeed;
     if (speed < 5) {
@@ -745,8 +869,8 @@ Page({
         'remoteState.windSpeed': newSpeed
       });
       wx.showToast({
-        title:'风速'+newSpeed+'档',
-        icon:'none'
+        title: '风速' + newSpeed + '档',
+        icon: 'none'
       })
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
@@ -756,6 +880,8 @@ Page({
 
   // 减少风速
   decreaseWindSpeed() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     let speed = this.data.remoteState.windSpeed;
     if (speed > 1) {
@@ -764,8 +890,8 @@ Page({
         'remoteState.windSpeed': newSpeed
       });
       wx.showToast({
-        title:'风速'+newSpeed+'档',
-        icon:'none'
+        title: '风速' + newSpeed + '档',
+        icon: 'none'
       })
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
@@ -775,6 +901,8 @@ Page({
 
   // 增加温度
   increaseTemperature() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     let temp = this.data.remoteState.targetTemperature;
     if (temp < 40) {
@@ -783,8 +911,8 @@ Page({
         'remoteState.targetTemperature': newTemp
       });
       wx.showToast({
-        title:'设置'+newTemp+'°C',
-        icon:'none'
+        title: '设置' + newTemp + '°C',
+        icon: 'none'
       })
       this.bufferCommand('setTemperature', newTemp);
     } else {
@@ -794,6 +922,8 @@ Page({
 
   // 减少温度
   decreaseTemperature() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'light' });
     if (!this.checkPower()) return;
     let temp = this.data.remoteState.targetTemperature;
     if (temp > 5) {
@@ -802,8 +932,8 @@ Page({
         'remoteState.targetTemperature': newTemp
       });
       wx.showToast({
-        title:'设置'+newTemp+'°C',
-        icon:'none'
+        title: '设置' + newTemp + '°C',
+        icon: 'none'
       })
       this.bufferCommand('setTemperature', newTemp);
     } else {
@@ -813,6 +943,8 @@ Page({
 
   // 照明开关
   toggleLighting() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     const newStatus = !this.data.remoteState.lightingOn;
     this.setData({
@@ -824,6 +956,8 @@ Page({
 
   // 强劲模式
   setStrongMode() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     if (this.data.remoteState.mode === 'strong') {
       this.setAutoMode();
@@ -839,6 +973,8 @@ Page({
 
   // 自动模式
   setAutoMode() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     this.setData({
       'remoteState.mode': 'auto',
@@ -850,6 +986,8 @@ Page({
 
   // 节能模式
   setEcoMode() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     if (this.data.remoteState.mode === 'eco') {
       this.setAutoMode();
@@ -865,6 +1003,8 @@ Page({
 
   // 制热模式
   toggleHeating() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     if (this.data.remoteState.mode === 'heat') {
       this.setAutoMode();
@@ -879,6 +1019,8 @@ Page({
 
   // 上下摆风开关
   toggleSwingUpDown() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     const newStatus = !this.data.remoteState.swingUpDown;
     this.setData({
@@ -890,6 +1032,8 @@ Page({
 
   // 左右摆风开关
   toggleSwingLeftRight() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'heavy' });
     if (!this.checkPower()) return;
     const newStatus = !this.data.remoteState.swingLeftRight;
     this.setData({

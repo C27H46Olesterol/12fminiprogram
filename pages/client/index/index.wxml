@@ -1,5 +1,11 @@
 <!--pages/client/index/index.wxml-->
-<view class="container client-home">
+<view class="container client-home" bindtap="closeAllDropdowns">
+  <!-- 刷新停止提示 -->
+  <view class="refresh-notify {{showRefreshNotify ? 'show' : ''}}" catchtap="resumeRefresh">
+    <text>系统已停止自动刷新以节省电量，点击恢复</text>
+    <view class="resume-btn">恢复</view>
+  </view>
+
   <!-- 远程遥控界面 -->
   <view class="section remote-control-section">
     
@@ -14,9 +20,9 @@
       </view>
 
       <!-- 2. 设备选择 -->
-      <view class="device-selector-container">
-        <view class="device-selector" bindtap="toggleDeviceModal">
-          <view class="device-picker-wrap">
+      <view class="device-selector-container" catchtap="noOp">
+        <view class="device-selector" catchtap="toggleDeviceModal">
+          <view class="device-picker-wrap {{deviceStatus.online ? 'online' : 'offline'}}">
             <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
             <text class="picker-arrow-large">▼</text>
           </view>
@@ -40,18 +46,38 @@
             </view>
           </block>
           <block wx:else>
-            <view class="dropdown-grid">
+            <view class="device-list-container">
               <view 
-                class="dropdown-item device-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
+                class="device-list-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
                 wx:for="{{deviceList}}" 
                 wx:key="sn" 
                 bindtap="onSelectDevice" 
                 data-index="{{index}}"
               >
-                <image class="device-img-small" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
-                <view class="device-info-small">
-                  <text class="device-sn-small">{{item.name || item.sn}}</text>
-                  <text class="device-status-dot {{item.online ? 'online' : 'offline'}}"></text>
+                <!-- 1. 指示灯 -->
+                <view class="device-list-indicator {{item.online ? 'online' : 'offline'}}"></view>
+
+                <!-- 2. 图片 -->
+                <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
+
+                <!-- 3. 信息 -->
+                <view class="device-list-info">
+                  <view class="info-row">
+                    <text class="info-label">设备名称：</text>
+                    <text class="info-value">{{item.name || '未命名'}}</text>
+                  </view>
+                  <view class="info-row">
+                    <text class="info-label">设备型号：</text>
+                    <text class="info-value">{{item.sn}}</text>
+                  </view>
+                  <view class="info-row">
+                    <text class="info-label">激活日期：</text>
+                    <text class="info-value">{{item.activationDate}}</text>
+                  </view>
+                  <view class="info-row">
+                    <text class="info-label">过保日期：</text>
+                    <text class="info-value">{{item.warrantyDate}}</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -68,7 +94,7 @@
       </view>
       
       <!-- 4. 登陆菜单 -->
-      <view class="header-btn-item menu-trigger" bindtap="toggleDropdown">
+      <view class="header-btn-item menu-trigger" catchtap="toggleDropdown">
         <view class="icon-btn">
           <image class="btn-icon-img" src="/images/icons/menu.png" mode="aspectFit"></image>
         </view>

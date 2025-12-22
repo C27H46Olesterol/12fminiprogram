@@ -75,10 +75,10 @@
 
 /* ===== 登录表单 ===== */
 .login-form {
-  background: #FFFFFF;
+  background: transparent;
   border-radius: 24rpx;
   padding: 64rpx 48rpx;
-  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 /* ===== 手机号输入区域 ===== */
