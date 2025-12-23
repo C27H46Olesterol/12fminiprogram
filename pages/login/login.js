@@ -8,7 +8,6 @@ Page({
 
   onLoad() {
     console.log('登录页面加载');
-    
     // 延迟检查登录状态，确保页面先渲染
     setTimeout(() => {
       this.checkLoginStatus();
@@ -20,25 +19,12 @@ Page({
     //开始登陆
     const userInfo = wx.getStorageSync('userInfo');
     const token = wx.getStorageSync('token');
-    
     if (userInfo && token) {
       this.setData({ userInfo });
       console.log('用户已登录:', userInfo);
-      
       const app = getApp();
       app.globalData.userInfo = userInfo;
-      // app.globalData.userRole = userInfo.role;
-      // app.globalData.isAdmin = userInfo.role === 'admin';
-      // app.globalData.isManager = userInfo.role === 'manager';
-      // app.globalData.isWorker = userInfo.role === 'worker';
-      // app.globalData.isClient = userInfo.role === 'client';
-
-      // this.navigateByRole(userInfo.role);
-      wx.navigateBack({
-        success:function(){
-          prevPage.onLoad();
-        }
-      });
+      wx.navigateBack();
     }
   },
 
@@ -236,9 +222,9 @@ Page({
     }
   },
   
-  
   //后端连接登陆逻辑
   async wxLogin(e){
+    //生产
     const code = e.detail.code;
     if(!code){
       wx.showToast({
@@ -271,17 +257,14 @@ Page({
                 userName:''
               }
               userInfo.userName = '用户'+loginRes.data.data.openid.slice(0, 5)
+              wx.setStorageSync('hasUserInfo',true)
               wx.setStorageSync('token', 'Bearer '+loginRes.data.data.access_token)
               wx.setStorageSync('userInfo',userInfo)
               wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
               console.log("token",wx.getStorageSync('token'))
               console.log("clientid",wx.getStorageSync('clientid'))
               console.log("userInfo",wx.getStorageSync('userInfo'))
-              wx.navigateBack({
-                success:function(){
-                  prevPage.onLoad();
-                }
-              })
+              wx.navigateBack()
             },
             fail: err=>{
               wx.showToast({
@@ -294,5 +277,18 @@ Page({
         }
       }
     })
+  },
+
+  async testLogin(){
+    const userInfo={
+      userName:'testUser',
+      userPhone:'123456789',
+      openid:'Ifaeg^&*dfaw',
+    }
+    wx.setStorageSync("userInfo",userInfo);
+    wx.setStorageSync('hasUserInfo',true)
+    wx.setStorageSync('token', 'test_token')
+    wx.setStorageSync('clientid', 'test_clientid')
+    wx.navigateBack()
   },
 });

@@ -54,8 +54,22 @@
                 bindtap="onSelectDevice" 
                 data-index="{{index}}"
               >
-                <!-- 1. 指示灯 -->
-                <view class="device-list-indicator {{item.online ? 'online' : 'offline'}}"></view>
+                <!-- 1. 连接方式指示器 -->
+                <view class="device-connection-indicator">
+                  <block wx:if="{{item.connectionType === 'bluetooth'}}">
+                    <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
+                  </block>
+                  <block wx:else>
+                    <!-- 4G信号条 -->
+                    <view class="signal-bars">
+                      <view class="signal-bar {{item.signalStrength >= 1 ? 'active' : ''}}"></view>
+                      <view class="signal-bar {{item.signalStrength >= 2 ? 'active' : ''}}"></view>
+                      <view class="signal-bar {{item.signalStrength >= 3 ? 'active' : ''}}"></view>
+                      <view class="signal-bar {{item.signalStrength >= 4 ? 'active' : ''}}"></view>
+                      <view class="signal-bar {{item.signalStrength >= 5 ? 'active' : ''}}"></view>
+                    </view>
+                  </block>
+                </view>
 
                 <!-- 2. 图片 -->
                 <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -147,7 +161,22 @@
 
       <!-- 中间：核心显示 (温度 & 模式) -->
       <view class="display-main">
-        <view class="display-item"></view> <!-- 左侧占位 -->
+        <!-- 左侧：连接方式指示器 -->
+        <view class="display-item connection-status">
+          <block wx:if="{{selectedDevice.connectionType === 'bluetooth'}}">
+            <image class="display-connection-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
+          </block>
+          <block wx:else>
+            <!-- 4G信号条 -->
+            <view class="display-signal-bars">
+              <view class="display-signal-bar {{selectedDevice.signalStrength >= 1 ? 'active' : ''}}"></view>
+              <view class="display-signal-bar {{selectedDevice.signalStrength >= 2 ? 'active' : ''}}"></view>
+              <view class="display-signal-bar {{selectedDevice.signalStrength >= 3 ? 'active' : ''}}"></view>
+              <view class="display-signal-bar {{selectedDevice.signalStrength >= 4 ? 'active' : ''}}"></view>
+              <view class="display-signal-bar {{selectedDevice.signalStrength >= 5 ? 'active' : ''}}"></view>
+            </view>
+          </block>
+        </view>
         <view class="display-item temp-display">
           <text class="temp-value">{{remoteState.targetTemperature}}</text>
           <text class="temp-unit">°C</text>
@@ -314,6 +343,53 @@
     </view>
   </view>
 
+  </view>
+
+  <!-- 蓝牙搜索弹窗 -->
+  <view wx:if="{{showBluetoothModal}}" class="bluetooth-modal-overlay">
+    <view class="bluetooth-modal">
+      <view class="modal-header">
+        <text class="modal-title">发现蓝牙设备</text>
+        <view class="close-btn" bindtap="closeBluetoothModal">×</view>
+      </view>
+
+      <view class="search-status">
+        <block wx:if="{{isSearchingBluetooth}}">
+          <view class="searching-spinner"></view>
+          <text>正在搜索中... {{bluetoothSearchTimer}}s</text>
+        </block>
+        <block wx:else>
+          <text>搜索结束</text>
+        </block>
+      </view>
+
+      <scroll-view scroll-y class="bluetooth-list">
+        <block wx:if="{{bluetoothDevices.length > 0}}">
+          <view 
+            class="bluetooth-item" 
+            wx:for="{{bluetoothDevices}}" 
+            wx:key="deviceId" 
+            bindtap="connectToBluetooth" 
+            data-id="{{item.deviceId}}"
+          >
+            <image class="bt-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
+            <view class="bt-info">
+              <text class="bt-name">{{item.name || item.localName || '未知设备'}}</text>
+              <text class="bt-id">{{item.deviceId}}</text>
+            </view>
+            <!-- <text class="bt-rssi">信号: {{item.RSSI}}</text> -->
+          </view>
+        </block>
+        <view wx:elif="{{!isSearchingBluetooth}}" class="no-bt-devices">
+          <text>附近未发现可用蓝牙设备</text>
+        </view>
+      </scroll-view>
+
+      <view class="modal-footer">
+        <button class="bt-action-btn refresh" bindtap="manualRefreshBluetooth">重新搜索</button>
+        <button class="bt-action-btn close" bindtap="closeBluetoothModal">关闭</button>
+      </view>
+    </view>
   </view>
 </view>
 

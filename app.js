@@ -17,7 +17,7 @@ App({
     console.log('App启动');
 
     // 初始化云开发
-    this.initCloud();
+    // this.initCloud();
 
     // 获取系统信息
     this.getSystemInfo();
@@ -57,12 +57,23 @@ App({
           'clientid':wx.getStorageSync("clientid")
         },
         success:(res)=>{
-          console.log("调用api成功",baseURL+api)
-          console.log("res1",res)
-          resolve(res.data);
+          if(res.statusCode === 200){
+            console.log("调用api成功",baseURL+api)
+            console.log("res1",res)
+            resolve(res.data);
+          }
+          else{
+            resolve({
+              errMsg:'接口调用失败',
+              statusCode:res.statusCode
+            })
+          }
         },
         fail:(err)=>{
-          reject(err.msg);
+          reject({
+            errMsg:err.msg,
+            statusCode:err.statusCode
+          });
         },
         complete:(res)=>{
           // console.log("url",baseURL+api)

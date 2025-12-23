@@ -800,3 +800,265 @@
   width: 0; /* 关键：配合 flex:1 必须设置具体的或0的width才能触发ellipsis */
 }
 
+/* 连接方式指示器 */
+.device-connection-indicator {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.connection-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.bluetooth-icon {
+  filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(187deg) brightness(119%) contrast(119%);
+}
+
+/* 4G信号条 */
+.signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rpx;
+  height: 32rpx;
+}
+
+.signal-bar {
+  width: 4rpx;
+  background-color: #d9d9d9;
+  border-radius: 2rpx;
+  transition: background-color 0.3s;
+}
+
+.signal-bar:nth-child(1) {
+  height: 6rpx;
+}
+
+.signal-bar:nth-child(2) {
+  height: 12rpx;
+}
+
+.signal-bar:nth-child(3) {
+  height: 18rpx;
+}
+
+.signal-bar:nth-child(4) {
+  height: 24rpx;
+}
+
+.signal-bar:nth-child(5) {
+  height: 30rpx;
+}
+
+.signal-bar.active {
+  background-color: #52c41a;
+}
+
+/* 显示屏中的连接状态 */
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.display-connection-icon {
+  width: 48rpx;
+  height: 48rpx;
+  filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(187deg) brightness(119%) contrast(119%);
+}
+
+.display-signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3rpx;
+  height: 48rpx;
+}
+
+.display-signal-bar {
+  width: 6rpx;
+  background-color: #e0e0e0;
+  border-radius: 3rpx;
+  transition: background-color 0.3s;
+}
+
+.display-signal-bar:nth-child(1) {
+  height: 10rpx;
+}
+
+.display-signal-bar:nth-child(2) {
+  height: 20rpx;
+}
+
+.display-signal-bar:nth-child(3) {
+  height: 30rpx;
+}
+
+.display-signal-bar:nth-child(4) {
+  height: 40rpx;
+}
+
+.display-signal-bar:nth-child(5) {
+  height: 48rpx;
+}
+
+.display-signal-bar.active {
+  background-color: #1890ff;
+}
+
+/* 蓝牙弹窗样式 */
+.bluetooth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  backdrop-filter: blur(4rpx);
+}
+
+.bluetooth-modal {
+  width: 90%;
+  max-width: 650rpx;
+  background: #fff;
+  border-radius: 32rpx;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  padding: 30rpx 40rpx;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #eee;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 40rpx;
+  color: #999;
+  padding: 10rpx;
+}
+
+.search-status {
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.searching-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 4rpx solid #1890ff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.bluetooth-list {
+  max-height: 500rpx;
+  padding: 0 20rpx;
+}
+
+.bluetooth-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  transition: background 0.2s;
+}
+
+.bluetooth-item:active {
+  background: #f0f7ff;
+}
+
+.bt-icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-right: 20rpx;
+}
+
+.bt-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bt-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.bt-id {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.bt-rssi {
+  font-size: 22rpx;
+  color: #52c41a;
+}
+
+.no-bt-devices {
+  padding: 60rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #999;
+}
+
+.modal-footer {
+  padding: 30rpx;
+  display: flex;
+  gap: 20rpx;
+  border-top: 1rpx solid #eee;
+}
+
+.bt-action-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin: 0;
+}
+
+.bt-action-btn.refresh {
+  background: #1890ff;
+  color: #fff;
+}
+
+.bt-action-btn.close {
+  background: #f5f5f5;
+  color: #333;
+}
+
