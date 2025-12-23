@@ -92,6 +92,11 @@
                     <text class="info-label">过保日期：</text>
                     <text class="info-value">{{item.warrantyDate}}</text>
                   </view>
+                  
+                  <!-- 4. 取消配对按钮 -->
+                  <view class="device-action-btn" catchtap="onUnpairDevice" data-index="{{index}}" data-item="{{item}}">
+                    <text>取消配对</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -376,6 +381,7 @@
             <view class="bt-info">
               <text class="bt-name">{{item.name || item.localName || '未知设备'}}</text>
               <text class="bt-id">{{item.deviceId}}</text>
+              <text class="bt-id">{{item.advertisServiceUUIDs}}</text>
             </view>
             <!-- <text class="bt-rssi">信号: {{item.RSSI}}</text> -->
           </view>

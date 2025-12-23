@@ -99,7 +99,9 @@ Page({
     this.UserInfoStorageCheck()
     this.loadUserData(); // 加载角色专属数据
     console.log("client/index加载完毕")
-
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 1500)
     // 页面显示时重置计时
     this.resetInactivityTimer();
   },
@@ -392,7 +394,6 @@ Page({
 
   // 选择设备
   onSelectDevice(e) {
-
     const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
     this.setData({
@@ -408,6 +409,116 @@ Page({
     // 切换设备后加载状态
     this.loadDeviceStatus();
     this.resetInactivityTimer();
+  },
+
+  // 取消配对/删除设备
+  onUnpairDevice(e) {
+    const index = e.currentTarget.dataset.index;
+    const device = e.currentTarget.dataset.item;
+    
+    wx.showModal({
+      title: '提示',
+      content: `确定要${device.connectionType === 'bluetooth' ? '断开' : '移除'}设备 ${device.name || device.sn} 吗？`,
+      success: async (res) => {
+        if (res.confirm) {
+          if (device.connectionType === 'bluetooth') {
+             // 蓝牙设备断开连接
+             wx.closeBLEConnection({
+               deviceId: device.deviceId,
+               success: (res) => {
+                 console.log("断开蓝牙连接成功", res);
+               },
+               fail: (err) => {
+                  console.error("断开蓝牙连接失败", err);
+               }
+             });
+             this.removeDeviceFromList(index);
+             wx.closeBluetoothAdapter()
+             wx.showToast({ title: '已断开连接', icon: 'none' });
+          } else {
+             // 4G设备，尝试调用解绑接口
+             try {
+                // 如果是远程设备，通常需要调用解绑接口
+                // 假设存在 /pro/banding/unbind，如果不存在则仅本地移除
+                const res = await app.apiRequest('/pro/banding/unbind', 'POST', { sn: device.sn });
+                if (res && res.code == 200) {
+                    this.removeDeviceFromList(index);
+                    wx.showToast({ title: '解绑成功', icon: 'success' });
+                } else {
+                    // 如果API调用失败（或者接口不存在返回404等），询问用户是否强制移除本地记录
+                     wx.showModal({
+                       title: '解绑失败',
+                       content: res.msg || '无法从服务器解绑，是否仅在本地移除？',
+                       success: (confirmRes) => {
+                         if (confirmRes.confirm) {
+                           this.removeDeviceFromList(index);
+                         }
+                       }
+                     });
+                }
+             } catch (error) {
+                console.error('解绑失败', error);
+                // 异常情况下提示本地移除
+                this.removeDeviceFromList(index);
+             }
+          }
+        }
+      }
+    });
+  },
+
+  removeDeviceFromList(index) {
+    let deviceList = this.data.deviceList;
+    if (!deviceList || deviceList.length <= index) return;
+    
+    deviceList.splice(index, 1);
+    
+    // 如果移除的是当前选中的设备，重置选中状态
+    let selectedDeviceIndex = this.data.selectedDeviceIndex;
+    let selectedDevice = this.data.selectedDevice;
+    
+    if (selectedDeviceIndex === index) {
+      if (deviceList.length > 0) {
+        selectedDeviceIndex = 0;
+        selectedDevice = deviceList[0];
+        wx.setStorageSync('selectedDeviceImei', selectedDevice.imei);
+      } else {
+        selectedDeviceIndex = -1;
+        selectedDevice = null;
+        wx.removeStorageSync('selectedDeviceImei');
+      }
+    } else if (selectedDeviceIndex > index) {
+      selectedDeviceIndex--; // 前面的被删了，索引减1
+    }
+    
+    this.setData({
+      deviceList,
+      selectedDeviceIndex,
+      selectedDevice
+    });
+    
+    // 如果列表为空，加载状态
+    if (deviceList.length === 0) {
+       this.setData({
+         deviceStatus: {
+            online: false,
+            temperature: '--',
+            humidity: '--',
+            voltage: '--',
+            runtime: 0,
+            outletTemp: '--',
+            inletTemp: '--',
+            signalStrength: 0,
+            faultCode: ''
+         },
+         remoteState: {
+           powerOn: false
+         }
+       });
+    } else if (selectedDeviceIndex !== -1) {
+       // 重新加载新选中设备的状态
+       this.loadDeviceStatus();
+    }
   },
 
   // onDeviceChange(e) {
@@ -1026,18 +1137,37 @@ Page({
     }, 1000);
   },
 
+
+
   startSearch() {
+    function filterFunc(d) {
+      if ((d.name || d.localName) && d.name !== '未知设备') {
+        if (d.advertisServiceUUIDs && d.advertisServiceUUIDs.length > 0) {
+          // 使用some或者for循环来正确返回true
+          for (let i = 0; i < d.advertisServiceUUIDs.length; i++) {
+            const uuid = d.advertisServiceUUIDs[i];
+            console.log("uuid:", uuid.slice(0, 8));
+            if (uuid.slice(0, 8) === "0000FFE0" || uuid.slice(0, 8) === "0000FFE7") {
+              console.log("注册空调蓝牙设备");
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
     wx.startBluetoothDevicesDiscovery({
       allowDuplicatesKey: false,
       success: (res) => {
         console.log('开始搜索蓝牙设备');
         // 监听发现新设备
         wx.onBluetoothDeviceFound((res) => {
-          const newDevices = res.devices.filter(d => (d.name || d.localName) && d.name !== '未知设备');
+          const newDevices = res.devices.filter(filterFunc);
           if (newDevices.length > 0) {
             let list = this.data.bluetoothDevices;
             newDevices.forEach(device => {
               if (!list.find(d => d.deviceId === device.deviceId)) {
+                console.log("添加设备")
                 list.push(device);
               }
             });
@@ -1158,26 +1288,6 @@ Page({
     });
   },
 
-  madeCommand() {
-    const buff = new ArrayBuffer(10)
-    const dataView = new DataView(buffer);
-    const remoteState = this.data.remoteState;
-    //帧头固定
-    dataView.setUint8(0, 0xAA);
-    dataView.setUint8(1, 0x39);
-    dataView.setUint8(2, 0x02);
-    let data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-    const finalCommand = wx.getStorageSync('finalCommand', finalCommand);
-    this.setPowerState(finalCommand),
-      this.setTemp(finalCommand),
-      this.setWindSpeed(finalCommand),
-      this.setModel(finalCommand),
-      this.setLight(finalCommand),
-      this.setMoodLight(finalCommand),
-      this.setIonizer(finalCommand),
-      this.setSwing(finalCommand),
-      this.setTimer(finalCommand)
-  },
 
   // ==================== 蓝牙通信完整实现 ====================
 // 基于绿色图协议（集控中心发送到显示屏）
