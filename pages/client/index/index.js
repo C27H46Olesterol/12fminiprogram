@@ -74,9 +74,6 @@ Page({
   },
 
   onLoad() {
-
-    // this.UserInfoStorageCheck()  //登陆状态查询
-
     //关闭加载弹窗
     setTimeout(() => {
       wx.hideLoading();
@@ -169,6 +166,8 @@ Page({
         myProducts: myProductsList
       })
 
+      wx.setStorageSync('myProductsList', myProductsList)
+
       // 更新设备列表 (用于下拉菜单和遥控)
       if (myProductsList && myProductsList.length > 0) {
         const savedImei = wx.getStorageSync('selectedDeviceImei');
@@ -209,7 +208,11 @@ Page({
     const userInfo = this.data.userInfo;
     try {
       const result = await app.apiRequest('/pro/banding/my', 'GET');
+      if(result.code === 401){
+        //无感登陆
+      }
       console.log("返回数据", result);
+
 
       // 检查调用是否成功
       if (result && result.data) {
@@ -377,11 +380,6 @@ Page({
   },
 
   // --- Remote Control Methods (Moved from remote.js) ---
-  async initDeviceSelection() {
-    const userInfo = this.data.userInfo
-    const savedImei = wx.getStorageSync('selectedDeviceImei');
-    await this.getDeviceInfo(userInfo, savedImei);
-  },
 
   // 切换设备选择弹窗
   toggleDeviceModal() {
@@ -467,6 +465,7 @@ Page({
     });
   },
 
+  // 移除设备
   removeDeviceFromList(index) {
     let deviceList = this.data.deviceList;
     if (!deviceList || deviceList.length <= index) return;
@@ -520,22 +519,6 @@ Page({
        this.loadDeviceStatus();
     }
   },
-
-  // onDeviceChange(e) {
-  //   const index = e.detail.value;
-  //   const device = this.data.deviceList[index];
-  //   this.setData({
-  //     selectedDeviceIndex: index,
-  //     selectedDevice: device
-  //   });
-  //   wx.setStorageSync('selectedDeviceImei', device.imei);
-  //   wx.showToast({
-  //     title: `已切换至 ${device.sn || '新设备'}`,
-  //     icon: 'none'
-  //   });
-  //   // 切换设备后加载状态
-  //   this.loadDeviceStatus();
-  // },
 
   async timerTest() {
     wx.vibrateShort({ type: 'heavy' });
@@ -634,54 +617,6 @@ Page({
     if (h < 1) h = 1;
     if (h > 8) h = 8;
     return `${h} 小时`;
-  },
-
-  //初始化设备信息 获取用户的所有激活的设备
-  async getDeviceInfo(userInfo, savedImei) {
-    try {
-      wx.showLoading({ title: '加载设备中...' });
-      if (!userInfo) {
-        wx.hideLoading();
-        return;
-      }
-      const userId = userInfo.userId;
-      const phone = userInfo.phone;
-
-      const res = await wx.cloud.callFunction({
-        name: 'onenet',
-        data: {
-          action: "getActiveDeviceList",
-          userId: userId,
-          phone: phone
-        },
-      });
-
-      if (res.result && res.result.data) {
-        const deviceList = res.result.data;
-        let selectedIndex = -1;
-        console.log("deviceList:", deviceList)
-        if (savedImei) {
-          selectedIndex = deviceList.findIndex(d => d.imei === savedImei);
-        }
-
-        // 如果没找到之前的设备，默认选第一个
-        if (selectedIndex === -1 && deviceList.length > 0) {
-          selectedIndex = 0;
-          wx.setStorageSync('selectedDeviceImei', deviceList[0].imei);
-        }
-
-        this.setData({
-          deviceList: deviceList,
-          selectedDeviceIndex: selectedIndex,
-          selectedDevice: selectedIndex !== -1 ? deviceList[selectedIndex] : null
-        });
-      }
-    } catch (error) {
-      console.error("获取设备列表失败：", error);
-      wx.showToast({ title: '获取设备失败', icon: 'none' });
-    } finally {
-      wx.hideLoading();
-    }
   },
 
   // 加载设备状态
@@ -829,7 +764,7 @@ Page({
     }
 
     // 使用 bufferCommand 发送指令，key为 setPower，value为目标状态(true/false)
-    // this.bufferCommand('setPower', newPowerState);
+    this.bufferCommand('setPower', newPowerState);
   },
 
   // 增加风速
@@ -1044,7 +979,7 @@ Page({
     this.commandTimers[action] = setTimeout(() => {
       this.sendControlCommand(action, value);
       delete this.commandTimers[action];
-    }, 1000); // 1秒内的连续操作只发送最后一次
+    }, 500); // 1秒内的连续操作只发送最后一次
   },
 
   // 发送控制指令
@@ -1074,12 +1009,6 @@ Page({
         console.log('[Bluetooth] 尝试通过蓝牙发送指令:', finalData);
         this.sendBluetoothCommand(finalData);
       }
-
-      const res = await wx.cloud.callFunction({
-        name: 'onenet',
-        data: finalData
-      });
-      console.log('指令发送结果:', res);
     } catch (err) {
       console.error('指令发送失败:', err);
     }
@@ -1572,11 +1501,11 @@ sendBluetoothCommand(finalData) {
   if (!this.data.isBluetoothConnected) return;
 
   // 根据协议构建10字节的数据包
-  // 格式: [帧头, 功能码, 数据1, 数据2, 数据3, 数据4, 数据5, 数据6, 数据7, 校验位]
+  // 格式: [帧头, 功能码, 指令类型, 数据1, 数据2, 数据3, 数据4, 数据5, 数据6, 数据7, 保留位]
   const buffer = new ArrayBuffer(10);
   const dataView = new DataView(buffer);
 
-  // 帧头固定为 0xAA, 功能码 0x39, 数据长度 0x02
+  // 帧头固定为 0xAA, 功能码 0x39, 指令类型 0x02 (发送指令)
   dataView.setUint8(0, 0xAA);
   dataView.setUint8(1, 0x39);
   dataView.setUint8(2, 0x02);

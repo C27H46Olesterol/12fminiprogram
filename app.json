@@ -2,13 +2,7 @@
   "pages": [
     "pages/client/index/index",
     "pages/client/remote/remote",
-    "pages/login/login", 
-    "pages/client/feedback/feedback",
-    "pages/client/progress/progress",
-    "pages/client/feedback-success/feedback-success",
-    "pages/processing-info/processing-info",
-    "pages/client/activate/activate",
-    "pages/client/product-detail/product-detail"
+    "pages/login/login"
   ],
   "window": {
     "backgroundTextStyle": "light",

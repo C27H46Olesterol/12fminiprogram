@@ -44,7 +44,13 @@ App({
       console.error('云开发初始化失败:', error);
     }
   },
+  
+  //无感登陆
+  async moodLogin(){
+    
+  },
 
+  //手机号授权登陆
   async apiRequest(api, method = 'GET', data = {}){
     return new Promise((resolve, reject) => {
       const baseURL="https://ha.musenyu.cn"
@@ -83,7 +89,6 @@ App({
     })
   },
 
-
   // 获取系统信息
   getSystemInfo() {
     try {
@@ -114,85 +119,6 @@ App({
     }
   },
 
-  // 显示加载提示
-  showLoading(title = '加载中...') {
-    wx.showLoading({
-      title: title,
-      mask: true
-    });
-  },
-
-  // 隐藏加载提示
-  hideLoading() {
-    wx.hideLoading();
-  },
-
-  // 显示成功提示
-  showSuccess(title = '操作成功') {
-    wx.showToast({
-      title: title,
-      icon: 'success',
-      duration: 2000
-    });
-  },
-
-  // 显示错误提示
-  showError(title = '操作失败') {
-    wx.showToast({
-      title: title,
-      icon: 'none',
-      duration: 2000
-    });
-  },
-
-  // 网络请求封装 - 使用云函数API路由
-  request(options) {
-    return new Promise((resolve, reject) => {
-      console.log('发起云函数API请求:', {
-        url: options.url,
-        method: options.method || 'GET',
-        data: options.data || {}
-      });
-
-      wx.cloud.callFunction({
-        name: 'api',
-        data: {
-          action: options.action || 'getUserList',
-          phoneNumber: options.phoneNumber,
-          verifyCode: options.verifyCode,
-          data: options.data || {},
-          userInfo: this.globalData.userInfo
-        },
-        success: (res) => {
-          console.log('云函数API请求成功:', res);
-
-          if (res.result && res.result.success) {
-            resolve(res.result);
-          } else {
-            console.error('API返回错误:', res.result);
-            reject(res.result || { message: 'API请求失败' });
-          }
-        },
-        fail: (err) => {
-          console.error('云函数API请求失败:', err);
-
-          // 根据错误类型提供更详细的错误信息
-          let errorMessage = 'API请求失败';
-          if (err.errMsg && err.errMsg.includes('timeout')) {
-            errorMessage = '请求超时，请检查网络连接';
-          } else if (err.errMsg && err.errMsg.includes('fail')) {
-            errorMessage = '网络连接失败，请检查服务器状态';
-          }
-
-          reject({
-            ...err,
-            message: errorMessage
-          });
-        }
-      });
-    });
-  },
-
   // 退出登录
   logout() {
     // 清除全局数据
@@ -212,14 +138,7 @@ App({
       duration: 1500
     });
     console.log("用户已退出")
-
-    // 跳转到首页或登录页
-    // setTimeout(() => {
-    //   wx.reLaunch({
-    //     url: '/pages/client/index/index'
-    //   });
-    // }, 1500);
-
+    
     setTimeout(() => {
         wx.navigateBack();
     }, 1500);
