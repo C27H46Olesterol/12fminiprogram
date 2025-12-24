@@ -3,12 +3,24 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 48px;
-  background: white;
-  display: flex;
+  height: 100rpx;
   padding-bottom: env(safe-area-inset-bottom);
-  z-index: 9999;
-  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+  
+  /* 关键：毛玻璃效果 */
+  background-color: rgba(255, 255, 255, 0.95); /* 提高不透明度，防止凸起部分穿帮 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  
+  /* 边框和阴影 */
+  border-top: 1rpx solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2rpx 20rpx rgba(0, 0, 0, 0.08);
+  
+  z-index: 999;
+  overflow: visible; /* 允许中间按钮凸出 */
 }
 
 .tab-bar-border {
@@ -22,20 +34,52 @@
 }
 
 .tab-bar-item {
-  flex: 1;
-  text-align: center;
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  position: relative;
 }
 
 .cover-image {
-  width: 27px;
-  height: 27px;
-  margin-bottom: 2px;
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 4rpx;
 }
 
 .tab-bar-item view {
   font-size: 10px;
+}
+
+/* 中间凸起按钮样式 */
+.center-item {
+  position: relative;
+  z-index: 1001;
+}
+
+.center-circle-wrap {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  position: absolute;
+  top: -40rpx; /* 向上凸出 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 -4rpx 10rpx rgba(0,0,0,0.1); /* 顶部阴影 */
+  border: 1rpx solid rgba(0, 0, 0, 0.05);
+}
+
+.center-image {
+  width: 64rpx; /* 放大图标 */
+  height: 64rpx;
+}
+
+.center-text {
+  margin-top: 70rpx; /* 将文字推到底部 */
+  font-size: 10px;
+  line-height: 1;
 }

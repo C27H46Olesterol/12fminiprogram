@@ -1,6 +1,41 @@
 <view class="container">
-  <view class="user-info">
-    <image class="avatar" src="/images/avatar.png" mode="aspectFill"></image>
-    <text class="nickname">微信用户</text>
+  <!-- 头部用户信息 -->
+  <view class="user-header">
+    <view class="user-info-row">
+      <image class="avatar" src="/images/icons/user.png" mode="aspectFill"></image>
+      <view class="info-col">
+        <text class="nickname">微信用户</text>
+        <!-- <text class="user-desc">微信号：wx_user</text> -->
+      </view>
+    </view>
+    <view class="arrow"></view>
+  </view>
+
+  <!-- 功能菜单组 -->
+  <view class="menu-group">
+    <view class="menu-item" hover-class="menu-item-hover">
+      <image class="menu-icon" src="/images/icons/bluetooth.png"></image>
+      <text class="menu-text">我的设备</text>
+      <view class="arrow"></view>
+    </view>
+    <view class="menu-item" hover-class="menu-item-hover">
+      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <text class="menu-text">安装记录</text>
+      <view class="arrow"></view>
+    </view>
+    <view class="menu-item" hover-class="menu-item-hover">
+      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <text class="menu-text">维修记录</text>
+      <view class="arrow"></view>
+    </view>
+  </view>
+
+  <!-- 设置/退出组 -->
+  <view class="menu-group">
+    <view class="menu-item" hover-class="menu-item-hover" bindtap="handleLogout">
+      <image class="menu-icon" src="/images/icons/power.png"></image>
+      <text class="menu-text">退出登录</text>
+      <view class="arrow"></view>
+    </view>
   </view>
 </view>

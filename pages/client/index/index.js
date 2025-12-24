@@ -98,13 +98,16 @@ Page({
   },
 
   onShow() {
+
     if (typeof this.getTabBar === 'function' &&
-      this.getTabBar()) {
+        this.getTabBar()) {
       this.getTabBar().setData({
-        selected: 0
+        selected: 1
       })
     }
+    
     console.log("显示client/index")
+    console.log()
     
     this.loadUserData(); // 加载角色专属数据
     console.log("client/index加载完毕")
@@ -167,7 +170,6 @@ Page({
               icon:'none'
             },2500)
           }
-      
           if (res.confirm) {
             this.onGoLogin();
           }

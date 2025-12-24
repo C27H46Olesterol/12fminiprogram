@@ -6,18 +6,18 @@ Component({
     list: [{
       pagePath: "/pages/index",
       text: "首页",
-      iconPath: "/images/logo.png",
-      selectedIconPath: "/images/logo.png"
+      iconPath: "/images/icons/home.png",
+      selectedIconPath: "/images/icons/home.png"
     }, {
       pagePath: "/pages/client/index/index",
       text: "遥控",
-      iconPath: "/images/icons/power.png",
-      selectedIconPath: "/images/icons/power.png"
+      iconPath: "/images/icons/remote.png",
+      selectedIconPath: "/images/icons/remote.png"
     }, {
       pagePath: "/pages/profile/profile",
       text: "我的",
-      iconPath: "/images/icons/menu.png",
-      selectedIconPath: "/images/icons/menu.png"
+      iconPath: "/images/icons/user.png",
+      selectedIconPath: "/images/icons/user.png"
     }]
   },
   methods: {

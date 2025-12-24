@@ -20,8 +20,8 @@
       </view>
 
       <!-- 2. 设备选择 -->
-      <view class="device-selector-container" catchtap="noOp">
-        <view class="device-selector" catchtap="toggleDeviceModal">
+      <view class="device-selector-container" catchtap="noOp" catchtap="toggleDeviceModal">
+        <view class="device-selector">
           <view class="device-picker-wrap {{deviceStatus.online ? 'online' : 'offline'}}">
             <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
             <text class="picker-arrow-large {{deviceStatus.online ? 'online' : 'offline'}}" ></text>
@@ -123,39 +123,6 @@
               <text>蓝牙连接</text>
             </view>
           </view>
-        </view>
-      </view>
-      
-      <!-- 4. 登陆菜单 -->
-      <view class="header-btn-item menu-trigger" catchtap="toggleDropdown">
-        <view class="icon-btn">
-          <image class="btn-icon-img" src="/images/icons/menu.png" mode="aspectFit"></image>
-        </view>
-        <text class="btn-label">登陆</text>
-        
-        <!-- 下拉菜单 -->
-        <view class="dropdown-menu {{showDropdown ? 'show' : ''}}">
-          <block wx:if="{{!hasUserInfo}}">
-            <view class="dropdown-grid">
-              <view class="dropdown-item" bindtap="onGoLogin">
-                <text>立即登录</text>
-              </view>
-            </view>
-          </block>
-          <block wx:else>
-            <view class="dropdown-user-info">
-              <text class="user-name">{{userInfo.userName || '微信用户'}}</text>
-              <text class="user-phone" wx:if="{{userInfo.phone || userInfo.phoneNumber}}">{{userInfo.phone || userInfo.phoneNumber}}</text>
-            </view>
-            <view class="dropdown-grid">
-              <view class="dropdown-item" bindtap="onApiTest">
-                <text>接口测试</text>
-              </view>
-              <view class="dropdown-item logout" bindtap="onLogout">
-                <text>退出登陆</text>
-              </view>
-            </view>
-          </block>
         </view>
       </view>
     </view>
@@ -288,7 +255,7 @@
           <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'auto') ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/auto.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'auto') ? '当前：自动' : '自动'}}</text>
+          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'auto') ? '当前：制冷' : '制冷'}}</text>
         </view>
 
         <view class="func-btn-wrapper" bindtap="setStrongMode">

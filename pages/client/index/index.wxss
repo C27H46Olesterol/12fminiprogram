@@ -117,35 +117,44 @@
 
 /* 设备选择器 (中央) */
 .device-selector-container {
+  grid-column: span 2; /* 占据中间两列 */
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* 改为横向排列 */
   align-items: center;
   justify-content: flex-start;
-  gap: 8rpx;
-  /* position: relative; */ /* Removed to allow dropdown to center relative to .remote-header */
+  gap: 16rpx;
   width: 100%;
   min-width: 0;
+  height: 120rpx; /* 与两侧按钮高度一致 */
+  background-color: #fff;
+  border-radius: 60rpx; /* 胶囊形状 */
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #f0f0f0;
 }
 
 .selector-label {
   font-size: 24rpx;
   color: #666;
+  display: none; /* 隐藏不必要的标签 */
 }
 
 .device-selector {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
+  width: auto; /* 自适应宽度 */
+  flex-shrink: 0;
 }
 
 .device-picker-wrap {
   display: flex;
   align-items: center;
   background-color: #fff;
-  padding: 6rpx; /* 极简边距 */
+  padding: 4rpx; /* 减小内边距 */
   border-radius: 50%; /* 改为纯圆，包裹圆形图片 */
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  /* box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08); */ /* 移除内部阴影 */
   border: 4rpx solid #f0f0f0; /* 增加初始边框宽度 */
   justify-content: center;
   position: relative;
@@ -165,8 +174,8 @@
 
 
 .selected-device-img-large {
-  width: 88rpx; /* 调整大小以匹配左右按钮高度，确保文字对齐 (88+padding 12+border 2 ≈ 102rpx) */
-  height: 88rpx;
+  width: 80rpx; /* 稍微调小以适应胶囊高度 */
+  height: 80rpx;
   border-radius: 50%;
   background-color: #eee;
   flex-shrink: 0;
@@ -174,13 +183,13 @@
 
 .picker-arrow-large {
   position: absolute;
-  bottom: -4rpx;
-  right: -4rpx;
+  bottom: 0;
+  right: -8rpx; /* 微调位置 */
   font-size: 20rpx;
   color: #1677ff;
   background: #fff;
-  width: 32rpx;
-  height: 32rpx;
+  width: 28rpx;
+  height: 28rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -197,17 +206,21 @@
 }
 
 .device-name-footer {
-  font-size: 24rpx;
+  font-size: 28rpx;
   font-weight: 600;
   color: #333;
-  text-align: center;
-  width: 100%;
-  height: 54rpx; /* 固定高度防止撑开 */
+  text-align: left; /* 左对齐 */
+  width: auto;
+  flex: 1; /* 占据剩余空间 */
+  height: auto;
   line-height: 1.2;
-  display: block;
+  display: -webkit-box; /* 改为多行显示或保持单行 */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal; /* 允许换行 */
+  margin-top: 0;
 }
 
 /* 右侧按钮组 */
