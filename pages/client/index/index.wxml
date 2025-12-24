@@ -24,7 +24,7 @@
         <view class="device-selector" catchtap="toggleDeviceModal">
           <view class="device-picker-wrap {{deviceStatus.online ? 'online' : 'offline'}}">
             <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
-            <text class="picker-arrow-large">▼</text>
+            <!-- <text class="picker-arrow-large">▼</text> -->
           </view>
         </view>
         <text class="device-name-footer">{{selectedDevice.name || selectedDevice.sn || '未选择'}}</text>
@@ -41,7 +41,7 @@
           <block wx:elif="{{deviceList.length === 0}}">
             <view class="dropdown-grid">
               <view class="dropdown-item" bindtap="onActivateProduct" style="justify-content: center; padding: 20rpx;">
-                <text>请先点击激活设备</text>
+                <text>请先连接设备</text>
               </view>
             </view>
           </block>
@@ -93,11 +93,13 @@
                     <text class="info-value">{{item.warrantyDate}}</text>
                   </view>
                   
-                  <!-- 4. 取消配对按钮 -->
-                  <view class="device-action-btn" catchtap="onUnpairDevice" data-index="{{index}}" data-item="{{item}}">
-                    <text>取消配对</text>
-                  </view>
+                  
+                  
                 </view>
+                <!-- 4. 取消配对按钮 -->
+                <view class="device-action-btn-red" catchtap="onUnpairDevice" data-index="{{index}}" data-item="{{item}}">
+                    <text class="delete-icon">×</text>
+                  </view>
               </view>
             </view>
           </block>
@@ -105,11 +107,23 @@
       </view>
 
       <!-- 3. 添加设备 -->
-      <view class="header-btn-item" bindtap="onActivateProduct">
+      <view class="header-btn-item menu-trigger" catchtap="toggleAddDeviceDropdown">
         <view class="icon-btn">
           <image class="btn-icon-img" src="/images/icons/add.png" mode="aspectFit"></image>
         </view>
-        <text class="btn-label">激活设备</text>
+        <text class="btn-label">连接设备</text>
+
+        <!-- 添加设备下拉菜单 -->
+        <view class="dropdown-menu {{showAddDeviceDropdown ? 'show' : ''}}">
+          <view class="dropdown-grid">
+            <view class="dropdown-item" bind:tap="onActivateProduct">
+              <text>激活设备</text>
+            </view>
+            <view class="dropdown-item" bind:tap="onApiTest">
+              <text>蓝牙连接</text>
+            </view>
+          </view>
+        </view>
       </view>
       
       <!-- 4. 登陆菜单 -->

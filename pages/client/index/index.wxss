@@ -190,7 +190,7 @@
 }
 
 .device-name-footer {
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 600;
   color: #333;
   text-align: center;
@@ -281,21 +281,29 @@
 
 .dropdown-grid {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center; /* 只有一个时居中 */
-  padding: 10rpx;
+  flex-direction: column; /* 改为纵向排列 */
+  padding: 14rpx;
+  /* gap: 12rpx; */
+
 }
 
 .dropdown-item {
-  flex: 0 0 45%; /* 每排最多两个，留出间隙 */
-  padding: 20rpx 10rpx;
-  font-size: 26rpx;
-  color: #333;
+  width: 100%; /* 占满宽度 */
+  padding: 30rpx 15rpx; /* 增加内边距，放大按钮区域 */
+  font-size: 32rpx; /* 放大字体 */
+  /* 使用 background-image 实现渐变边界线 */
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0)),
+    linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0));
+  background-position: top, bottom;
+  background-size: 100% 1rpx;
+  background-repeat: no-repeat;
   text-align: center;
   white-space: nowrap;
-  border-radius: 8rpx;
-  margin: 5rpx;
-  transition: background 0.2s;
+  border-radius: 0; /* 边界线设计通常不需要圆角，或者仅首尾需要，这里统一直角或微调 */
+  transition: all 0.2s;
+  box-sizing: border-box; /* 确保padding不撑大宽度 */
+  margin: 0; /* 由 grid gap 控制间距 */
 }
 
 .dropdown-item.logout {
@@ -811,9 +819,35 @@
   flex-shrink: 0;
 }
 
+/* 设备列表删除按钮 (红色背景) */
+.device-action-btn-red {
+  width: 80rpx;
+  height: 80rpx;
+  background-color: #ff4d4f;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.2);
+}
+
+.device-action-btn-red:active {
+  background-color: #d9363e;
+  transform: scale(0.9);
+}
+
+.delete-icon {
+  font-size: 40rpx;
+  color: #fff;
+  font-weight: bold;
+  line-height: 1;
+}
+
 .connection-icon {
-  width: 32rpx;
-  height: 32rpx;
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .bluetooth-icon {

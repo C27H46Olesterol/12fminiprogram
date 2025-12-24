@@ -2,7 +2,8 @@
   "pages": [
     "pages/client/index/index",
     "pages/client/remote/remote",
-    "pages/login/login"
+    "pages/login/login",
+    "pages/client/activate/activate"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -27,20 +27,20 @@ Page({
     selectedDeviceIndex: -1,
     selectedDevice: null,
     deviceStatus: {
-      online: true,
+      online: false,
       temperature: 26,
       humidity: 60,
-      voltage: '',
+      voltage: '--',
       runtime: 245,
-      outletTemp: '',
-      inletTemp: '',
-      signalStrength: 0,
+      outletTemp: '--',
+      inletTemp: '--',
+      signalStrength: 3,
       faultCode: '' // 故障码，空字符串表示无故障
     },
     wxTimerList: {},
     remoteState: {
       powerOn: false,
-      windSpeed: 1,//可调范围1-5
+      windSpeed: 3,//可调范围1-5
       lightingOn: false,
       lightSurround: false,
       lightClean: false,
@@ -70,7 +70,8 @@ Page({
     finalCommand: '',
 
     //错误信息
-    errMsg:''
+    errMsg:'',
+    showAddDeviceDropdown: false // 添加设备下拉菜单显示状态
   },
 
   onLoad() {
@@ -304,17 +305,29 @@ Page({
     this.resetInactivityTimer();
     this.setData({
       showDropdown: !this.data.showDropdown,
-      showDeviceModal: false // 互斥显示
+      showDeviceModal: false, // 互斥显示
+      showAddDeviceDropdown: false
+    });
+  },
+
+  // 切换添加设备下拉菜单
+  toggleAddDeviceDropdown() {
+    this.resetInactivityTimer();
+    this.setData({
+      showAddDeviceDropdown: !this.data.showAddDeviceDropdown,
+      showDropdown: false,
+      showDeviceModal: false
     });
   },
 
   // 关闭所有下拉菜单 (点击外部时触发)
   closeAllDropdowns() {
     this.resetInactivityTimer();
-    if (this.data.showDropdown || this.data.showDeviceModal) {
+    if (this.data.showDropdown || this.data.showDeviceModal || this.data.showAddDeviceDropdown) {
       this.setData({
         showDropdown: false,
-        showDeviceModal: false
+        showDeviceModal: false,
+        showAddDeviceDropdown: false
       });
     }
   },
@@ -324,6 +337,10 @@ Page({
 
   //产品激活事件
   onActivateProduct() {
+    this.setData({
+      showAddDeviceDropdown: false
+    });
+    
     if (!this.data.hasUserInfo) {
       // 未登录，存储目标页面后跳转登录
       // wx.setStorageSync('redirectAfterLogin', '/pages/client/activate/activate');
@@ -337,6 +354,7 @@ Page({
 
       return;
     }
+    console.log("设备激活")
     wx.navigateTo({ url: '/pages/client/activate/activate' });
   },
 
@@ -373,10 +391,12 @@ Page({
   },
 
   // 接口测试 - 改为开启蓝牙搜索
+
   onApiTest() {
     wx.vibrateShort({ type: 'heavy' });
     this.setData({
       showDropdown: false,
+      showAddDeviceDropdown: false,
       showBluetoothModal: true,
       bluetoothDevices: []
     });
@@ -390,7 +410,8 @@ Page({
     this.resetInactivityTimer();
     this.setData({
       showDeviceModal: !this.data.showDeviceModal,
-      showDropdown: false // 互斥显示
+      showDropdown: false, // 互斥显示
+      showAddDeviceDropdown: false
     });
   },
 
@@ -629,26 +650,17 @@ Page({
       const device = this.data.selectedDevice;
       if (!device) return;
 
-      // const result = await wx.cloud.callFunction({
-      //   name: 'onenet',
-      //   data: {
-      //     action: 'getDviceStatus',
-      //     deviceName: device.imei
-      //   }
-      // })
-      // console.log("设备状态返回", result.result);
-
       // 暂时使用模拟数据
       const mockStatus = {
-        online: Math.random() > 0.1, // 90%概率在线
-        temperature: Math.floor(Math.random() * 10) + 20, // 20-30°C
-        humidity: Math.floor(Math.random() * 20) + 50, // 50-70%
-        voltage: (Math.random() * 2 + 11).toFixed(1), // 11-13V
-        runtime: Math.floor(Math.random() * 500) + 100, // 100-600h
-        outletTemp: Math.floor(Math.random() * 5) + 18,
-        inletTemp: Math.floor(Math.random() * 5) + 25,
-        signalStrength: Math.floor(Math.random() * 5) + 1, // 1-5 信号强度
-        faultCode: Math.random() > 0.8 ? 'E01' : '' // 模拟故障码
+        // online: Math.random() > 0.1, // 90%概率在线
+        // temperature: Math.floor(Math.random() * 10) + 20, // 20-30°C
+        // humidity: Math.floor(Math.random() * 20) + 50, // 50-70%
+        // voltage: (Math.random() * 2 + 11).toFixed(1), // 11-13V
+        // runtime: Math.floor(Math.random() * 500) + 100, // 100-600h
+        // outletTemp: Math.floor(Math.random() * 5) + 18,
+        // inletTemp: Math.floor(Math.random() * 5) + 25,
+        // signalStrength: Math.floor(Math.random() * 5) + 1, // 1-5 信号强度
+        // faultCode: Math.random() > 0.8 ? 'E01' : '' // 模拟故障码
       };
 
       this.setData({ deviceStatus: mockStatus });
@@ -976,13 +988,13 @@ Page({
 
     // // “所有功能按钮只有设定值为true时才会向设备发送命令”
     // // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
-    // const restrictedActions = ['setLighting', 'setSwingUpDown', 'setSwingLeftRight'];
+    const restrictedActions = ['setAutoMode', 'setEcoMode', 'setStrongMode'];
 
-    // if (restrictedActions.includes(action) && value !== true) {
-    //   // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
-    //   console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
-    //   return;
-    // }
+    if (restrictedActions.includes(action) && value !== true) {
+      // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
+      console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
+      return;
+    }
 
     // 设置新定时器
     this.commandTimers[action] = setTimeout(() => {
@@ -1343,6 +1355,11 @@ Page({
     // Byte 4: Temp
     data[1] = Math.max(5, Math.min(40, remoteState.targetTemperature));
 
+    data[2] = 0x00
+    if (remoteState.lightingOn) data[2] |= 0x04;
+    if (remoteState.lightSurround) data[2] |= 0x08;
+    if (remoteState.lightClean) data[2] |= 0x10;
+
     // Byte 8: Timer
     if (remoteState.clock && this.data.timerMinutes) {
       const timerValue = Math.min(15, Math.floor(this.data.timerMinutes / 30));
@@ -1355,9 +1372,6 @@ Page({
     data[6] = 0x00;
     if (remoteState.swingUpDown) data[6] |= 0x01;
     if (remoteState.swingLeftRight) data[6] |= 0x02;
-    if (remoteState.lightingOn) data[6] |= 0x04;
-    if (remoteState.lightSurround) data[6] |= 0x08;
-    if (remoteState.lightClean) data[6] |= 0x10;
 
     // --- 特殊处理 Storage ---
     if (!remoteState.powerOn) {
