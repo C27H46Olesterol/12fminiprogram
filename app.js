@@ -2,15 +2,7 @@
 App({
   globalData: {
     userInfo: null,
-    userRole: null, // 'client', 'manager', 'worker', 'admin'
-    version: '1.0.0',
-    isAdmin: false, // 是否为超级管理员
-    baseUrl: '', // 使用云函数API路由，不需要基础URL
-    adminWhitelist: [
-      // 在这里添加管理员的openid
-      // 'your-admin-openid-here'
-      'test-admin' // 临时测试管理员
-    ] // 管理员白名单
+    hasUserInfo: false,
   },
 
   onLaunch() {
@@ -123,13 +115,11 @@ App({
   logout() {
     // 清除全局数据
     this.globalData.userInfo = null;
-    this.globalData.userRole = null;
-    this.globalData.isAdmin = false;
+    this.globalData.hasUserInfo = false;
 
     // 清除本地缓存
     wx.removeStorageSync('userInfo');
-    wx.removeStorageSync('userRole');
-    wx.removeStorageSync('isAdmin');
+    wx.removeStorageSync('hasUserInfo')
 
     // 显示提示
     wx.showToast({
@@ -138,7 +128,7 @@ App({
       duration: 1500
     });
     console.log("用户已退出")
-    
+
     setTimeout(() => {
         wx.navigateBack();
     }, 1500);
