@@ -974,15 +974,15 @@ Page({
       delete this.commandTimers[action];
     }
 
-    // “所有功能按钮只有设定值为true时才会向设备发送命令”
-    // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
-    const restrictedActions = ['setLighting', 'setSwingUpDown', 'setSwingLeftRight'];
+    // // “所有功能按钮只有设定值为true时才会向设备发送命令”
+    // // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
+    // const restrictedActions = ['setLighting', 'setSwingUpDown', 'setSwingLeftRight'];
 
-    if (restrictedActions.includes(action) && value !== true) {
-      // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
-      console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
-      return;
-    }
+    // if (restrictedActions.includes(action) && value !== true) {
+    //   // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
+    //   console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
+    //   return;
+    // }
 
     // 设置新定时器
     this.commandTimers[action] = setTimeout(() => {
