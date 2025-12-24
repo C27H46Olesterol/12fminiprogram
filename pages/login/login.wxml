@@ -52,12 +52,12 @@
 
       <!-- open-type="getPhoneNumber" -->
       <!-- 微信授权获取手机号登录按钮 -->
-      <button class="btn btn-block" 
+      <!-- <button class="btn btn-block" 
         bind:tap="testLogin"
         disabled="{{loading}}"
         style="background-color: #07C160; color: rgba(255, 255, 255, 0);">
         <text class="btn-text">登陆测试</text>
-        </button>
+      </button> -->
       <button 
         class="btn btn-block" 
         open-type="getPhoneNumber"

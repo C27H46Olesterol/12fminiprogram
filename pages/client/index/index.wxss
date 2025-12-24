@@ -159,8 +159,8 @@
 }
 
 .device-picker-wrap.offline {
-  border-color: #bfbfbf;
-  filter: grayscale(0.8);
+  border-color: #e0e0e0;
+  filter: grayscale(0.1);
 }
 
 
@@ -186,7 +186,14 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.1);
-  border: 1rpx solid #f0f0f0;
+  border: 4rpx solid #fff;
+}
+.picker-arrow-large.online {
+  background-color: #52c41a;
+}
+
+.picker-arrow-large.offline {
+  background-color: #bfbfbf;
 }
 
 .device-name-footer {

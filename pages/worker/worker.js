@@ -1,4 +1,4 @@
-// pages/client/remote/remote.js
+// pages/worker/worker.js
 Page({
 
   /**

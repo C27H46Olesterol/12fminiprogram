@@ -80,14 +80,16 @@ Page({
 
   onLoad() {
     //关闭加载弹窗
+    console.log('加载页面onLoad')
     setTimeout(() => {
       wx.hideLoading()
     }, 1500)
-    
+    this.UserInfoStorageCheck()
     //停止下拉刷新
     wx.stopPullDownRefresh()
     // 启动定时任务
     this.resetInactivityTimer();
+    console.log('加载页面onLoad完毕')
   },
 
   //下拉刷新事件
@@ -96,9 +98,14 @@ Page({
   },
 
   onShow() {
+    if (typeof this.getTabBar === 'function' &&
+      this.getTabBar()) {
+      this.getTabBar().setData({
+        selected: 0
+      })
+    }
     console.log("显示client/index")
-    console.log()
-    this.UserInfoStorageCheck()
+    
     this.loadUserData(); // 加载角色专属数据
     console.log("client/index加载完毕")
     setTimeout(() => {
@@ -150,7 +157,23 @@ Page({
     }
     else {
       console.log('没有信息 开始跳转')
-      this.onGoLogin();
+      wx.showModal({
+        title: '登陆',
+        content: '检测到您未登录，4G遥控功能需要先登陆再使用',
+        complete: (res) => {
+          if (res.cancel) {
+            wx.showToast({
+              title: '检测您未登陆\n可以使用基础的蓝牙功能',
+              icon:'none'
+            },2500)
+          }
+      
+          if (res.confirm) {
+            this.onGoLogin();
+          }
+        }
+      })
+      
     }
   },
 
@@ -217,7 +240,10 @@ Page({
       try {
         const result = await app.apiRequest('/pro/banding/my', 'GET');
         if(result.code === 401){
-          //无感登陆
+          wx.showToast({
+            title:'授权信息过期，\n请重新登陆'
+          },1500)
+          this.onGoLogin();
         }
         console.log("返回数据", result);
         // 检查调用是否成功
@@ -345,7 +371,7 @@ Page({
       showAddDeviceDropdown: false
     });
     
-    if (!this.data.hasUserInfo) {
+    if (!wx.getStorageSync('hasUserInfo')) {
       // 未登录，存储目标页面后跳转登录
       // wx.setStorageSync('redirectAfterLogin', '/pages/client/activate/activate');
       wx.showToast({
@@ -355,7 +381,6 @@ Page({
       setTimeout(() => {
         wx.navigateTo({ url: '/pages/login/login' });
       }, 500)
-
       return;
     }
     console.log("设备激活")

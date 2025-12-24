@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="user-info">
+    <image class="avatar" src="/images/avatar.png" mode="aspectFill"></image>
+    <text class="nickname">微信用户</text>
+  </view>
+</view>
