@@ -364,6 +364,10 @@
   color: #ff4d4f;
 }
 
+.display-value.nomal {
+  color: #00cc00;
+}
+
 .display-main {
   display: flex;
   justify-content: space-between;

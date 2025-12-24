@@ -21,36 +21,40 @@ Page({
     // Remote Control Data (Moved from remote.js)
     deviceInfo: {
       sn: '',
-      imei: ''
+      imei: '',
+      type:'',
+      connectTime:''
     },
     deviceList: [],
     selectedDeviceIndex: -1,
     selectedDevice: null,
     deviceStatus: {
       online: false,
-      temperature: 26,
-      humidity: 60,
+      powerOn: false,
+      windSpeed: null,
+      temperature: null,
+      lightingOn: false,
+      lightSurround: false,
+      lightClean: false,
       voltage: '--',
-      runtime: 245,
       outletTemp: '--',
       inletTemp: '--',
-      signalStrength: 3,
+      signalStrength: null,
       faultCode: '' // 故障码，空字符串表示无故障
     },
     wxTimerList: {},
     remoteState: {
       powerOn: false,
-      windSpeed: 3,//可调范围1-5
+      windSpeed: 0,//可调范围1-5
       lightingOn: false,
       lightSurround: false,
       lightClean: false,
-      targetTemperature: 26,//可调范围5-40
-      mode: 'auto', // auto, strong, eco, heat(暂无)
+      targetTemperature: null,//可调范围5-40
+      mode: '--', // auto, strong, eco, heat(暂无),fan
       swingUpDown: false,
       swingLeftRight: false,
       clock: false
-    }
-    ,
+    },
     // 定时弹窗相关
     showTimerModal: false,
     timerMinutes: 60, // 初始为 60 分钟
@@ -67,11 +71,11 @@ Page({
     isBluetoothConnected: false,
     serviceId: '', // 蓝牙服务ID
     characteristicId: '', // 蓝牙特征值ID
-    finalCommand: '',
-
+    showAddDeviceDropdown: false, // 添加设备下拉菜单显示状态
+    
+    
     //错误信息
-    errMsg:'',
-    showAddDeviceDropdown: false // 添加设备下拉菜单显示状态
+    errMsg:''
   },
 
   onLoad() {
@@ -526,14 +530,13 @@ Page({
        this.setData({
          deviceStatus: {
             online: false,
+            powerOn: false,
             temperature: '--',
-            humidity: '--',
             voltage: '--',
-            runtime: 0,
             outletTemp: '--',
             inletTemp: '--',
             signalStrength: 0,
-            faultCode: ''
+            faultCode: '--'
          },
          remoteState: {
            powerOn: false
@@ -648,19 +651,20 @@ Page({
   async loadDeviceStatus() {
     try {
       const device = this.data.selectedDevice;
+      const bluetooth = this.data.BLUE
       if (!device) return;
 
       // 暂时使用模拟数据
       const mockStatus = {
-        // online: Math.random() > 0.1, // 90%概率在线
-        // temperature: Math.floor(Math.random() * 10) + 20, // 20-30°C
-        // humidity: Math.floor(Math.random() * 20) + 50, // 50-70%
-        // voltage: (Math.random() * 2 + 11).toFixed(1), // 11-13V
-        // runtime: Math.floor(Math.random() * 500) + 100, // 100-600h
-        // outletTemp: Math.floor(Math.random() * 5) + 18,
-        // inletTemp: Math.floor(Math.random() * 5) + 25,
-        // signalStrength: Math.floor(Math.random() * 5) + 1, // 1-5 信号强度
-        // faultCode: Math.random() > 0.8 ? 'E01' : '' // 模拟故障码
+        online: Math.random() > 0.1, // 90%概率在线
+        temperature: Math.floor(Math.random() * 10) + 20, // 20-30°C
+        humidity: Math.floor(Math.random() * 20) + 50, // 50-70%
+        voltage: (Math.random() * 2 + 11).toFixed(1), // 11-13V
+        runtime: Math.floor(Math.random() * 500) + 100, // 100-600h
+        outletTemp: Math.floor(Math.random() * 5) + 18,
+        inletTemp: Math.floor(Math.random() * 5) + 25,
+        signalStrength: Math.floor(Math.random() * 5) + 1, // 1-5 信号强度
+        faultCode: Math.random() > 0.8 ? '故障码' : '' // 模拟故障码
       };
 
       this.setData({ deviceStatus: mockStatus });
@@ -688,7 +692,11 @@ Page({
   resetInactivityTimer() {
     const userInfo = this.data.userInfo
     const hasUserInfo = this.data.hasUserInfo
-    if (userInfo && hasUserInfo) {
+    const deiveiceOnline = this.data.deviceStatus.online;
+    const powerOn = this.data.remoteState.powerOn;
+    const selectedDevice = this.data.selectedDevice
+    //登陆后，选中设备后开始刷新
+    if (userInfo && hasUserInfo && deiveiceOnline && powerOn && selectedDevice) {
       this.setData({ showRefreshNotify: false });
 
       // 清除旧的计时器
@@ -945,6 +953,21 @@ Page({
       });
       this.showControlToast('制热模式');
       this.bufferCommand('setMode', 'heat');
+    }
+  },
+
+  toggleFan() {
+    this.resetInactivityTimer();
+    wx.vibrateShort({ type: 'fan' });
+    if (!this.checkPower()) return;
+    if (this.data.remoteState.mode === 'fan') {
+      this.setAutoMode();
+    } else {
+      this.setData({
+        'remoteState.mode': 'fan'
+      });
+      this.showControlToast('通风模式');
+      this.bufferCommand('setMode', 'fan');
     }
   },
 
@@ -1433,140 +1456,140 @@ Page({
 * 解析蓝牙接收到的数据（基于橙色图协议 - 显示屏发送到集控中心）
 * @param {ArrayBuffer} buffer - 接收到的数据包
 */
-parseBluetoothData(buffer) {
-  const dataView = new DataView(buffer);
+  parseBluetoothData(buffer) {
+    const dataView = new DataView(buffer);
 
-  // 验证帧头
-  if (dataView.getUint8(0) !== 0xAA || dataView.getUint8(1) !== 0xB4) {
-      console.warn('[蓝牙接收] 无效的帧头');
-      return null;
-  }
+    // 验证帧头
+    if (dataView.getUint8(0) !== 0xAA || dataView.getUint8(1) !== 0xB4) {
+        console.warn('[蓝牙接收] 无效的帧头');
+        return null;
+    }
 
-  // 验证固定字节
-  if (dataView.getUint8(2) !== 0x01) {
-      console.warn('[蓝牙接收] 无效的固定字节');
-      return null;
-  }
+    // 验证固定字节
+    if (dataView.getUint8(2) !== 0x01) {
+        console.warn('[蓝牙接收] 无效的固定字节');
+        return null;
+    }
 
-  const parsedData = {};
+    const parsedData = {};
 
-  // 字节#3: 开关机标志位
-  const byte3 = dataView.getUint8(3);
-  parsedData.powerOn = (byte3 & 0x80) !== 0; // bit7
+    // 字节#3: 开关机标志位
+    const byte3 = dataView.getUint8(3);
+    parsedData.powerOn = (byte3 & 0x80) !== 0; // bit7
 
-  // bit6-4: 模式
-  const modeValue = (byte3 >> 4) & 0x07;
-  const modeNames = ['', '通风', '睡眠', '制冷', '强劲', '自动', '制热', '除湿'];
-  parsedData.modeName = modeNames[modeValue] || '未知';
-  const modeKeys = ['', 'fan', 'eco', 'auto', 'strong', 'auto', 'heat', ''];
-  parsedData.mode = modeKeys[modeValue] || 'auto';
+    // bit6-4: 模式
+    const modeValue = (byte3 >> 4) & 0x07;
+    const modeNames = ['', '通风', '睡眠', '制冷', '强劲', '自动', '制热', '除湿'];
+    parsedData.modeName = modeNames[modeValue] || '未知';
+    const modeKeys = ['', 'fan', 'eco', 'auto', 'strong', 'auto', 'heat', ''];
+    parsedData.mode = modeKeys[modeValue] || 'auto';
 
-  // bit3-0: 风速
-  parsedData.windSpeed = (byte3 & 0x0F) + 1;
+    // bit3-0: 风速
+    parsedData.windSpeed = (byte3 & 0x0F) + 1;
 
-  // 字节#4: 当前设定温度
-  parsedData.targetTemperature = dataView.getUint8(4);
+    // 字节#4: 当前设定温度
+    parsedData.targetTemperature = dataView.getUint8(4);
 
-  // 字节#5: 欠压保护低字节 (备用)
-  // 字节#6: 欠压保护高字节 (备用)
-  // 字节#7: 压缩机功率限制 (备用)
+    // 字节#5: 欠压保护低字节 (备用)
+    // 字节#6: 欠压保护高字节 (备用)
+    // 字节#7: 压缩机功率限制 (备用)
 
-  // 字节#8: 定时
-  const byte8 = dataView.getUint8(7);
-  parsedData.timerEnabled = (byte8 & 0x80) !== 0;
-  if (parsedData.timerEnabled) {
-      parsedData.timerMinutes = (byte8 & 0x0F) * 30;
-  }
+    // 字节#8: 定时
+    const byte8 = dataView.getUint8(7);
+    parsedData.timerEnabled = (byte8 & 0x80) !== 0;
+    if (parsedData.timerEnabled) {
+        parsedData.timerMinutes = (byte8 & 0x0F) * 30;
+    }
 
-  // 字节#9: 其他功能标志位
-  const byte9 = dataView.getUint8(8);
-  parsedData.swingUpDown = (byte9 & 0x01) !== 0;      // bit0
-  parsedData.swingLeftRight = (byte9 & 0x02) !== 0;   // bit1
-  parsedData.lightingOn = (byte9 & 0x04) !== 0;       // bit2
-  parsedData.lightSurround = (byte9 & 0x08) !== 0;    // bit3 氛围灯
-  parsedData.lightClean = (byte9 & 0x10) !== 0;       // bit4 负离子
+    // 字节#9: 其他功能标志位
+    const byte9 = dataView.getUint8(8);
+    parsedData.swingUpDown = (byte9 & 0x01) !== 0;      // bit0
+    parsedData.swingLeftRight = (byte9 & 0x02) !== 0;   // bit1
+    parsedData.lightingOn = (byte9 & 0x04) !== 0;       // bit2
+    parsedData.lightSurround = (byte9 & 0x08) !== 0;    // bit3 氛围灯
+    parsedData.lightClean = (byte9 & 0x10) !== 0;       // bit4 负离子
 
-  // 字节#10-11: 进风温度 (0-200对应-50到150度, 250表示传感器故障)
-  const inletTemp = dataView.getUint8(9);
-  parsedData.inletTemp = inletTemp === 250 ? '故障' : (inletTemp - 50);
+    // 字节#10-11: 进风温度 (0-200对应-50到150度, 250表示传感器故障)
+    const inletTemp = dataView.getUint8(9);
+    parsedData.inletTemp = inletTemp === 250 ? '故障' : (inletTemp - 50);
 
-  // 字节#11: 出风温度
-  const outletTemp = dataView.getUint8(10);
-  parsedData.outletTemp = outletTemp === 250 ? '故障' : (outletTemp - 50);
+    // 字节#11: 出风温度
+    const outletTemp = dataView.getUint8(10);
+    parsedData.outletTemp = outletTemp === 250 ? '故障' : (outletTemp - 50);
 
-  // 字节#12: 电瓶电压低字节
-  // 字节#13: 电瓶电压高字节
-  // 电瓶电压低字节 单位0.1V
-  const voltageLow = dataView.getUint8(11);
-  const voltageHigh = dataView.getUint8(12);
-  parsedData.voltage = (voltageHigh * 256 + voltageLow) * 0.1;
+    // 字节#12: 电瓶电压低字节
+    // 字节#13: 电瓶电压高字节
+    // 电瓶电压低字节 单位0.1V
+    const voltageLow = dataView.getUint8(11);
+    const voltageHigh = dataView.getUint8(12);
+    parsedData.voltage = (voltageHigh * 256 + voltageLow) * 0.1;
 
-  // 字节#14: 故障代码1
-  const fault1 = dataView.getUint8(13);
-  parsedData.faults = [];
-  const faultNames1 = [
-      '无故障', '', '压缩机过载', '压缩机堵转保护',
-      '控制器欠压保护', '控制器故障', '电子阀故障', '压缩机缺相',
-      '压缩机温度保护', '压力保护', '电子阀故障'
-  ];
-  if (fault1 > 0 && fault1 < faultNames1.length) {
-      parsedData.faults.push(faultNames1[fault1]);
-  }
+    // 字节#14: 故障代码1
+    const fault1 = dataView.getUint8(13);
+    parsedData.faults = [];
+    const faultNames1 = [
+        '无故障', '', '压缩机过载', '压缩机堵转保护',
+        '控制器欠压保护', '控制器故障', '电子阀故障', '压缩机缺相',
+        '压缩机温度保护', '压力保护', '电子阀故障'
+    ];
+    if (fault1 > 0 && fault1 < faultNames1.length) {
+        parsedData.faults.push(faultNames1[fault1]);
+    }
 
-  // 字节#15: 故障代码2
-  const fault2 = dataView.getUint8(14);
-  const faultNames2 = ['无故障', '电瓶欠压'];
-  if (fault2 > 0 && fault2 < faultNames2.length) {
-      parsedData.faults.push(faultNames2[fault2]);
-  }
+    // 字节#15: 故障代码2
+    const fault2 = dataView.getUint8(14);
+    const faultNames2 = ['无故障', '电瓶欠压'];
+    if (fault2 > 0 && fault2 < faultNames2.length) {
+        parsedData.faults.push(faultNames2[fault2]);
+    }
 
-  // 打印解析结果
-  console.log('[蓝牙接收] 解析数据:', parsedData);
+    // 打印解析结果
+    console.log('[蓝牙接收] 解析数据:', parsedData);
 
-  // 更新界面状态
-  this.setData({
-      'remoteState.powerOn': parsedData.powerOn,
-      'remoteState.mode': parsedData.mode,
-      'remoteState.windSpeed': parsedData.windSpeed,
-      'remoteState.targetTemperature': parsedData.targetTemperature,
-      'remoteState.swingUpDown': parsedData.swingUpDown,
-      'remoteState.swingLeftRight': parsedData.swingLeftRight,
-      'remoteState.lightingOn': parsedData.lightingOn,
-      'remoteState.lightSurround': parsedData.lightSurround,
-      'remoteState.lightClean': parsedData.lightClean,
-      'deviceStatus.inletTemp': parsedData.inletTemp,
-      'deviceStatus.outletTemp': parsedData.outletTemp,
-      'deviceStatus.voltage': parsedData.voltage.toFixed(1),
-      'deviceStatus.faultCode': parsedData.faults.join(', ') || ''
-  });
+    // 更新界面状态
+    this.setData({
+        'remoteState.powerOn': parsedData.powerOn,
+        'remoteState.mode': parsedData.mode,
+        'remoteState.windSpeed': parsedData.windSpeed,
+        'remoteState.targetTemperature': parsedData.targetTemperature,
+        'remoteState.swingUpDown': parsedData.swingUpDown,
+        'remoteState.swingLeftRight': parsedData.swingLeftRight,
+        'remoteState.lightingOn': parsedData.lightingOn,
+        'remoteState.lightSurround': parsedData.lightSurround,
+        'remoteState.lightClean': parsedData.lightClean,
+        'deviceStatus.inletTemp': parsedData.inletTemp,
+        'deviceStatus.outletTemp': parsedData.outletTemp,
+        'deviceStatus.voltage': parsedData.voltage.toFixed(1),
+        'deviceStatus.faultCode': parsedData.faults.join(', ') || ''
+    });
 
-  return parsedData;
-},
+    return parsedData;
+  },
 
 /**
 * 启动蓝牙数据监听
 */
-startBluetoothDataListener() {
-  if (!this.data.isBluetoothConnected) return;
+  startBluetoothDataListener() {
+    if (!this.data.isBluetoothConnected) return;
 
-  wx.onBLECharacteristicValueChange((res) => {
-      console.log('[蓝牙接收] 收到数据:', res);
-      this.parseBluetoothData(res.value);
-  });
+    wx.onBLECharacteristicValueChange((res) => {
+        console.log('[蓝牙接收] 收到数据:', res);
+        this.parseBluetoothData(res.value);
+    });
 
-  // 启用notify
-  wx.notifyBLECharacteristicValueChange({
-      deviceId: this.data.connectedDevice.deviceId,
-      serviceId: this.data.serviceId,
-      characteristicId: this.data.characteristicId,
-      state: true,
-      success: () => {
-          console.log('[蓝牙接收] 数据监听已启动');
-      },
-      fail: (err) => {
-          console.error('[蓝牙接收] 启动监听失败', err);
-      }
-  });
-},
+    // 启用notify
+    wx.notifyBLECharacteristicValueChange({
+        deviceId: this.data.connectedDevice.deviceId,
+        serviceId: this.data.serviceId,
+        characteristicId: this.data.characteristicId,
+        state: true,
+        success: () => {
+            console.log('[蓝牙接收] 数据监听已启动');
+        },
+        fail: (err) => {
+            console.error('[蓝牙接收] 启动监听失败', err);
+        }
+    });
+  },
 
 });
