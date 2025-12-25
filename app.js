@@ -42,7 +42,7 @@ App({
     
   },
 
-  //手机号授权登陆
+  //api通过ji
   async apiRequest(api, method = 'GET', data = {}){
     return new Promise((resolve, reject) => {
       const baseURL="https://ha.musenyu.cn"

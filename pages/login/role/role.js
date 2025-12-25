@@ -9,58 +9,29 @@ Page({
   },
 
   /**
-   * 生命周期函数--监听页面加载
+   * 选择普通用户
    */
-  onLoad(options) {
+  selectUser() {
+    // 可以在这里存储角色信息，例如
+    wx.setStorageSync('role', 'user');
 
+    // 跳转到首页 (TabBar 页面使用 switchTab)
+    wx.switchTab({
+      url: '/pages/index'
+    });
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
+   * 选择安装/维修工
    */
-  onReady() {
+  selectWorker() {
+    // 存储角色信息
+    wx.setStorageSync('role', 'worker');
 
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+    // 跳转到工作台 (非 TabBar 页面使用 navigateTo 或 redirectTo)
+    // 根据需求，这可能是一个主要入口，可以用 reLaunch 或 redirectTo 防止回退
+    wx.reLaunch({
+      url: '/pages/worker/worker'
+    });
   }
 })

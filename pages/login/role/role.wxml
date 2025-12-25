@@ -1,2 +1,33 @@
 <!--pages/login/role/role.wxml-->
-<text>pages/login/role/role.wxml</text>
+<view class="container">
+  <view class="header">
+    <text class="title">请选择您的身份</text>
+    <text class="subtitle">选择对应的身份进入不同的服务空间</text>
+  </view>
+
+  <view class="role-list">
+    <!-- 普通用户 -->
+    <view class="role-card user-card" bindtap="selectUser">
+      <view class="icon-bg blue">
+        <image class="role-icon" src="/images/icons/user.png" mode="aspectFit"></image>
+      </view>
+      <view class="role-info">
+        <text class="role-name">普通用户</text>
+        <text class="role-desc">我是车主/使用者，需要控制设备</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+
+    <!-- 维修工 -->
+    <view class="role-card worker-card" bindtap="selectWorker">
+      <view class="icon-bg orange">
+        <image class="role-icon" src="/images/icons/auto.png" mode="aspectFit"></image>
+      </view>
+      <view class="role-info">
+        <text class="role-name">安装/维修工</text>
+        <text class="role-desc">我是工程师，需要安装维修</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+  </view>
+</view>

@@ -1,3 +1,5 @@
+const app = getApp();
+
 Page({
   data: {},
   onShow() {
@@ -32,5 +34,10 @@ Page({
     wx.navigateTo({
       url: '/pages/worker/worker',
     })
+  },
+
+  async apiTest(){
+    const result =await app.apiRequest('/system/user/getInfo','GET');
+    console.log(result.data)
   }
 })

@@ -52,7 +52,10 @@ Page({
               console.log("token",wx.getStorageSync('token'))
               console.log("clientid",wx.getStorageSync('clientid'))
               console.log("userInfo",wx.getStorageSync('userInfo'))
-              wx.navigateBack()
+              // 登录成功后跳转到角色选择页
+              wx.redirectTo({
+                url: '/pages/login/role/role'
+              })
             },
             fail: err=>{
               wx.showToast({
@@ -76,6 +79,9 @@ Page({
     wx.setStorageSync('hasUserInfo',true)
     wx.setStorageSync('token', 'test_token')
     wx.setStorageSync('clientid', 'test_clientid')
-    wx.navigateBack()
+    // 测试登录成功后跳转到角色选择页
+    wx.redirectTo({
+      url: '/pages/login/role/role'
+    })
   },
 });
