@@ -1,0 +1,133 @@
+<!--pages/profile/resign/resign.wxml-->
+<view class="container">
+  <!-- 头部 -->
+  <view class="header-section">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="header-title">申请成为维修工</view>
+      <view class="header-desc">请填写真实的店铺信息以通过审核</view>
+    </view>
+  </view>
+
+  <!-- 表单容器 -->
+  <view class="form-container">
+    <view class="form-card">
+      <view class="card-title">店铺信息</view>
+
+      <!-- 店面名称 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>店面名称</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="text" 
+          placeholder="请输入您的店面名称" 
+          placeholder-class="input-placeholder"
+          value="{{formData.storeName}}" 
+          bindinput="onStoreNameInput"
+        />
+      </view>
+
+      <!-- 店面地址 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>店面地址</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="text" 
+          placeholder="请输入详细地址" 
+          placeholder-class="input-placeholder"
+          value="{{formData.storeAddress}}" 
+          bindinput="onStoreAddressInput"
+        />
+      </view>
+    </view>
+
+    <view class="form-card">
+      <view class="card-title">资质证明</view>
+
+      <!-- 店面照片 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>店面照片</text>
+          <text class="required-mark">*</text>
+          <text class="label-desc">请上传门头照或店内环境照</text>
+        </view>
+        <view class="image-upload-area">
+          <view 
+            class="uploaded-item" 
+            wx:for="{{formData.storeImages}}" 
+            wx:key="*this"
+          >
+            <image 
+              class="uploaded-img" 
+              src="{{item}}" 
+              mode="aspectFill"
+              bindtap="onPreviewStoreImage"
+              data-url="{{item}}"
+            />
+            <view class="delete-btn" catchtap="onDeleteStoreImage" data-index="{{index}}">
+              <text class="delete-icon">×</text>
+            </view>
+          </view>
+          
+          <view class="upload-btn" bindtap="onChooseStoreImage" wx:if="{{formData.storeImages.length < 3}}">
+            <view class="upload-icon-wrap">
+              <text class="upload-icon">+</text>
+            </view>
+            <text class="upload-text">上传照片</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 营业执照 -->
+      <view class="form-group no-border">
+        <view class="form-label">
+          <text>营业执照</text>
+          <text class="required-mark">*</text>
+          <text class="label-desc">请上传清晰的营业执照照片</text>
+        </view>
+        <view class="image-upload-area">
+          <view 
+            class="uploaded-item" 
+            wx:for="{{formData.licenseImages}}" 
+            wx:key="*this"
+          >
+            <image 
+              class="uploaded-img" 
+              src="{{item}}" 
+              mode="aspectFill"
+              bindtap="onPreviewLicenseImage"
+              data-url="{{item}}"
+            />
+            <view class="delete-btn" catchtap="onDeleteLicenseImage" data-index="{{index}}">
+              <text class="delete-icon">×</text>
+            </view>
+          </view>
+          
+          <view class="upload-btn" bindtap="onChooseLicenseImage" wx:if="{{formData.licenseImages.length < 1}}">
+            <view class="upload-icon-wrap">
+              <text class="upload-icon">+</text>
+            </view>
+            <text class="upload-text">上传执照</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="submit-area">
+      <button 
+        class="btn-submit" 
+        hover-class="btn-hover"
+        bindtap="onSubmit"
+        disabled="{{isSubmitting || !canSubmit}}"
+      >
+        {{isSubmitting ? '提交中...' : '提交审核'}}
+      </button>
+    </view>
+  </view>
+</view>

@@ -1,14 +1,40 @@
 const app = getApp();
 
 Page({
-  data: {},
+  data: {
+    hasUserInfo: false,
+    userInfo: {}
+  },
   onShow() {
+    this.checkLoginStatus();
     if (typeof this.getTabBar === 'function' &&
         this.getTabBar()) {
       this.getTabBar().setData({
         selected: 2
       })
     }
+  },
+
+  checkLoginStatus() {
+    const userInfo = wx.getStorageSync('userInfo');
+    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    if (userInfo && hasUserInfo) {
+      this.setData({
+        hasUserInfo: true,
+        userInfo: userInfo
+      });
+    } else {
+      this.setData({
+        hasUserInfo: false,
+        userInfo: {}
+      });
+    }
+  },
+
+  onGoLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login'
+    });
   },
 
   handleLogout() {
@@ -36,8 +62,17 @@ Page({
     })
   },
 
+  goResign(){
+    wx.navigateTo({
+      url: '/pages/profile/resign/resign',
+    })
+  },
+
   async apiTest(){
     const result =await app.apiRequest('/system/user/getInfo','GET');
-    console.log(result.data)
+    const roles = result.data.user.roles
+    const userRole = roles.map(i=>i.roleName)
+    console.log('userRole',userRole)
+    console.log(roles[0])
   }
 })

@@ -1,6 +1,11 @@
 // pages/login/login.js
+const app = getApp();
 Page({
   data: {
+    userInfo:{
+      userName:'用户',
+      userRole:'用户角色'
+    },
   },
 
   onLoad() {
@@ -42,20 +47,18 @@ Page({
             success: loginRes => {
               // 登录成功，保存 token
               console.log("res",loginRes)
-              const userInfo ={
-                userName:'用户'+loginRes.data.data.openid.slice(0, 5)
-              }
+              this.setData({
+                'userInfo.userName': '用户'+loginRes.data.data.openid.slice(0, 5)
+              })
               wx.setStorageSync('hasUserInfo',true)
               wx.setStorageSync('token', 'Bearer '+loginRes.data.data.access_token)
-              wx.setStorageSync('userInfo',userInfo)
+              wx.setStorageSync('userInfo',this.data.userInfo)
               wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
               console.log("token",wx.getStorageSync('token'))
               console.log("clientid",wx.getStorageSync('clientid'))
               console.log("userInfo",wx.getStorageSync('userInfo'))
               // 登录成功后跳转到角色选择页
-              wx.redirectTo({
-                url: '/pages/login/role/role'
-              })
+              this.getRole();
             },
             fail: err=>{
               wx.showToast({
@@ -66,6 +69,22 @@ Page({
           })
         }
       }
+    })
+
+    
+  },
+
+  async getRole(){
+    const res = await app.apiRequest('/system/user/getInfo','GET')
+    const roles = res.data.user.roles
+    const userRole = roles.map(i=>i.roleName)
+    this.setData({
+      'userInfo.userRole': userRole
+    })
+    wx.setStorageSync('userInfo',this.data.userInfo)
+    console.log("userInfo",wx.getStorageSync('userInfo'))
+    wx.redirectTo({
+      url: '/pages/login/role/role'
     })
   },
 

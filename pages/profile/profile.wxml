@@ -1,40 +1,53 @@
 <view class="container">
   <!-- 头部用户信息 -->
-  <view class="user-header">
+  <view class="user-header" bindtap="{{!hasUserInfo ? 'onGoLogin' : ''}}">
     <view class="user-info-row">
-      <image class="avatar" src="/images/icons/user.png" mode="aspectFill"></image>
+      <image class="avatar" src="{{userInfo.avatarUrl || '/images/icons/user.png'}}" mode="aspectFill"></image>
       <view class="info-col">
-        <text class="nickname">微信用户</text>
-        <!-- <text class="user-desc">微信号：wx_user</text> -->
+        <block wx:if="{{hasUserInfo}}">
+          <text class="nickname">{{userInfo.userName || '微信用户'}}</text>
+          <text class="user-desc">{{userInfo.userRole || '----'}}</text>
+        </block>
+        <block wx:else>
+          <text class="nickname">未登录</text>
+          <text class="user-desc">点击登录/注册</text>
+        </block>
       </view>
     </view>
     <view class="arrow"></view>
+  </view>
+  <view class="menu-group">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goResign'>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
+      <text class="menu-text">申请成为维修工</text>
+      <view class="arrow"></view>
+    </view>
   </view>
 
   <!-- 功能菜单组 -->
   <view class="menu-group">
     <view class="menu-item" hover-class="menu-item-hover">
-      <image class="menu-icon" src="/images/icons/bluetooth.png"></image>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">我的设备</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover">
-      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">安装记录</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover">
-      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">维修记录</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="goWorker">
-      <image class="menu-icon" src="/images/icons/menu.png"></image>
-      <text class="menu-text">维修工界面测试</text>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
+      <text class="menu-text">我的工作台</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="apiTest">
-      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">api测试</text>
       <view class="arrow"></view>
     </view>

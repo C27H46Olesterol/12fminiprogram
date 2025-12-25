@@ -6,7 +6,8 @@
     "pages/client/activate/activate",
     "pages/worker/worker",
     "pages/profile/profile",
-    "pages/login/role/role"
+    "pages/login/role/role",
+    "pages/profile/resign/resign"
   ],
   "window": {
     "backgroundTextStyle": "light",
