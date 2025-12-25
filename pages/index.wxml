@@ -1,2 +1,45 @@
 <!--pages/index.wxml-->
-<text>pages/index.wxml</text>
+<view class="container">
+  <!-- 顶部搜索/Logo区 (可选) -->
+  <view class="header-bar">
+    <image class="header-logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="header-title">颐尔福服务</text>
+  </view>
+
+  <!-- 1. 轮播图：公司新品 -->
+  <view class="swiper-section">
+    <swiper class="banner-swiper" indicator-dots="true" autoplay="true" interval="5000" duration="500" circular="true" indicator-active-color="#1677ff">
+      <block wx:for="{{banners}}" wx:key="id">
+        <swiper-item>
+          <view class="banner-item">
+            <image src="{{item.image}}" class="banner-image" mode="aspectFill"></image>
+            <view class="banner-info" wx:if="{{item.title}}">
+              <text class="banner-title">{{item.title}}</text>
+            </view>
+          </view>
+        </swiper-item>
+      </block>
+    </swiper>
+  </view>
+
+  <!-- 2. 公司动态 -->
+  <view class="news-section">
+    <view class="section-header">
+      <text class="section-title">公司动态</text>
+      <text class="section-more">更多 ></text>
+    </view>
+    
+    <view class="news-list">
+      <block wx:for="{{newsList}}" wx:key="id">
+        <view class="news-item" bindtap="onNewsTap" data-id="{{item.id}}">
+          <view class="news-content">
+            <text class="news-title">{{item.title}}</text>
+            <text class="news-desc">{{item.summary}}</text>
+            <text class="news-date">{{item.date}}</text>
+          </view>
+          <image class="news-thumb" src="{{item.image}}" mode="aspectFill"></image>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

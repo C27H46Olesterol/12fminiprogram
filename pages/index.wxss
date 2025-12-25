@@ -1,0 +1,159 @@
+/* pages/index.wxss */
+.container {
+  padding: 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 顶部栏 */
+.header-bar {
+  background-color: #fff;
+  padding: 20rpx 30rpx;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+
+.header-logo {
+  width: 60rpx;
+  height: 60rpx;
+  margin-right: 20rpx;
+}
+
+.header-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 轮播图 */
+.swiper-section {
+  background-color: #fff;
+  padding: 20rpx 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.banner-swiper {
+  height: 360rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  transform: translateY(0); /* Fix for borderRadius overflow on some devices */
+}
+
+.banner-item {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.banner-image {
+  width: 100%;
+  height: 100%;
+  background-color: #eee;
+}
+
+.banner-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 40rpx 20rpx 20rpx;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+}
+
+.banner-title {
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+/* 公司动态 */
+.news-section {
+  background-color: #fff;
+  padding: 30rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+  padding-left: 10rpx;
+  border-left: 8rpx solid #1677ff;
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.section-more {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.news-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-right: 24rpx;
+}
+
+.news-title {
+  font-size: 30rpx;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 12rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.news-desc {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.news-date {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.news-thumb {
+  width: 200rpx;
+  height: 140rpx;
+  border-radius: 12rpx;
+  background-color: #f5f5f5;
+  flex-shrink: 0;
+}
+

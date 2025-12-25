@@ -26,5 +26,11 @@ Page({
         }
       }
     })
+  },
+
+  goWorker(){
+    wx.navigateTo({
+      url: '/pages/worker/worker',
+    })
   }
 })

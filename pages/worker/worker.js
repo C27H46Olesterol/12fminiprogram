@@ -16,51 +16,54 @@ Page({
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
    * 生命周期函数--监听页面显示
    */
   onShow() {
-
+    // 可以在这里检查用户身份，如果不是worker则跳转或提示
+    if (typeof this.getTabBar === 'function' &&
+    this.getTabBar()) {
+      // 假设 worker 页面不在 tabbar 中，或者如果是独立入口则不需要这段。
+      // 但如果 worker 也是 tabbar 的一部分，需要设置 selected
+      // 目前 tabbar 只有 3 项：首页、遥控、我的。worker 可能是独立入口。
+    }
   },
 
   /**
-   * 生命周期函数--监听页面隐藏
+   * 安装设备
    */
-  onHide() {
-
+  handleInstall() {
+    wx.navigateTo({
+      url: '/pages/client/activate/activate', // 复用激活页面或新建安装页面
+      fail: () => {
+        wx.showToast({
+          title: '功能开发中',
+          icon: 'none'
+        })
+      }
+    })
   },
 
   /**
-   * 生命周期函数--监听页面卸载
+   * 维修设备
    */
-  onUnload() {
-
+  handleRepair() {
+    wx.showToast({
+      title: '维修功能开发中',
+      icon: 'none'
+    })
+    // 实际路径示例:
+    // wx.navigateTo({ url: '/pages/worker/repair/repair' })
   },
 
   /**
-   * 页面相关事件处理函数--监听用户下拉动作
+   * 查阅维修手册
    */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  handleManual() {
+    wx.showToast({
+      title: '手册功能开发中',
+      icon: 'none'
+    })
+    // 实际路径示例:
+    // wx.downloadFile({ ... }) or wx.openDocument({ ... })
   }
 })

@@ -1,2 +1,41 @@
 <!--pages/worker/worker.wxml-->
-<text>pages/worker/worker.wxml</text>
+<view class="container">
+  <!-- 头部欢迎区 -->
+  <view class="worker-header">
+    <view class="header-content">
+      <text class="greeting">你好，售后工程师</text>
+      <text class="subtitle">准备好开始今天的工作了吗？</text>
+    </view>
+    <image class="header-bg-icon" src="/images/icons/user.png" mode="aspectFit"></image>
+  </view>
+
+  <!-- 工作台功能区 -->
+  <view class="workbench-grid">
+    <!-- 安装设备 -->
+    <view class="work-card" bindtap="handleInstall">
+      <view class="icon-circle blue">
+        <image class="work-icon" src="/images/icons/add.png"></image>
+      </view>
+      <text class="work-title">安装设备</text>
+      <text class="work-desc">新设备激活与绑定</text>
+    </view>
+
+    <!-- 维修设备 -->
+    <view class="work-card" bindtap="handleRepair">
+      <view class="icon-circle orange">
+        <image class="work-icon" src="/images/icons/auto.png"></image>
+      </view>
+      <text class="work-title">维修设备</text>
+      <text class="work-desc">故障诊断与处理</text>
+    </view>
+
+    <!-- 维修手册 -->
+    <view class="work-card" bindtap="handleManual">
+      <view class="icon-circle green">
+        <image class="work-icon" src="/images/icons/menu.png"></image>
+      </view>
+      <text class="work-title">维修手册</text>
+      <text class="work-desc">查阅技术文档</text>
+    </view>
+  </view>
+</view>

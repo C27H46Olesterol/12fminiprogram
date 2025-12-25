@@ -28,6 +28,11 @@
       <text class="menu-text">维修记录</text>
       <view class="arrow"></view>
     </view>
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goWorker">
+      <image class="menu-icon" src="/images/icons/menu.png"></image>
+      <text class="menu-text">维修工界面测试</text>
+      <view class="arrow"></view>
+    </view>
   </view>
 
   <!-- 设置/退出组 -->
