@@ -34,14 +34,14 @@
           <block wx:if="{{!hasUserInfo}}">
             <view class="dropdown-grid">
               <view class="dropdown-item" bindtap="onGoLogin" style="justify-content: center; padding: 20rpx;">
-                <text>请先登录后选择您的设备</text>
+                <text>点击<text style='color:rgb(3, 105, 201);' >登录</text>后选择您的设备</text>
               </view>
             </view>
           </block>
           <block wx:elif="{{deviceList.length === 0}}">
             <view class="dropdown-grid">
               <view class="dropdown-item" bindtap="onActivateProduct" style="justify-content: center; padding: 20rpx;">
-                <text>请先连接设备</text>
+                <text>点击连接设备</text>
               </view>
             </view>
           </block>
@@ -240,62 +240,119 @@
       </view>
     </view>
 
-    <!-- 功能按钮区域 -->
+    <!-- 功能按钮区域 (Updated Single Row with Pull-out Buttons) -->
     <view class="function-area">
-      <!-- 第一排：功能键 -->
-      <view class="func-grid">
-        <view class="func-btn-wrapper" bindtap="toggleLighting">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.lightingOn) ? 'active' : ''}}">
-            <image class="func-icon-img" src="{{(remoteState.powerOn && remoteState.lightingOn) ? '/images/icons/light_on.png' : '/images/icons/light_off.png'}}" mode="aspectFit"></image>
+      <view class="func-grid-row">
+        
+        <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
+        <view class="func-btn-wrapper" catchtap="cycleMode" catchlongpress="toggleModeDropdown">
+          <view class="func-btn circle {{remoteState.powerOn ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/{{remoteState.mode === 'strong' ? 'strong' : (remoteState.mode === 'eco' ? 'eco' : (remoteState.mode === 'fan' ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label"> {{(remoteState.powerOn && remoteState.lightingOn) ? '照明：开' : '照明：关'}} </text>
+          <text class="func-label">{{remoteState.mode === 'auto' ? '制冷' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'fan' ? '通风' : '模式')))}}</text>
+          
+          <!-- Mode Expandable -->
+          <view class="expand-menu {{showModeDropdown ? 'show' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="auto" style="--i:1">
+               <view class="expand-btn-circle {{remoteState.mode === 'auto' ? 'active' : ''}}">
+                 <image src="/images/icons/auto.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">制冷</text>
+             </view>
+             <view class="expand-item" catchtap="selectMode" data-mode="strong" style="--i:2">
+               <view class="expand-btn-circle {{remoteState.mode === 'strong' ? 'active' : ''}}">
+                 <image src="/images/icons/strong.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">强劲</text>
+             </view>
+             <view class="expand-item" catchtap="selectMode" data-mode="eco" style="--i:3">
+               <view class="expand-btn-circle {{remoteState.mode === 'eco' ? 'active' : ''}}">
+                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">节能</text>
+             </view>
+             <view class="expand-item" catchtap="selectMode" data-mode="fan" style="--i:4">
+               <view class="expand-btn-circle {{remoteState.mode === 'fan' ? 'active' : ''}}">
+                 <image src="/images/icons/wind.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">通风</text>
+             </view>
+          </view>
         </view>
 
-        <view class="func-btn-wrapper" bindtap="setAutoMode">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'auto') ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/auto.png" mode="aspectFit"></image>
+        <!-- 2. 摆风键 (Up/Down, Left/Right) -->
+        <view class="func-btn-wrapper" catchtap="cycleSwing" catchlongpress="toggleSwingDropdown">
+          <view class="func-btn circle {{remoteState.powerOn && (remoteState.swingUpDown || remoteState.swingLeftRight) ? 'active' : ''}}">
+            <image class="func-icon-img" src="{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '/images/icons/wind5.png' : (remoteState.swingLeftRight ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'auto') ? '当前：制冷' : '制冷'}}</text>
+          <text class="func-label">{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '全向摆风' : (remoteState.swingLeftRight ? '左右摆风' : (remoteState.swingUpDown ? '上下摆风' : '摆风'))}}</text>
+
+          <!-- Swing Expandable -->
+          <view class="expand-menu {{showSwingDropdown ? 'show' : ''}}">
+             <view class="expand-item" catchtap="selectSwing" data-type="off" style="--i:1">
+                <view class="expand-btn-circle {{(!remoteState.swingUpDown && !remoteState.swingLeftRight) ? 'active' : ''}}">
+                  <image src="/images/icons/wind5.png" mode="aspectFit" style="opacity: 0.5;"></image>
+                </view>
+                <text class="expand-text">关闭</text>
+             </view>
+             <view class="expand-item" catchtap="selectSwing" data-type="ud" style="--i:2">
+                <view class="expand-btn-circle {{remoteState.swingUpDown && !remoteState.swingLeftRight ? 'active' : ''}}">
+                  <image src="/images/icons/uptodown.png" mode="aspectFit"></image>
+                </view>
+                <text class="expand-text">上下</text>
+             </view>
+             <view class="expand-item" catchtap="selectSwing" data-type="lr" style="--i:3">
+                <view class="expand-btn-circle {{remoteState.swingLeftRight && !remoteState.swingUpDown ? 'active' : ''}}">
+                  <image src="/images/icons/sidetoside.png" mode="aspectFit"></image>
+                </view>
+                <text class="expand-text">左右</text>
+             </view>
+             <view class="expand-item" catchtap="selectSwing" data-type="both" style="--i:4">
+                <view class="expand-btn-circle {{remoteState.swingUpDown && remoteState.swingLeftRight ? 'active' : ''}}">
+                  <image src="/images/icons/wind5.png" mode="aspectFit"></image>
+                </view>
+                <text class="expand-text">全向</text>
+             </view>
+          </view>
         </view>
 
-        <view class="func-btn-wrapper" bindtap="setStrongMode">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'strong') ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/strong.png" mode="aspectFit"></image>
+        <!-- 3. 功能键 (Lighting/Surround/Anion) -->
+        <view class="func-btn-wrapper" catchtap="cycleFunction" catchlongpress="toggleFunctionDropdown">
+          <view class="func-btn circle {{remoteState.powerOn && (remoteState.lightingOn || remoteState.lightSurround || remoteState.lightClean) ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'strong') ? '当前：强劲' : '强劲'}}</text>
+          <text class="func-label">功能</text>
+
+          <!-- Function Expandable -->
+          <view class="expand-menu {{showFunctionDropdown ? 'show' : ''}}">
+             <view class="expand-item" catchtap="selectFunction" data-func="off" style="--i:1">
+               <view class="expand-btn-circle">
+                 <image src="/images/icons/light_off.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">全部关闭</text>
+             </view>
+             <view class="expand-item" catchtap="selectFunction" data-func="light" style="--i:2">
+               <view class="expand-btn-circle {{remoteState.lightingOn ? 'active' : ''}}">
+                 <image src="/images/icons/light_on.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">照明灯</text>
+             </view>
+             <view class="expand-item" catchtap="selectFunction" data-func="surround" style="--i:3">
+               <view class="expand-btn-circle {{remoteState.lightSurround ? 'active' : ''}}">
+                 <image src="/images/icons/sun.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">氛围灯</text>
+             </view>
+             <view class="expand-item" catchtap="selectFunction" data-func="clean" style="--i:4">
+               <view class="expand-btn-circle {{remoteState.lightClean ? 'active' : ''}}">
+                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
+               </view>
+               <text class="expand-text">负离子</text>
+             </view>
+          </view>
         </view>
 
-        <view class="func-btn-wrapper" bindtap="setEcoMode">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'eco') ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/eco.png" mode="aspectFit"></image>
-          </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'eco') ? '当前：节能' : '节能'}}</text>
-        </view>
-      </view>
-
-      <!-- 第二排：功能键 -->
-      <view class="func-grid">
-        <view class="func-btn-wrapper" bindtap="toggleFan">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.mode === 'fan') ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/wind.png" mode="aspectFit"></image>
-          </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.mode === 'fan') ? '当前：通风' : '通风'}}</text>
-        </view>
-
-        <view class="func-btn-wrapper" bindtap="toggleSwingUpDown">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.swingUpDown) ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/uptodown.png" mode="aspectFit"></image>
-          </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.swingUpDown) ? '上下摆风：开' : '上下摆风：关'}}</text>
-        </view>
-
-        <view class="func-btn-wrapper" bindtap="toggleSwingLeftRight">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.swingLeftRight) ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/sidetoside.png" mode="aspectFit"></image>
-          </view>
-          <text class="func-label">{{(remoteState.powerOn && remoteState.swingLeftRight) ? '左右摆风：开' : '左右摆风：关'}}</text>
-        </view>
-
+        <!-- 4. 定时 (Existing) -->
         <view class="func-btn-wrapper" bindtap="timerTest">
           <view class="func-btn circle {{(remoteState.powerOn && remoteState.clock) ? 'active' : ''}}" >
             <image class="func-icon-img" src="/images/icons/clock.png" mode="aspectFit"></image>

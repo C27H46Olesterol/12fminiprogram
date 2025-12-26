@@ -1,9 +1,12 @@
 /* pages/client/index/index.wxss */
 
 .client-home {
-  padding-top: 20rpx;
+  padding-top: 10rpx;
   background-color: #f5f5f5;
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 /* 刷新停止提示 */
@@ -45,11 +48,11 @@
 /* 远程遥控界面 (Main Section) */
 .remote-control-section {
   padding: 16rpx 24rpx;
-  background-color: transparent;
-  border-radius: 32rpx;
-  margin: 0 10rpx 20rpx;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* 均匀分布 */
+  padding-bottom: 40rpx;
   box-sizing: border-box;
 }
 
@@ -339,11 +342,11 @@
   background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
   border: none;
   border-radius: 32rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx; /* Reduced from 30rpx */
+  padding: 30rpx 24rpx; /* 稍微增加上下内边距 */
+  margin-bottom: 30rpx;
   box-shadow: 0 12rpx 40rpx rgba(24, 144, 255, 0.08);
   flex-shrink: 0;
-  overflow: hidden; /* 溢出隐藏 */
+  overflow: hidden;
 }
 
 .display-row {
@@ -505,73 +508,229 @@
 /* 功能按钮区域 */
 .function-area {
   padding: 0 10rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 40rpx;
 }
 
-.func-grid {
+.func-grid-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx; /* 稍微压缩 gap 以便容纳固定宽度 */
-  margin-bottom: 15rpx;
-  overflow: hidden;
+  gap: 20rpx;
+  align-items: start;
 }
 
 .func-btn-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  min-height: 180rpx;
+  overflow: visible; /* 确保阴影不被裁剪 */
 }
 
-.func-btn {
-  background-color: #fff;
+/* 统一按钮样式 */
+.func-btn.circle {
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  margin-bottom: 4rpx;
-  transition: all 0.2s;
-}
-
-.func-btn.circle {
-  width: 100rpx; /* 统一按钮宽度 */
-  height: 100rpx; /* 统一按钮高度 */
-  border-radius: 50%;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid #f0f0f0;
   flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
-.func-btn:active {
-  transform: scale(0.95);
+.func-btn.circle:active {
+  transform: scale(0.92);
+  background-color: #f5f5f5;
 }
 
-.func-btn.active {
-  background-color: #e6fffa;
-  border: 2rpx solid #00bfa5;
+.func-btn.circle.active {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  box-shadow: 0 6rpx 20rpx rgba(24, 144, 255, 0.3);
 }
 
 .func-btn .func-icon-img {
-  width: 72rpx;
-  height: 72rpx;
+  width: 70rpx;
+  height: 70rpx;
+  transition: all 0.2s;
 }
 
-.func-btn.active .func-icon-img {
-  /* 如果需要激活态图标变色，可以使用 filter 或者准备特定的激活态图片，
-     由于这里可能只有一套图片，暂时保持原样或透明度处理 */
+.func-btn.circle.active .func-icon-img {
+  filter: brightness(0) invert(1); /* 激活时图标变白 */
 }
 
 .func-label {
-  font-size: 24rpx; /* Increased from 22rpx */
-  font-weight: bold; /* Added bold */
-  color: #333; /* Darker color for better readability when bold */
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #666;
+  margin-top: 12rpx;
   text-align: center;
-  width: 130rpx;
-  height: 60rpx; /* Slightly adjusted to accommodate larger text */
-  line-height: 1.2;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  width: 140rpx;
+  white-space: nowrap;
   overflow: hidden;
-  margin-top: 4rpx;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
+
+.func-btn-wrapper .active + .func-label {
+  color: #1890ff;
+  font-weight: bold;
+}
+
+/* 展开式二级菜单 - 调整为向上弹出且文字在右侧 */
+.expand-menu {
+  position: absolute;
+  bottom: 160rpx; /* 进一步拉开与主按钮的距离，防止重叠 */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse; 
+  gap: 25rpx; /* 增加间距 */
+  z-index: 1000;
+  pointer-events: none;
+  width: 350rpx; /* 加宽以容纳更大的按钮和文字 */
+  align-items: flex-start;
+  padding-left: 122rpx; /* 重新计算：(350/2) - (106/2) = 175 - 53 = 122，使106宽的按钮居中 */
+}
+
+.expand-menu.show {
+  pointer-events: auto;
+}
+
+.expand-item {
+  display: flex;
+  flex-direction: row; /* 水平排列，文字在右 */
+  align-items: center;
+  opacity: 0;
+  transform: translateY(40rpx) scale(0.8);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 0.05s);
+  width: 100%;
+}
+
+.expand-menu.show .expand-item {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 二级按钮样式 - 放大版 */
+.expand-btn-circle {
+  width: 106rpx; 
+  height: 106rpx;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.15);
+  border: 1rpx solid #f0f0f0;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.expand-btn-circle image {
+  width: 66rpx;
+  height: 66rpx;
+}
+
+.expand-btn-circle.active {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  box-shadow: 0 6rpx 20rpx rgba(24, 144, 255, 0.3);
+}
+
+.expand-btn-circle.active image {
+  filter: brightness(0) invert(1);
+}
+
+.expand-text {
+  font-size: 24rpx;
+  color: #333;
+  margin-left: 20rpx; /* 增加与按钮的间距，防止背景盖住按钮阴影 */
+  background: rgba(255, 255, 255, 0.85); /* 降低不透明度 */
+  backdrop-filter: blur(8px); /* 磨砂玻璃效果 */
+  -webkit-backdrop-filter: blur(8px);
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  white-space: nowrap;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
+  font-weight: 500;
+  border: 1rpx solid rgba(255,255,255,0.4);
+}
+
+/* 中间控制区域 (优化防误触) */
+.control-panel-split {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30rpx;
+  padding: 0 30rpx;
+  align-items: center;
+}
+
+.control-pill {
+  width: 170rpx;
+  min-height: 380rpx; /* 增加高度，拉开+和-的距离 */
+  background-color: #ffffff;
+  border-radius: 90rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  box-shadow: 0 12rpx 30rpx rgba(0, 0, 0, 0.08);
+  border: 2rpx solid #f5f5f5;
+}
+
+.control-btn {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.control-btn:active {
+  background-color: #e6f7ff;
+  transform: scale(0.9);
+}
+
+/* 针对加减号的特定样式，增加视觉区分 */
+.control-btn image {
+  width: 80rpx; /* 调整图标大小，比例更协调 */
+  height: 80rpx;
+}
+
+.control-btn:first-child {
+  /* 增加向上箭头的背景色淡出提示或微调 */
+  border: 1rpx solid #fff1f0; /* 给加号一点暖色边缘（可选） */
+}
+
+.control-btn:last-child {
+  border: 1rpx solid #f0f5ff; /* 给减号一点冷色边缘（可选） */
+}
+
+.control-icon-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-title {
+  font-size: 26rpx;
+  color: #999;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+}
+
 
 /* Obsolete iconfont styles removed */
 

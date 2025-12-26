@@ -80,9 +80,9 @@
 }
 
 .menu-icon {
-  width: 40rpx;
-  height: 40rpx;
-  margin-right: 30rpx;
+  width: 80rpx;
+  height: 80rpx;
+  margin-right: 20rpx;
 }
 
 .menu-text {

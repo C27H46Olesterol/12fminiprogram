@@ -44,9 +44,9 @@
 }
 
 .cover-image {
-  width: 48rpx;
-  height: 48rpx;
-  margin-bottom: 4rpx;
+  width: 78rpx;
+  height: 78rpx;
+  margin-bottom: 2rpx;
 }
 
 .tab-bar-item view {
@@ -74,8 +74,8 @@
 }
 
 .center-image {
-  width: 64rpx; /* 放大图标 */
-  height: 64rpx;
+  width: 89rpx; /* 放大图标 */
+  height: 89rpx;
 }
 
 .center-text {
