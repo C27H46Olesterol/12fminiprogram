@@ -1,16 +1,17 @@
+// custom-tab-bar/index.js
 Component({
   data: {
     selected: 0,
-    color: "#7A7E83",
-    selectedColor: "#1677ff",
+    color: "#8e8e93", // 稍微浅一点的灰，更显现代感
+    selectedColor: "#1890ff", // 品牌蓝
     list: [{
       pagePath: "/pages/index",
-      text: "首页",
-      iconPath: "/images/icons/home.png",
-      selectedIconPath: "/images/icons/home.png"
+      text: "工作台",
+      iconPath: "/images/icons/desk.png",
+      selectedIconPath: "/images/icons/desk.png"
     }, {
       pagePath: "/pages/client/index/index",
-      text: "遥控",
+      text: "遥控器",
       iconPath: "/images/icons/remote.png",
       selectedIconPath: "/images/icons/remote.png"
     }, {
@@ -22,12 +23,15 @@ Component({
   },
   methods: {
     switchTab(e) {
-      const data = e.currentTarget.dataset
-      const url = data.path
-      wx.switchTab({url})
-      // this.setData({
-      //   selected: data.index
-      // })
+      const data = e.currentTarget.dataset;
+      const url = data.path;
+
+      // 添加轻微震动反馈
+      wx.vibrateShort({ type: 'light' });
+
+      wx.switchTab({
+        url: url
+      });
     }
   }
 })

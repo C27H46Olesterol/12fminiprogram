@@ -1,159 +1,252 @@
 /* pages/index.wxss */
 .container {
-  padding: 0;
-  background-color: #f5f5f5;
   min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 30rpx;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 150rpx; /* 留出TabBar空间 */
 }
 
-/* 顶部栏 */
-.header-bar {
+/* 头部样式 - 共享通用设计 */
+.worker-header {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  border-radius: 24rpx;
+  padding: 40rpx;
+  margin-bottom: 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  box-shadow: 0 8rpx 20rpx rgba(22, 119, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.worker-header.user-mode {
+  background: linear-gradient(135deg, #00bfa5 0%, #00d2b4 100%); /* 用户模式换个颜色区分 */
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.greeting {
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.subtitle {
+  font-size: 26rpx;
+  opacity: 0.9;
+}
+
+.header-bg-icon {
+  width: 120rpx;
+  height: 120rpx;
+  opacity: 0.2;
+  position: absolute;
+  right: 20rpx;
+  bottom: -20rpx;
+  transform: rotate(-15deg);
+}
+
+/* ================= 维修工样式 (Worker) ================= */
+.workbench-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30rpx;
+}
+
+.work-card {
   background-color: #fff;
-  padding: 20rpx 30rpx;
+  border-radius: 20rpx;
+  padding: 40rpx;
   display: flex;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  position: relative;
 }
 
-.header-logo {
-  width: 60rpx;
-  height: 60rpx;
-  margin-right: 20rpx;
+.work-card:active {
+  transform: scale(0.98);
+  background-color: #fafafa;
 }
 
-.header-title {
+.icon-circle {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 30rpx;
+  flex-shrink: 0;
+}
+
+.icon-circle.blue { background-color: #e6f7ff; }
+.icon-circle.orange { background-color: #fff7e6; }
+.icon-circle.green { background-color: #f6ffed; }
+.icon-circle.teal { background-color: #e6fffb; }
+
+.work-icon {
+  width: 73rpx;
+  height: 73rpx;
+}
+
+.work-title {
   font-size: 32rpx;
   font-weight: 600;
   color: #333;
 }
 
-/* 轮播图 */
-.swiper-section {
-  background-color: #fff;
-  padding: 20rpx 30rpx;
-  margin-bottom: 20rpx;
+.work-desc {
+  font-size: 24rpx;
+  color: #999;
+  padding: 0 20px;
 }
 
-.banner-swiper {
-  height: 360rpx;
-  border-radius: 16rpx;
-  overflow: hidden;
-  transform: translateY(0); /* Fix for borderRadius overflow on some devices */
-}
-
-.banner-item {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  border-radius: 16rpx;
-  overflow: hidden;
-}
-
-.banner-image {
-  width: 100%;
-  height: 100%;
-  background-color: #eee;
-}
-
-.banner-info {
+.work-card::after {
+  content: " ";
+  display: inline-block;
+  height: 16rpx;
+  width: 16rpx;
+  border-width: 4rpx 4rpx 0 0;
+  border-color: #e0e0e0;
+  border-style: solid;
+  transform: rotate(45deg);
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 40rpx 20rpx 20rpx;
-  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  right: 40rpx;
+  top: 50%;
+  margin-top: -10rpx;
 }
 
-.banner-title {
-  color: #fff;
-  font-size: 30rpx;
-  font-weight: 500;
-}
-
-/* 公司动态 */
-.news-section {
+/* ================= 普通用户样式 (Repair Form) ================= */
+.form-container {
   background-color: #fff;
-  padding: 30rpx;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.form-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
   margin-bottom: 30rpx;
-  padding-left: 10rpx;
-  border-left: 8rpx solid #1677ff;
+  padding-left: 20rpx;
+  border-left: 8rpx solid #00bfa5;
 }
 
-.section-title {
-  font-size: 34rpx;
-  font-weight: bold;
-  color: #333;
+.form-item {
+  margin-bottom: 30rpx;
+  position: relative;
 }
 
-.section-more {
-  font-size: 26rpx;
-  color: #999;
-}
-
-.news-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.news-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-
-.news-item:last-child {
-  border-bottom: none;
-}
-
-.news-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  margin-right: 24rpx;
-}
-
-.news-title {
-  font-size: 30rpx;
-  color: #333;
-  line-height: 1.4;
-  margin-bottom: 12rpx;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  font-weight: 500;
-}
-
-.news-desc {
-  font-size: 26rpx;
+.label {
+  display: block;
+  font-size: 28rpx;
   color: #666;
-  margin-bottom: 12rpx;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  overflow: hidden;
+  margin-bottom: 16rpx;
 }
 
-.news-date {
-  font-size: 22rpx;
-  color: #999;
+.required {
+  color: #ff4d4f;
+  margin-right: 4rpx;
 }
 
-.news-thumb {
-  width: 200rpx;
-  height: 140rpx;
+.input {
+  width: 100%;
+  height: 80rpx;
+  background-color: #f9f9f9;
   border-radius: 12rpx;
-  background-color: #f5f5f5;
-  flex-shrink: 0;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+  border: 1rpx solid #eee;
 }
 
+.scan-icon {
+  position: absolute;
+  right: 24rpx;
+  top: 70rpx;
+  width: 40rpx;
+  height: 40rpx;
+  z-index: 10;
+}
+
+.textarea {
+  width: 100%;
+  height: 200rpx;
+  background-color: #f9f9f9;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+  border: 1rpx solid #eee;
+}
+
+.image-uploader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.image-wrap {
+  width: 140rpx;
+  height: 140rpx;
+  position: relative;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}
+
+.remove-btn {
+  position: absolute;
+  top: -14rpx;
+  right: -14rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+}
+
+.upload-btn {
+  width: 140rpx;
+  height: 140rpx;
+  border: 2rpx dashed #d9d9d9;
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 22rpx;
+}
+
+.submit-btn {
+  width: 100% !important;
+  height: 90rpx;
+  background: linear-gradient(135deg, #00bfa5 0%, #00d2b4 100%);
+  color: #fff;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40rpx;
+  box-shadow: 0 8rpx 16rpx rgba(0, 191, 165, 0.2);
+}

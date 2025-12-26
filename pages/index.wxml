@@ -1,45 +1,72 @@
-<!--pages/index.wxml-->
+<!-- pages/index.wxml -->
 <view class="container">
-  <!-- 顶部搜索/Logo区 (可选) -->
-  <view class="header-bar">
-    <image class="header-logo" src="/images/logo.png" mode="aspectFit"></image>
-    <text class="header-title">颐尔福服务</text>
-  </view>
-
-  <!-- 1. 轮播图：公司新品 -->
-  <view class="swiper-section">
-    <swiper class="banner-swiper" indicator-dots="true" autoplay="true" interval="5000" duration="500" circular="true" indicator-active-color="#1677ff">
-      <block wx:for="{{banners}}" wx:key="id">
-        <swiper-item>
-          <view class="banner-item">
-            <image src="{{item.image}}" class="banner-image" mode="aspectFill"></image>
-            <view class="banner-info" wx:if="{{item.title}}">
-              <text class="banner-title">{{item.title}}</text>
-            </view>
-          </view>
-        </swiper-item>
-      </block>
-    </swiper>
-  </view>
-
-  <!-- 2. 公司动态 -->
-  <view class="news-section">
-    <view class="section-header">
-      <text class="section-title">公司动态</text>
-      <text class="section-more">更多 ></text>
+  
+  <!-- 1. 维修工视图 -->
+  <block wx:if="{{userRole === '维修工'}}">
+    <view class="worker-header">
+      <view class="header-content">
+        <text class="greeting">您好，{{userInfo.userName || "售后工程师"}}</text>
+        <text class="subtitle">准备好开始今天的工作了吗？</text>
+      </view>
+      <image class="header-bg-icon" src="/images/icons/worker.png" mode="aspectFit"></image>
     </view>
-    
-    <view class="news-list">
-      <block wx:for="{{newsList}}" wx:key="id">
-        <view class="news-item" bindtap="onNewsTap" data-id="{{item.id}}">
-          <view class="news-content">
-            <text class="news-title">{{item.title}}</text>
-            <text class="news-desc">{{item.summary}}</text>
-            <text class="news-date">{{item.date}}</text>
-          </view>
-          <image class="news-thumb" src="{{item.image}}" mode="aspectFill"></image>
+
+    <view class="workbench-grid">
+      <view class="work-card" bindtap="handleInstall">
+        <view class="icon-circle blue">
+          <image class="work-icon" src="/images/icons/add.png"></image>
         </view>
-      </block>
+        <text class="work-title">安装设备</text>
+        <text class="work-desc">新设备激活与绑定</text>
+      </view>
+
+      <view class="work-card" bindtap="handleRepair">
+        <view class="icon-circle orange">
+          <image class="work-icon" src="/images/icons/auto.png"></image>
+        </view>
+        <text class="work-title">维修设备</text>
+        <text class="work-desc">故障诊断与处理</text>
+      </view>
+
+      <view class="work-card" bindtap="handleManual">
+        <view class="icon-circle green">
+          <image class="work-icon" src="/images/icons/menu.png"></image>
+        </view>
+        <text class="work-title">维修手册</text>
+        <text class="work-desc">查阅技术文档</text>
+      </view>
     </view>
-  </view>
+  </block>
+
+  <!-- 2. 普通用户视图 (功能入口) -->
+  <block wx:else>
+    <view class="worker-header user-mode">
+      <view class="header-content">
+        <text class="greeting">您好，{{userInfo.userName || "尊敬的用户"}}</text>
+        <text class="subtitle">颐尔福为您提供全方位的售后保障</text>
+      </view>
+      <image class="header-bg-icon" src="/images/icons/user.png" mode="aspectFit"></image>
+    </view>
+
+    <view class="workbench-grid">
+      <!-- 报修申请 -->
+      <view class="work-card" bindtap="handleReport">
+        <view class="icon-circle teal">
+          <image class="work-icon" src="/images/icons/repair-form.png"></image>
+        </view>
+        <text class="work-title">报修申请</text>
+        <text class="work-desc">设备故障在线报修</text>
+      </view>
+
+      <!-- 自助手册 -->
+      <view class="work-card" bindtap="handleManual">
+        <view class="icon-circle green">
+          <image class="work-icon" src="/images/icons/menu.png"></image>
+        </view>
+        <text class="work-title">自助手册</text>
+        <text class="work-desc">常见问题与操作指引</text>
+      </view>
+    </view>
+  </block>
+
 </view>

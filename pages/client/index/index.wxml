@@ -111,7 +111,7 @@
         <view class="icon-btn">
           <image class="btn-icon-img" src="/images/icons/add.png" mode="aspectFit"></image>
         </view>
-        <text class="btn-label">连接设备</text>
+        <text class="btn-label">连接方式</text>
 
         <!-- 添加设备下拉菜单 -->
         <view class="dropdown-menu {{showAddDeviceDropdown ? 'show' : ''}}">

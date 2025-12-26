@@ -1,19 +1,24 @@
 <view class="tab-bar">
-  <view class="tab-bar-border"></view>
   <block wx:for="{{list}}" wx:key="index">
-    <view class="tab-bar-item {{index === 1 ? 'center-item' : ''}}" data-path="{{item.pagePath}}" data-index="{{index}}" bindtap="switchTab">
+    <view class="tab-bar-item {{selected === index ? 'active' : ''}} {{index === 1 ? 'center-item' : ''}}" data-path="{{item.pagePath}}" data-index="{{index}}" bindtap="switchTab">
+      
       <!-- 中间凸起按钮特殊处理 -->
-      <block wx:if="{{index === 1}}">
-        <view class="center-circle-wrap">
-          <image src="{{selected === index ? item.selectedIconPath : item.iconPath}}" class="center-image"></image>
-        </view>
-        <view class="center-text" style="color: {{selected === index ? selectedColor : color}}">{{item.text}}</view>
-      </block>
-      <!-- 普通按钮 -->
-      <block wx:else>
+      <view wx:if="{{index === 1}}" class="center-circle-wrap {{selected === index ? 'active' : ''}}">
+        <image src="{{selected === index ? item.selectedIconPath : item.iconPath}}" class="center-image"></image>
+      </view>
+      
+      <!-- 普通项图标 -->
+      <view wx:else class="normal-icon-wrap {{selected === index ? 'active' : ''}}">
         <image src="{{selected === index ? item.selectedIconPath : item.iconPath}}" class="cover-image"></image>
-        <view style="color: {{selected === index ? selectedColor : color}}">{{item.text}}</view>
-      </block>
+      </view>
+      
+      <!-- 文字标签 -->
+      <view class="tab-text {{index === 1 ? 'center-text' : ''}}" style="color: {{selected === index ? selectedColor : color}}">
+        {{item.text}}
+      </view>
+      
+      <!-- 底部指示线 (仅非中间项) -->
+      <view class="indicator"></view>
     </view>
   </block>
 </view>

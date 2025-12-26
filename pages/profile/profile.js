@@ -90,5 +90,16 @@ Page({
   async apiTest(){
     this.getUserRole();
     // this.goApply();
+  },
+
+  roleChange(){
+    const userInfo = wx.getStorageSync('userInfo')
+    if(userInfo.userRole === '维修工'){
+      userInfo.userRole = '普通用户'
+    }
+    else{
+      userInfo.userRole = '维修工'
+    }
+    wx.setStorageSync('userInfo',userInfo)
   }
 })

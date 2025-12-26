@@ -1,38 +1,32 @@
-<!--pages/client/problem/problem.wxml-->
+<!--pages/client/problem/issues/issues.wxml-->
 <view class="container">
-  <!-- 头部欢迎区 (保持与worker页面风格一致) -->
-  <view class="worker-header">
+  <view class="worker-header user-mode">
     <view class="header-content">
-      <text class="greeting">您好，{{userInfo.userName || "尊敬的用户"}}</text>
-      <text class="subtitle">遇到问题了吗？请提交您的报修申请</text>
+      <text class="greeting">故障报修</text>
+      <text class="subtitle">请准确填写您的设备故障信息</text>
     </view>
     <image class="header-bg-icon" src="/images/icons/worker.png" mode="aspectFit"></image>
   </view>
 
-  <!-- 提交报修申请表单 -->
   <view class="form-container">
     <view class="form-title">报修单信息</view>
     
-    <!-- 设备码 SN -->
     <view class="form-item">
       <text class="label"><text class="required">*</text>设备码 (SN/IMEI)</text>
       <input class="input" placeholder="请输入或扫描设备条码" value="{{formData.sn}}" bindinput="onInputChange" data-field="sn" />
       <image class="scan-icon" src="/images/icons/scan.png" bindtap="onScanSN"></image>
     </view>
 
-    <!-- 手机号 -->
     <view class="form-item">
       <text class="label"><text class="required">*</text>联系电话</text>
       <input class="input" type="number" placeholder="请输入您的手机号码" value="{{formData.phone}}" bindinput="onInputChange" data-field="phone" />
     </view>
 
-    <!-- 故障描述 -->
     <view class="form-item">
       <text class="label"><text class="required">*</text>故障现象描述</text>
       <textarea class="textarea" placeholder="请详细描述设备出现的故障现象..." value="{{formData.description}}" bindinput="onInputChange" data-field="description" maxlength="200"></textarea>
     </view>
 
-    <!-- 故障图片 -->
     <view class="form-item">
       <text class="label">附件图片 (可选)</text>
       <view class="image-uploader">
@@ -50,7 +44,6 @@
       <text class="tip">最多上传4张图片</text>
     </view>
 
-    <!-- 提交按钮 -->
     <button class="submit-btn" bindtap="onSubmitReport">提交报修申请</button>
   </view>
 </view>

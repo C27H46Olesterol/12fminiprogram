@@ -1,36 +1,27 @@
+/* custom-tab-bar/index.wxss */
 .tab-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100rpx;
+  height: 140rpx; /* 从 120rpx 增加 */
   padding-bottom: env(safe-area-inset-bottom);
   
-  /* 关键：毛玻璃效果 */
-  background-color: rgba(255, 255, 255, 0.95); /* 提高不透明度，防止凸起部分穿帮 */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* 现代拟物 & 毛玻璃混合 */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   
   display: flex;
   align-items: center;
   justify-content: space-around;
   
-  /* 边框和阴影 */
-  border-top: 1rpx solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 -2rpx 20rpx rgba(0, 0, 0, 0.08);
+  /* 柔和阴影 */
+  box-shadow: 0 -8rpx 30rpx rgba(0, 0, 0, 0.05);
+  border-top: 1rpx solid rgba(255, 255, 255, 0.3);
   
   z-index: 999;
-  overflow: visible; /* 允许中间按钮凸出 */
-}
-
-.tab-bar-border {
-  background-color: rgba(0, 0, 0, 0.33);
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 1px;
-  transform: scaleY(0.5);
+  overflow: visible;
 }
 
 .tab-bar-item {
@@ -41,45 +32,87 @@
   flex: 1;
   height: 100%;
   position: relative;
+  transition: all 0.3s ease;
 }
 
-.cover-image {
-  width: 78rpx;
-  height: 78rpx;
-  margin-bottom: 2rpx;
-}
-
-.tab-bar-item view {
-  font-size: 10px;
-}
-
-/* 中间凸起按钮样式 */
-.center-item {
-  position: relative;
-  z-index: 1001;
-}
-
-.center-circle-wrap {
-  width: 110rpx;
-  height: 110rpx;
+.normal-icon-wrap {
+  width: 100rpx; /* 从 86rpx 增加 */
+  height: 100rpx;
   border-radius: 50%;
-  background-color: #fff;
-  position: absolute;
-  top: -40rpx; /* 向上凸出 */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 -4rpx 10rpx rgba(0,0,0,0.1); /* 顶部阴影 */
-  border: 1rpx solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.normal-icon-wrap.active {
+  background: linear-gradient(135deg, #1890ff 0%, #00bfa5 100%);
+  box-shadow: 0 6rpx 16rpx rgba(24, 144, 255, 0.25);
+  transform: translateY(-4rpx);
+}
+
+.cover-image {
+  width: 88rpx; /* 从 48rpx 增加 */
+  height: 88rpx;
+  transition: all 0.3s ease;
+}
+
+.normal-icon-wrap.active .cover-image {
+  filter: brightness(0) invert(1);
+}
+
+.tab-bar-item .tab-text {
+  font-size: 24rpx; /* 从 20rpx 增加 */
+  font-weight: 600;
+  margin-top: 4rpx;
+  transition: all 0.3s ease;
+}
+
+/* 中间凸起按钮样式 - 核心交互点 */
+.center-item {
+  position: relative;
+  overflow: visible;
+}
+
+.center-circle-wrap {
+  width: 140rpx; /* 从 120rpx 增加 */
+  height: 140rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  position: absolute;
+  top: -45rpx; /* 向上凸出更多，更显眼 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10rpx 25rpx rgba(24, 144, 255, 0.15);
+  border: 4rpx solid #ffffff; /* 白色边框增加层次感 */
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.center-circle-wrap.active {
+  background: linear-gradient(135deg, #1890ff 0%, #00bfa5 100%);
+  box-shadow: 0 12rpx 30rpx rgba(24, 144, 255, 0.35);
+  transform: translateY(-5rpx);
 }
 
 .center-image {
-  width: 89rpx; /* 放大图标 */
-  height: 89rpx;
+  width: 76rpx; /* 从 86rpx 进一步放大 */
+  height: 76rpx;
+  transition: all 0.3s ease;
+}
+
+.center-circle-wrap.active .center-image {
+  filter: brightness(0) invert(1); /* 激活时变为纯白 */
 }
 
 .center-text {
-  margin-top: 70rpx; /* 将文字推到底部 */
-  font-size: 10px;
+  margin-top: 60rpx; /* 适配更大的图标 */
+  font-size: 24rpx;
+  font-weight: 600;
   line-height: 1;
+}
+
+/* 移除旧的指示线 */
+.indicator {
+  display: none;
 }

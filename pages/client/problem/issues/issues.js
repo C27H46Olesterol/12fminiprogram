@@ -1,4 +1,4 @@
-// pages/client/problem/problem.js
+// pages/client/problem/issues/issues.js
 Page({
 
   /**
@@ -21,7 +21,6 @@ Page({
     const userInfo = wx.getStorageSync('userInfo');
     this.setData({
       userInfo,
-      // 预填手机号如果缓存有的话
       'formData.phone': userInfo ? userInfo.phone : ''
     });
   },
@@ -46,12 +45,6 @@ Page({
         this.setData({
           'formData.sn': res.result
         });
-      },
-      fail: () => {
-        wx.showToast({
-          title: '扫码取消',
-          icon: 'none'
-        });
       }
     });
   },
@@ -64,7 +57,6 @@ Page({
     wx.chooseImage({
       count: count,
       sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
       success: (res) => {
         this.setData({
           tempImages: this.data.tempImages.concat(res.tempFilePaths)
@@ -87,9 +79,8 @@ Page({
    * 预览图片
    */
   onPreviewImage(e) {
-    const { url } = e.currentTarget.dataset;
     wx.previewImage({
-      current: url,
+      current: e.currentTarget.dataset.url,
       urls: this.data.tempImages
     });
   },
@@ -100,45 +91,22 @@ Page({
   async onSubmitReport() {
     const { sn, phone, description } = this.data.formData;
 
-    // 必填校验
-    if (!sn) {
-      return wx.showToast({ title: '请输入设备码', icon: 'none' });
-    }
-    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-      return wx.showToast({ title: '请输入正确的手机号', icon: 'none' });
-    }
-    if (!description) {
-      return wx.showToast({ title: '请简要描述故障现象', icon: 'none' });
-    }
+    if (!sn) return wx.showToast({ title: '请输入设备码', icon: 'none' });
+    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) return wx.showToast({ title: '手机号格式错误', icon: 'none' });
+    if (!description) return wx.showToast({ title: '请填写故障描述', icon: 'none' });
 
     wx.showLoading({ title: '提交中...' });
 
-    // 模拟提交过程
     setTimeout(() => {
       wx.hideLoading();
       wx.showModal({
         title: '提交成功',
-        content: '您的报修申请已收到，我们将尽快联系您处理。',
+        content: '您的报修申请已收到',
         showCancel: false,
         success: () => {
           wx.navigateBack();
         }
       });
     }, 1500);
-
-    // 实际业务逻辑中，这里应该调用 API 接口
-    /*
-    try {
-      const result = await app.apiRequest('/api/repair/submit', 'POST', {
-        ...this.data.formData,
-        images: this.data.tempImages // 实际开发通常需要先上传图片换取URL
-      });
-      if (result.code === 200) {
-        // 成功处理
-      }
-    } catch (e) {
-      // 错误处理
-    }
-    */
   }
 })
