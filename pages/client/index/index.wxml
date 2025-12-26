@@ -136,34 +136,35 @@
           <text class="display-value {{remoteState.powerOn ? 'active' : ''}}">{{remoteState.powerOn ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
-          <text class="display-label">照明</text>
-          <text class="display-value {{remoteState.lightingOn ? 'active' : ''}}">{{remoteState.lightingOn ? 'ON' : 'OFF'}}</text>
+          <text class="display-label">信号</text>
+          <view class="display-item-content">
+            <block wx:if="{{selectedDevice.connectionType === 'bluetooth'}}">
+              <image class="display-connection-icon-small" src="/images/icons/bluetooth.png" mode="aspectFit" style="width:30rpx;height:30rpx;"></image>
+            </block>
+            <block wx:else>
+              <view class="display-signal-bars-small">
+                <view class="display-signal-bar {{selectedDevice.signalStrength >= 1 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{selectedDevice.signalStrength >= 2 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{selectedDevice.signalStrength >= 3 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{selectedDevice.signalStrength >= 4 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{selectedDevice.signalStrength >= 5 ? 'active' : ''}}"></view>
+              </view>
+            </block>
+          </view>
         </view>
         <view class="display-item">
-          <text class="display-label">故障码</text>
-          <text class="display-value error" wx:if="{{deviceStatus.faultCode}}">{{deviceStatus.faultCode}}</text>
-          <text class="display-value nomal" wx:if="{{!deviceStatus.faultCode && deviceStatus.online}}">工作正常</text>
-          <text class="display-value ">--</text>
+          <text class="display-label">状态</text>
+          <text class="display-value nomal" wx:if="{{deviceStatus.online}}">在线</text>
+          <text class="display-value" wx:else>离线</text>
         </view>
       </view>
 
       <!-- 中间：核心显示 (温度 & 模式) -->
       <view class="display-main">
-        <!-- 左侧：连接方式指示器 -->
-        <view class="display-item connection-status">
-          <block wx:if="{{selectedDevice.connectionType === 'bluetooth'}}">
-            <image class="display-connection-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
-          </block>
-          <block wx:else>
-            <!-- 4G信号条 -->
-            <view class="display-signal-bars">
-              <view class="display-signal-bar {{selectedDevice.signalStrength >= 1 ? 'active' : ''}}"></view>
-              <view class="display-signal-bar {{selectedDevice.signalStrength >= 2 ? 'active' : ''}}"></view>
-              <view class="display-signal-bar {{selectedDevice.signalStrength >= 3 ? 'active' : ''}}"></view>
-              <view class="display-signal-bar {{selectedDevice.signalStrength >= 4 ? 'active' : ''}}"></view>
-              <view class="display-signal-bar {{selectedDevice.signalStrength >= 5 ? 'active' : ''}}"></view>
-            </view>
-          </block>
+        <!-- 左侧：故障码显示 -->
+        <view class="display-item fault-status">
+          <text class="display-label-mini">故障码</text>
+          <text class="display-value fault-code {{deviceStatus.faultCode ? 'error' : 'nomal'}}">{{deviceStatus.faultCode || '--'}}</text>
         </view>
         <view class="display-item temp-display">
           <text class="temp-value">{{remoteState.targetTemperature || '--'}}</text>
@@ -194,15 +195,31 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">上下摆风</text>
-          <text class="display-value">{{remoteState.swingUpDown ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{remoteState.swingUpDown ? 'active' : ''}}">{{remoteState.swingUpDown ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">左右摆风</text>
-          <text class="display-value">{{remoteState.swingLeftRight ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{remoteState.swingLeftRight ? 'active' : ''}}">{{remoteState.swingLeftRight ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">电压</text>
           <text class="display-value">{{deviceStatus.voltage}}V</text>
+        </view>
+      </view>
+
+      <!-- 第五行：扩展功能状态 -->
+      <view class="display-row">
+        <view class="display-item">
+          <text class="display-label">照明灯</text>
+          <text class="display-value {{remoteState.lightingOn ? 'active' : ''}}">{{remoteState.lightingOn ? 'ON' : 'OFF'}}</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">氛围灯</text>
+          <text class="display-value {{remoteState.lightSurround ? 'active' : ''}}">{{remoteState.lightSurround ? 'ON' : 'OFF'}}</text>
+        </view>
+        <view class="display-item">
+          <text class="display-label">负离子</text>
+          <text class="display-value {{remoteState.lightClean ? 'active' : ''}}">{{remoteState.lightClean ? 'ON' : 'OFF'}}</text>
         </view>
       </view>
     </view>

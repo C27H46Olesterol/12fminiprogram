@@ -10,8 +10,7 @@
     "pages/profile/resign/resign",
     "pages/worker/repair/repair",
     "pages/worker/activate/activate",
-    "pages/client/products/products",
-    "pages/news/news"
+    "pages/client/problem/problem"
   ],
   "window": {
     "backgroundTextStyle": "light",

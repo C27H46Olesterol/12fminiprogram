@@ -373,6 +373,19 @@
   margin-bottom: 4rpx;
 }
 
+.display-label-mini {
+  font-size: 20rpx;
+  color: #8c8c8c;
+  margin-bottom: 2rpx;
+}
+
+.display-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40rpx;
+}
+
 .display-value {
   font-size: 28rpx;
   font-weight: 600;
@@ -1125,6 +1138,36 @@
 
 .display-signal-bar.active {
   background-color: #1890ff;
+}
+
+/* 缩小版信号条 (用于 Row 1) */
+.display-signal-bars-small {
+  display: flex;
+  align-items: flex-end;
+  gap: 3rpx;
+  height: 28rpx;
+}
+
+.display-signal-bars-small .display-signal-bar {
+  width: 5rpx;
+  background-color: #e0e0e0;
+  border-radius: 2rpx;
+}
+
+.display-signal-bars-small .display-signal-bar:nth-child(1) { height: 6rpx; }
+.display-signal-bars-small .display-signal-bar:nth-child(2) { height: 11rpx; }
+.display-signal-bars-small .display-signal-bar:nth-child(3) { height: 16rpx; }
+.display-signal-bars-small .display-signal-bar:nth-child(4) { height: 21rpx; }
+.display-signal-bars-small .display-signal-bar:nth-child(5) { height: 28rpx; }
+
+.display-signal-bars-small .display-signal-bar.active {
+  background-color: #1890ff;
+}
+
+.fault-code {
+  font-size: 40rpx;
+  font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 /* 蓝牙弹窗样式 */
