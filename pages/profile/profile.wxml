@@ -25,6 +25,16 @@
     </view>
   </view>
 
+  <!-- 设置项 -->
+  <view class="setting-group-title">个性化设置</view>
+  <view class="menu-group">
+    <view class="menu-item no-arrow">
+      <image class="menu-icon" src="/images/icons/manual.png"></image>
+      <text class="menu-text">弹窗文字内置模式</text>
+      <switch checked="{{menuStyle === 'inside'}}" bindchange="onMenuStyleChange" color="#1890ff" />
+    </view>
+  </view>
+
   <!-- 功能菜单组 -->
   <view class="menu-group">
     <view class="menu-item" hover-class="menu-item-hover">
@@ -45,6 +55,11 @@
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="goWorker">
       <image class="menu-icon" src="/images/icons/desk.png"></image>
       <text class="menu-text">我的工作台</text>
+      <view class="arrow"></view>
+    </view>
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goManual">
+      <image class="menu-icon" src="/images/icons/manual.png"></image>
+      <text class="menu-text">维修手册</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="apiTest">

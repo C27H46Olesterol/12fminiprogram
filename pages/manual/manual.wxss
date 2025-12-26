@@ -1,0 +1,226 @@
+/* pages/manual/manual.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部样式 */
+.header {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  padding: 40rpx 30rpx 60rpx;
+  border-bottom-left-radius: 40rpx;
+  border-bottom-right-radius: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(24, 144, 255, 0.2);
+}
+
+.title-section {
+  margin-bottom: 30rpx;
+}
+
+.main-title {
+  display: block;
+  color: #fff;
+  font-size: 40rpx;
+  font-weight: bold;
+  letter-spacing: 2rpx;
+}
+
+.sub-title {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+  margin-top: 8rpx;
+}
+
+/* 搜索栏 */
+.search-bar {
+  background-color: #fff;
+  height: 90rpx;
+  border-radius: 45rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.search-bar icon {
+  margin-right: 15rpx;
+}
+
+.search-bar input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 列表滚动区 */
+.content-scroll {
+  flex: 1;
+  margin-top: -30rpx;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+}
+
+.fault-list {
+  padding-bottom: 60rpx;
+}
+
+/* 卡片样式 */
+.fault-card {
+  background-color: #fff;
+  border-radius: 24rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.3s;
+  border: 1rpx solid #f0f0f0;
+}
+
+.fault-card.expanded {
+  box-shadow: 0 12rpx 30rpx rgba(0, 0, 0, 0.08);
+  border-color: rgba(24, 144, 255, 0.3);
+}
+
+.card-header {
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.code-badge {
+  background-color: #f0f7ff;
+  color: #1890ff;
+  font-size: 28rpx;
+  font-weight: bold;
+  padding: 8rpx 20rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(24, 144, 255, 0.2);
+  margin-right: 20rpx;
+  min-width: 80rpx;
+  text-align: center;
+}
+
+.title-box {
+  flex: 1;
+}
+
+.fault-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.arrow-icon {
+  width: 32rpx;
+  height: 32rpx;
+  opacity: 0.4;
+  transition: transform 0.3s;
+}
+
+.arrow-icon image {
+  width: 100%;
+  height: 100%;
+}
+
+/* 卡片内容区 */
+.card-content {
+  padding: 10rpx 30rpx 30rpx;
+  border-top: 1rpx solid #f9f9f9;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+
+.info-row .label {
+  width: 140rpx;
+  font-size: 24rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.info-row .value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 解决步骤区域 */
+.solution-section {
+  margin-top: 30rpx;
+  background-color: #fcfcfd;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  border-left: 6rpx solid #1890ff;
+}
+
+.section-label {
+  display: block;
+  font-size: 24rpx;
+  color: #1890ff;
+  font-weight: bold;
+  margin-bottom: 15rpx;
+}
+
+.step-item {
+  display: flex;
+  margin-bottom: 12rpx;
+}
+
+.step-item:last-child {
+  margin-bottom: 0;
+}
+
+.step-num {
+  width: 36rpx;
+  height: 36rpx;
+  background-color: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 15rpx;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #444;
+  line-height: 1.4;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 100rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empty-state image {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.2;
+}
+
+.empty-state text {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.footer-tip {
+  text-align: center;
+  color: #ccc;
+  font-size: 22rpx;
+  padding: 40rpx 0;
+}

@@ -67,6 +67,14 @@ Page({
 
   // ===================== 共享逻辑 =====================
   handleManual() {
-    wx.showToast({ title: '手册功能开发中', icon: 'none' });
+    wx.navigateTo({
+      url: '/pages/manual/manual',
+      fail: () => {
+        wx.showToast({
+          title: '功能开发中',
+          icon: 'none'
+        })
+      }
+    })
   }
 })

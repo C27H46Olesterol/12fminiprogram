@@ -99,3 +99,14 @@
   border-right: 4rpx solid #c7c7cc;
   transform: rotate(45deg);
 }
+
+.setting-group-title {
+  padding: 30rpx 40rpx 10rpx;
+  font-size: 26rpx;
+  color: #999;
+  font-weight: 500;
+}
+
+.menu-item.no-arrow {
+  padding-right: 30rpx;
+}

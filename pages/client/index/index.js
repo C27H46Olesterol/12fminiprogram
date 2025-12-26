@@ -75,6 +75,7 @@ Page({
     showModeDropdown: false, // 模式选择下拉菜单
     showSwingDropdown: false, // 摆风选择下拉菜单
     showFunctionDropdown: false, // 功能选择下拉菜单
+    menuStyle: 'outside', // 'outside' or 'inside'
 
 
     //错误信息
@@ -111,6 +112,10 @@ Page({
 
     console.log("显示client/index")
     console.log()
+
+    // 读取菜单样式设置
+    const menuStyle = wx.getStorageSync('menuStyle') || 'outside';
+    this.setData({ menuStyle });
 
     this.loadUserData(); // 加载角色专属数据
     console.log("client/index加载完毕")

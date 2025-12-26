@@ -1,0 +1,75 @@
+<!--pages/manual/manual.wxml-->
+<view class="container">
+  <!-- 顶部标题区 -->
+  <view class="header">
+    <view class="title-section">
+      <text class="main-title">驻车空调维修手册</text>
+      <text class="sub-title">故障代码排除与解决方法</text>
+    </view>
+    
+    <!-- 搜索栏 -->
+    <view class="search-bar">
+      <icon type="search" size="18" color="#999"></icon>
+      <input 
+        placeholder="搜索错误代码或关键字..." 
+        placeholder-style="color: #bbb;" 
+        bindinput="onSearch"
+        value="{{searchQuery}}"
+      />
+    </view>
+  </view>
+
+  <!-- 故障列表 -->
+  <scroll-view scroll-y class="content-scroll">
+    <view class="fault-list">
+      <block wx:for="{{displayList}}" wx:key="code">
+        <view class="fault-card {{item.expanded ? 'expanded' : ''}}" bindtap="toggleExpand" data-index="{{index}}">
+          <view class="card-header">
+            <view class="code-badge">{{item.code}}</view>
+            <view class="title-box">
+              <text class="fault-title">{{item.title}}</text>
+            </view>
+            <view class="arrow-icon {{item.expanded ? 'up' : 'down'}}">
+              <image src="/images/icons/arrow-down.png" mode="aspectFit" wx:if="{{!item.expanded}}"></image>
+              <image src="/images/icons/arrow-up.png" mode="aspectFit" wx:else></image>
+            </view>
+          </view>
+          
+          <!-- 展开内容 -->
+          <view class="card-content" wx:if="{{item.expanded}}" catchtap="stopBubble">
+            <view class="info-row">
+              <text class="label">引起原因</text>
+              <text class="value">{{item.cause}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">检查部位</text>
+              <text class="value">{{item.check}}</text>
+            </view>
+            <view class="info-row">
+              <text class="label">情况分析</text>
+              <text class="value">{{item.analysis}}</text>
+            </view>
+            
+            <view class="solution-section">
+              <text class="section-label">解决步骤</text>
+              <block wx:for="{{item.solution}}" wx:for-item="step" wx:for-index="sIdx" wx:key="sIdx">
+                <view class="step-item">
+                  <view class="step-num">{{sIdx + 1}}</view>
+                  <text class="step-text">{{step}}</text>
+                </view>
+              </block>
+            </view>
+          </view>
+        </view>
+      </block>
+      
+      <!-- 无搜索结果 -->
+      <view class="empty-state" wx:if="{{displayList.length === 0}}">
+        <image src="/images/icons/manual.png" mode="aspectFit"></image>
+        <text>未找到相关故障代码</text>
+      </view>
+      
+      <view class="footer-tip">-- 查阅完毕请根据实际情况由专业人士维修 --</view>
+    </view>
+  </scroll-view>
+</view>

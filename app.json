@@ -11,7 +11,8 @@
     "pages/worker/repair/repair",
     "pages/worker/activate/activate",
     "pages/client/problem/problem",
-    "pages/client/problem/issues/issues"
+    "pages/client/problem/issues/issues",
+    "pages/manual/manual"
   ],
   "window": {
     "backgroundTextStyle": "light",

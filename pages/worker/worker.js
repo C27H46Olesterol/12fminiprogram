@@ -64,11 +64,14 @@ Page({
    * 查阅维修手册
    */
   handleManual() {
-    wx.showToast({
-      title: '手册功能开发中',
-      icon: 'none'
+    wx.navigateTo({
+      url: '/pages/manual/manual',
+      fail: () => {
+        wx.showToast({
+          title: '功能开发中',
+          icon: 'none'
+        })
+      }
     })
-    // 实际路径示例:
-    // wx.downloadFile({ ... }) or wx.openDocument({ ... })
   }
 })
