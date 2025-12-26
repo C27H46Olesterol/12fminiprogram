@@ -22,7 +22,7 @@
 
       <view class="work-card" bindtap="handleRepair">
         <view class="icon-circle orange">
-          <image class="work-icon" src="/images/icons/auto.png"></image>
+          <image class="work-icon" src="/images/icons/wrench.png"></image>
         </view>
         <text class="work-title">维修设备</text>
         <text class="work-desc">故障诊断与处理</text>
@@ -30,7 +30,7 @@
 
       <view class="work-card" bindtap="handleManual">
         <view class="icon-circle green">
-          <image class="work-icon" src="/images/icons/menu.png"></image>
+          <image class="work-icon" src="/images/icons/manual.png"></image>
         </view>
         <text class="work-title">维修手册</text>
         <text class="work-desc">查阅技术文档</text>

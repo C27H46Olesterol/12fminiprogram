@@ -113,16 +113,20 @@
         </view>
         <text class="btn-label">连接方式</text>
 
-        <!-- 添加设备下拉菜单 -->
-        <view class="dropdown-menu {{showAddDeviceDropdown ? 'show' : ''}}">
-          <view class="dropdown-grid">
-            <view class="dropdown-item" bind:tap="onActivateProduct">
-              <text>激活设备</text>
-            </view>
-            <view class="dropdown-item" bind:tap="onApiTest">
-              <text>蓝牙连接</text>
-            </view>
-          </view>
+        <!-- 连接方式折叠菜单 (New Style) -->
+        <view class="expand-menu connect-menu {{showAddDeviceDropdown ? 'show' : ''}}">
+           <view class="expand-item left-text" catchtap="onActivateProduct" style="--i:1">
+             <text class="expand-text">4G连接</text>
+             <view class="expand-btn-circle">
+               <image src="/images/icons/4gconn.png" mode="aspectFit"></image>
+             </view>
+           </view>
+           <view class="expand-item left-text" catchtap="onApiTest" style="--i:2">
+             <text class="expand-text">蓝牙连接</text>
+             <view class="expand-btn-circle">
+               <image src="/images/icons/bluetooth.png" mode="aspectFit"></image>
+             </view>
+           </view>
         </view>
       </view>
     </view>
@@ -265,6 +269,7 @@
         <view class="func-btn-wrapper" catchtap="cycleMode" catchlongpress="toggleModeDropdown">
           <view class="func-btn circle {{remoteState.powerOn ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/{{remoteState.mode === 'strong' ? 'strong' : (remoteState.mode === 'eco' ? 'eco' : (remoteState.mode === 'fan' ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
+            <view class="ellipsis-marker">...</view>
           </view>
           <text class="func-label">{{remoteState.mode === 'auto' ? '制冷' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'fan' ? '通风' : '模式')))}}</text>
           
@@ -301,6 +306,7 @@
         <view class="func-btn-wrapper" catchtap="cycleSwing" catchlongpress="toggleSwingDropdown">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.swingUpDown || remoteState.swingLeftRight) ? 'active' : ''}}">
             <image class="func-icon-img" src="{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '/images/icons/wind5.png' : (remoteState.swingLeftRight ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
+            <view class="ellipsis-marker">...</view>
           </view>
           <text class="func-label">{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '全向摆风' : (remoteState.swingLeftRight ? '左右摆风' : (remoteState.swingUpDown ? '上下摆风' : '摆风'))}}</text>
 
@@ -337,6 +343,7 @@
         <view class="func-btn-wrapper" catchtap="cycleFunction" catchlongpress="toggleFunctionDropdown">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.lightingOn || remoteState.lightSurround || remoteState.lightClean) ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
+            <view class="ellipsis-marker">...</view>
           </view>
           <text class="func-label">功能</text>
 

@@ -119,6 +119,33 @@ Page({
     }, 1500)
     // 页面显示时重置计时
     this.resetInactivityTimer();
+    // 触发入门动画
+    this.triggerEntranceAnimation();
+  },
+
+  /**
+   * 入口提示动画：短时间展开所有菜单后收回
+   */
+  triggerEntranceAnimation() {
+    // 延迟一点点触发，等待页面渲染稳定
+    setTimeout(() => {
+      this.setData({
+        showModeDropdown: true,
+        showSwingDropdown: true,
+        showFunctionDropdown: true,
+        showAddDeviceDropdown: true
+      });
+
+      // 1.5秒后自动收回
+      setTimeout(() => {
+        this.setData({
+          showModeDropdown: false,
+          showSwingDropdown: false,
+          showFunctionDropdown: false,
+          showAddDeviceDropdown: false
+        });
+      }, 1500);
+    }, 500);
   },
 
   onHide() {

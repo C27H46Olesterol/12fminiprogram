@@ -47,12 +47,12 @@
 
 /* 远程遥控界面 (Main Section) */
 .remote-control-section {
-  padding: 16rpx 24rpx;
+  padding: 10rpx 24rpx; /* 进一步压缩上下边距 */
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* 均匀分布 */
-  padding-bottom: 40rpx;
+  padding-bottom: 170rpx; /* 留出TabBar空间 (140rpx) 并预留缓冲区域 */
   box-sizing: border-box;
 }
 
@@ -62,7 +62,7 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 20rpx;
   align-items: flex-start; /* 顶部按钮水平对齐 */
-  margin-bottom: 20rpx;
+  margin-bottom: 10rpx;
   padding: 0;
   position: relative;
   z-index: 100; 
@@ -74,7 +74,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8rpx;
-  min-width: 0; /* 允许压缩内容以维持网格稳定 */
+  min-width: 0;
+  position: relative; /* 为弹出菜单提供定位基准 */
 }
 
 .btn-label {
@@ -314,6 +315,7 @@
   width: 100%; /* 占满宽度 */
   padding: 30rpx 15rpx; /* 增加内边距，放大按钮区域 */
   font-size: 32rpx; /* 放大字体 */
+  font-weight: bold; /* 加粗 */
   /* 使用 background-image 实现渐变边界线 */
   background-image: 
     linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0)),
@@ -342,8 +344,8 @@
   background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
   border: none;
   border-radius: 32rpx;
-  padding: 30rpx 24rpx; /* 稍微增加上下内边距 */
-  margin-bottom: 30rpx;
+  padding: 16rpx 24rpx; /* 进一步压缩内边距 */
+  margin-bottom: 16rpx; /* 压缩至 16rpx */
   box-shadow: 0 12rpx 40rpx rgba(24, 144, 255, 0.08);
   flex-shrink: 0;
   overflow: hidden;
@@ -352,7 +354,7 @@
 .display-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 16rpx; /* 增加行间距 */
+  margin-bottom: 8rpx; /* 压缩至 8rpx */
 }
 
 .display-row:last-child {
@@ -408,10 +410,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10rpx 0;
+  padding: 4rpx 0; /* 压缩主显示区域间距 */
   border-top: 1rpx dashed rgba(24, 144, 255, 0.2);
   border-bottom: 1rpx dashed rgba(24, 144, 255, 0.2);
-  margin: 10rpx 0;
+  margin: 6rpx 0; /* 压缩外边距 */
 }
 
 .temp-display {
@@ -553,6 +555,35 @@
   border: 1rpx solid #f0f0f0;
   flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  position: relative; /* 为指示标记定位 */
+}
+
+/* 省略号指示标记 - 提示可长按展开，带圆形背景 */
+.ellipsis-marker {
+  position: absolute;
+  right: 6rpx;
+  bottom: 6rpx;
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18rpx;
+  line-height: 1;
+  color: #999;
+  font-weight: bold;
+  letter-spacing: 1rpx;
+  pointer-events: none;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
+  border: 1rpx solid #e0e0e0;
+}
+
+.func-btn.circle.active .ellipsis-marker {
+  background-color: #ffffff; /* 变为不透明纯白 */
+  color: #1890ff; /* 对应主题蓝 */
+  border-color: #ffffff;
 }
 
 .func-btn.circle:active {
@@ -594,20 +625,50 @@
   font-weight: bold;
 }
 
-/* 展开式二级菜单 - 调整为向上弹出且文字在右侧 */
+/* 展开式二级菜单 - 基础样式 */
 .expand-menu {
   position: absolute;
-  bottom: 160rpx; /* 进一步拉开与主按钮的距离，防止重叠 */
+  bottom: 160rpx; /* 默认向上弹出 */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column-reverse; 
-  gap: 25rpx; /* 增加间距 */
+  gap: 25rpx;
   z-index: 1000;
   pointer-events: none;
-  width: 350rpx; /* 加宽以容纳更大的按钮和文字 */
+  width: 350rpx;
   align-items: flex-start;
-  padding-left: 122rpx; /* 重新计算：(350/2) - (106/2) = 175 - 53 = 122，使106宽的按钮居中 */
+  padding-left: 122rpx;
+}
+
+/* 连接方式专用弹出菜单 (向下弹出，精确中心对齐) */
+.connect-menu {
+  top: 130rpx !important; 
+  bottom: auto !important;
+  right: calc(50% - 53rpx) !important; /* 50%是父容器中心，53rpx是二级图标半径。整体效果：二级图标中心对齐父容器中心 */
+  left: auto !important;
+  transform: none !important;
+  flex-direction: column !important; /* 向下扩展 */
+  width: auto !important;
+  align-items: flex-end !important;
+  padding-left: 0 !important;
+}
+
+.connect-menu .expand-item {
+  flex-direction: row; /* WXML中Text在前，View在后，Row即为Text左Icon右 */
+  justify-content: flex-end;
+  transform: translateY(-40rpx) scale(0.8); /* 从上方淡入 */
+  transition-delay: calc(var(--i) * 0.08s);
+}
+
+.connect-menu.show .expand-item {
+  transform: translateY(0) scale(1);
+}
+
+.expand-item.left-text .expand-text {
+  margin-left: 0;
+  margin-right: 20rpx; /* 文字在图标左侧，间距在右 */
+  text-align: right;
 }
 
 .expand-menu.show {
@@ -671,7 +732,7 @@
   border-radius: 30rpx;
   white-space: nowrap;
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
-  font-weight: 500;
+  font-weight: bold;
   border: 1rpx solid rgba(255,255,255,0.4);
 }
 
