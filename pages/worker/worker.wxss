@@ -98,8 +98,8 @@
 }
 
 .work-icon {
-  width: 56rpx;
-  height: 56rpx;
+  width: 73rpx;
+  height: 73rpx;
 }
 
 /* 文字信息 */
@@ -115,6 +115,7 @@
   font-size: 24rpx;
   color: #999;
   display: block;
+  padding: 0 20px;
 }
 
 /* 箭头装饰 */

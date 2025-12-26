@@ -25,7 +25,7 @@
 .avatar {
   width: 128rpx;
   height: 128rpx;
-  border-radius: 12rpx; /* 微信风格圆角矩形 */
+  border-radius: 64rpx;
   margin-right: 30rpx;
   background-color: #f0f0f0;
 }
@@ -80,8 +80,8 @@
 }
 
 .menu-icon {
-  width: 50rpx;
-  height: 50rpx;
+  width: 40rpx;
+  height: 40rpx;
   margin-right: 30rpx;
 }
 

@@ -28,13 +28,25 @@ Page({
       return
     }
     console.log("登陆开始");
+    wx.showLoading({
+      title: '登陆中',
+    }),
     wx.login({
       success: res => {
         console.log("成功获取code",res.code);
         if (res.code) {
           // 获取用户信息
+          // app.apiRequest('/auth/login','POST',data={
+          //   clientId: '2aeeae6eada0ddca866d775707cc5b11',
+          //   grantType: 'xcx',
+          //   xcxCode: res.code,
+          //   phoneCode:code,
+          //   appid: 'wxa81a2077330256cf',
+          //   tenantId: "000000"
+          // })
           wx.request({
-            url: 'https://ha.musenyu.cn/auth/login',
+            // url: 'https://ha.musenyu.cn/auth/login',
+            url:'http://192.168.70.44:8080/auth/login',
             method: 'POST',
             data: {
               clientId: '2aeeae6eada0ddca866d775707cc5b11',
@@ -59,12 +71,19 @@ Page({
               console.log("userInfo",wx.getStorageSync('userInfo'))
               // 登录成功后跳转到角色选择页
               this.getRole();
+              
+              wx.hideLoading();
+              wx.showToast({
+                tittle:'登陆成功',
+                icon:"success"
+              })
             },
             fail: err=>{
               wx.showToast({
-                title:"网络问题，请检查网络或者联系服务人员",
+                title:"服务器连接失败",
                 icon:"error"
               })
+              wx.hideLoading();
             }
           })
         }
@@ -77,12 +96,22 @@ Page({
   async getRole(){
     const res = await app.apiRequest('/system/user/getInfo','GET')
     const roles = res.data.user.roles
-    const userRole = roles.map(i=>i.roleName)
+    let userRole = roles.map(i=>i.roleName)
+    if(userRole.find(i=>i==="维修工")){
+      userRole = "维修工"
+    }
     this.setData({
       'userInfo.userRole': userRole
     })
     wx.setStorageSync('userInfo',this.data.userInfo)
     console.log("userInfo",wx.getStorageSync('userInfo'))
+    //如果是普通用户直接跳转首页
+    if(userRole === '普通用户'){
+      wx.redirectTo({
+        url:'/pages/index'
+      })
+    }
+    //维修工跳转角色选择
     wx.redirectTo({
       url: '/pages/login/role/role'
     })

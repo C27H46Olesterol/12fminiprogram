@@ -13,7 +13,7 @@
       </view>
       <view class="role-info">
         <text class="role-name">普通用户</text>
-        <text class="role-desc">我是车主/使用者，需要控制设备</text>
+        <text class="role-desc">我是拥有产品，需要控制设备</text>
       </view>
       <view class="arrow"></view>
     </view>

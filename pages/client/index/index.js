@@ -243,9 +243,10 @@ Page({
         const result = await app.apiRequest('/pro/banding/my', 'GET');
         if(result.code === 401){
           wx.showToast({
-            title:'授权信息过期，\n请重新登陆'
+            title:'授权信息过期，\n请重新登陆',
+            icon:'none'
           },1500)
-          this.onGoLogin();
+          // this.onGoLogin();
         }
         console.log("返回数据", result);
         // 检查调用是否成功

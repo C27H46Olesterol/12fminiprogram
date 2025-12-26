@@ -7,7 +7,11 @@
     "pages/worker/worker",
     "pages/profile/profile",
     "pages/login/role/role",
-    "pages/profile/resign/resign"
+    "pages/profile/resign/resign",
+    "pages/worker/repair/repair",
+    "pages/worker/activate/activate",
+    "pages/client/products/products",
+    "pages/news/news"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -27,16 +31,20 @@
     "selectedColor": "#3cc51f",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
-    "list": [{
-      "pagePath": "pages/index",
-      "text": "首页"
-    }, {
-      "pagePath": "pages/client/index/index",
-      "text": "遥控"
-    }, {
-      "pagePath": "pages/profile/profile",
-      "text": "我的"
-    }]
+    "list": [
+      {
+        "pagePath": "pages/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/client/index/index",
+        "text": "遥控"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
   },
   "requiredPrivateInfos": [
     "getLocation",

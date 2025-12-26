@@ -45,7 +45,8 @@ App({
   //api通过ji
   async apiRequest(api, method = 'GET', data = {}){
     return new Promise((resolve, reject) => {
-      const baseURL="https://ha.musenyu.cn"
+      // const baseURL="https://ha.musenyu.cn"
+      const baseURL = 'http://192.168.70.44:8080'
       wx.request({
         url:baseURL+api,
         method:method,

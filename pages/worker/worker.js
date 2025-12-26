@@ -5,20 +5,22 @@ Page({
    * 页面的初始数据
    */
   data: {
-
+    userInfo:'',
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad(options) {
-
+  onLoad(options) { 
+    this.data.userInfo = wx.getStorageSync('userInfo');
+    console.log(this.data.userInfo.userName)
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
   onShow() {
+
     // 可以在这里检查用户身份，如果不是worker则跳转或提示
     if (typeof this.getTabBar === 'function' &&
     this.getTabBar()) {
@@ -47,12 +49,15 @@ Page({
    * 维修设备
    */
   handleRepair() {
-    wx.showToast({
-      title: '维修功能开发中',
-      icon: 'none'
+    wx.navigateTo({
+      url: '/pages/worker/repair/repair',
+      fail: () => {
+        wx.showToast({
+          title: '功能开发中',
+          icon: 'none'
+        })
+      }
     })
-    // 实际路径示例:
-    // wx.navigateTo({ url: '/pages/worker/repair/repair' })
   },
 
   /**

@@ -3,7 +3,7 @@
   <!-- 头部欢迎区 -->
   <view class="worker-header">
     <view class="header-content">
-      <text class="greeting">你好，售后工程师</text>
+      <text class="greeting">你好，{{userInfo.userName || "售后工程师"}}</text>
       <text class="subtitle">准备好开始今天的工作了吗？</text>
     </view>
     <image class="header-bg-icon" src="/images/icons/user.png" mode="aspectFit"></image>
