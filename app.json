@@ -4,14 +4,16 @@
     "pages/client/index/index",
     "pages/login/login",
     "pages/client/activate/activate",
-    "pages/worker/worker",
     "pages/profile/profile",
     "pages/login/role/role",
     "pages/profile/resign/resign",
     "pages/worker/repair/repair",
     "pages/worker/activate/activate",
-    "pages/client/problem/problem",
-    "pages/client/problem/issues/issues"
+    "pages/client/issues/issues",
+    "pages/manual/manual",
+    "pages/worker/repairLog/repairLog",
+    "pages/worker/activateLog/activateLog",
+    "pages/client/issuesLog/issuesLog"
   ],
   "window": {
     "backgroundTextStyle": "light",

@@ -62,11 +62,11 @@ Page({
 
   // ===================== 普通用户逻辑 =====================
   handleReport() {
-    wx.navigateTo({ url: '/pages/client/problem/issues/issues' });
+    wx.navigateTo({ url: '/pages/client/issues/issues' });
   },
 
   // ===================== 共享逻辑 =====================
   handleManual() {
-    wx.showToast({ title: '手册功能开发中', icon: 'none' });
+    wx.navigateTo({ url: '/pages/manual/manual' });
   }
 })

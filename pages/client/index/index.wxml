@@ -266,7 +266,7 @@
       <view class="func-grid-row">
         
         <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
-        <view class="func-btn-wrapper" catchtap="cycleMode" catchlongpress="toggleModeDropdown">
+        <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/{{remoteState.mode === 'strong' ? 'strong' : (remoteState.mode === 'eco' ? 'eco' : (remoteState.mode === 'fan' ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
             <view class="ellipsis-marker">...</view>
@@ -303,7 +303,7 @@
         </view>
 
         <!-- 2. 摆风键 (Up/Down, Left/Right) -->
-        <view class="func-btn-wrapper" catchtap="cycleSwing" catchlongpress="toggleSwingDropdown">
+        <view class="func-btn-wrapper" catchtap="toggleSwingDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.swingUpDown || remoteState.swingLeftRight) ? 'active' : ''}}">
             <image class="func-icon-img" src="{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '/images/icons/wind5.png' : (remoteState.swingLeftRight ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
             <view class="ellipsis-marker">...</view>
@@ -340,7 +340,7 @@
         </view>
 
         <!-- 3. 功能键 (Lighting/Surround/Anion) -->
-        <view class="func-btn-wrapper" catchtap="cycleFunction" catchlongpress="toggleFunctionDropdown">
+        <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.lightingOn || remoteState.lightSurround || remoteState.lightClean) ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
             <view class="ellipsis-marker">...</view>

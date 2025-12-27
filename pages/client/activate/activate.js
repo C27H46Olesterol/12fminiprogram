@@ -197,8 +197,8 @@ Page({
       formData.licensePlate.trim() !== '' &&
       phoneRegex.test(formData.userPhone) &&
       phoneRegex.test(formData.installerPhone)
-      // formData.processImages.length < 0 &&
-      // formData.finishImages.length < 0;
+    // formData.processImages.length < 0 &&
+    // formData.finishImages.length < 0;
 
     this.setData({ canSubmit: isValid });
   },

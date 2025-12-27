@@ -26,9 +26,6 @@ Component({
       const data = e.currentTarget.dataset;
       const url = data.path;
 
-      // 添加轻微震动反馈
-      wx.vibrateShort({ type: 'light' });
-
       wx.switchTab({
         url: url
       });
