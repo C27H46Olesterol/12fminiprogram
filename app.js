@@ -37,6 +37,7 @@ App({
     }
   },
 
+
   //api通过ji
   async apiRequest(api, method = 'GET', data = {}){
     return new Promise((resolve, reject) => {
