@@ -65,6 +65,10 @@ Page({
     wx.navigateTo({ url: '/pages/client/issues/issues' });
   },
 
+  handleReportLog(){
+    wx.navigateTo({ url:'/pages/client/issuesLog/issuesLog'})
+  },
+
   // ===================== 共享逻辑 =====================
   handleManual() {
     wx.navigateTo({ url: '/pages/manual/manual' });

@@ -13,7 +13,8 @@
     "pages/manual/manual",
     "pages/worker/repairLog/repairLog",
     "pages/worker/activateLog/activateLog",
-    "pages/client/issuesLog/issuesLog"
+    "pages/client/issuesLog/issuesLog",
+    "pages/client/devices/devices"
   ],
   "window": {
     "backgroundTextStyle": "light",

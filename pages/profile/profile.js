@@ -56,6 +56,30 @@ Page({
     })
   },
 
+  goDevices() {
+    wx.navigateTo({
+      url: '/pages/client/devices/devices',
+    })
+  },
+
+  goActivateLog() {
+    wx.navigateTo({
+      url: '/pages/worker/activateLog/activateLog',
+    })
+  },
+
+  goIssuesLog() {
+    wx.navigateTo({
+      url: '/pages/client/issuesLog/issuesLog',
+    })
+  },
+
+  goRepairLog() {
+    wx.navigateTo({
+      url: '/pages/worker/repairLog/repairLog',
+    })
+  },
+
   goWorker() {
     wx.navigateTo({
       url: '/pages/worker/worker',

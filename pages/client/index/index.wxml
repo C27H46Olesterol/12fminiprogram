@@ -269,7 +269,7 @@
         <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/{{remoteState.mode === 'strong' ? 'strong' : (remoteState.mode === 'eco' ? 'eco' : (remoteState.mode === 'fan' ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
-            <view class="ellipsis-marker">...</view>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">{{remoteState.mode === 'auto' ? '制冷' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'fan' ? '通风' : '模式')))}}</text>
           
@@ -306,7 +306,7 @@
         <view class="func-btn-wrapper" catchtap="toggleSwingDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.swingUpDown || remoteState.swingLeftRight) ? 'active' : ''}}">
             <image class="func-icon-img" src="{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '/images/icons/wind5.png' : (remoteState.swingLeftRight ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
-            <view class="ellipsis-marker">...</view>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '全向摆风' : (remoteState.swingLeftRight ? '左右摆风' : (remoteState.swingUpDown ? '上下摆风' : '摆风'))}}</text>
 
@@ -343,7 +343,7 @@
         <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown" catchlongpress="">
           <view class="func-btn circle {{remoteState.powerOn && (remoteState.lightingOn || remoteState.lightSurround || remoteState.lightClean) ? 'active' : ''}}">
             <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
-            <view class="ellipsis-marker">...</view>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">功能</text>
 

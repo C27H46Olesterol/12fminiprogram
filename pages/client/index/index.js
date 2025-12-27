@@ -1197,7 +1197,7 @@ Page({
   selectFunction(e) {
     this.resetInactivityTimer();
     wx.vibrateShort({ type: 'heavy' });
-    if (!this.checkPower()) return;
+    // if (!this.checkPower()) return;
 
     const func = e.currentTarget.dataset.func;
     const s = this.data.remoteState;

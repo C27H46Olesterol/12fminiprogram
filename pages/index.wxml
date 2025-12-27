@@ -66,6 +66,14 @@
         <text class="work-title">自助手册</text>
         <text class="work-desc">常见问题与操作指引</text>
       </view>
+
+      <view class="work-card" bindtap="handleReportLog">
+        <view class="icon-circle teal">
+          <image class="work-icon" src="/images/icons/repair-form.png"></image>
+        </view>
+        <text class="work-title">报修记录</text>
+        <text class="work-desc">查看报修进度</text>
+      </view>
     </view>
   </block>
 

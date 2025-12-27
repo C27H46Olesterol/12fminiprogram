@@ -27,22 +27,22 @@
 
   <!-- 功能菜单组 -->
   <view class="menu-group">
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='' wx:if="{{userInfo.userRole === '普通用户'}}">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDevices' wx:if="{{userInfo.userRole === '普通用户'}}">
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">我的设备</text>
       <view class="arrow"></view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='' wx:if="{{userInfo.userRole === '普通用户'}}">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goIssuesLog' wx:if="{{userInfo.userRole === '普通用户'}}">
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">报修记录</text>
       <view class="arrow"></view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="" wx:if="{{userInfo.userRole === '维修工'}}">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goActivateLog" wx:if="{{userInfo.userRole === '维修工'}}">
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">安装记录</text>
       <view class="arrow"></view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepair"  wx:if="{{userInfo.userRole === '维修工'}}">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">
       <image class="menu-icon" src="/images/icons/wrench.png"></image>
       <text class="menu-text">维修记录</text>
       <view class="arrow"></view>

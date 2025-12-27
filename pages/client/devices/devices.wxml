@@ -1,0 +1,46 @@
+<!-- pages/client/devices/devices.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">我的设备</text>
+    <text class="subtitle">共 {{displayDevices.length}} 台已安装设备</text>
+  </view>
+
+  <scroll-view scroll-y class="device-list">
+    <block wx:for="{{displayDevices}}" wx:key="id">
+      <view class="device-card" bindtap="handleShowDetail" data-sn="{{item.sn}}">
+        <view class="card-body">
+          <image class="device-img" src="{{item.imageUrl}}" mode="aspectFit"></image>
+          <view class="device-info">
+            <view class="name-row">
+              <text class="device-name">{{item.name}}</text>
+              <view class="status-tag tag-{{item.statusType}}">{{item.warrantyStatus}}</view>
+            </view>
+            <view class="sn-text">SN: {{item.sn}}</view>
+            
+            <view class="date-grid">
+              <view class="date-item">
+                <text class="date-label">安装时间</text>
+                <text class="date-value">{{item.installDate}}</text>
+              </view>
+              <view class="date-item">
+                <text class="date-label">质保到期</text>
+                <text class="date-value">{{item.warrantyDate}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="card-footer">
+          <text class="action-text">查看详情</text>
+          <view class="arrow"></view>
+        </view>
+      </view>
+    </block>
+
+    <view class="empty-state" wx:if="{{displayDevices.length === 0}}">
+      <image class="empty-img" src="/images/icons/desk.png" mode="aspectFit"></image>
+      <text>暂无安装设备</text>
+    </view>
+    
+    <view class="bottom-safe"></view>
+  </scroll-view>
+</view>

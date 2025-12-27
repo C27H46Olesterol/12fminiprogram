@@ -1,2 +1,119 @@
-<!--pages/worker/repairLog/repairLog.wxml-->
-<text>pages/worker/repairLog/repairLog.wxml</text>
+<!-- pages/worker/repairLog/repairLog.wxml -->
+<view class="container">
+  <!-- 顶部搜索与筛选 -->
+  <view class="filter-section">
+    <view class="search-bar">
+      <icon type="search" size="16" color="#999" />
+      <input 
+        placeholder="搜索SN、车牌、手机或故障" 
+        bindinput="onSearch" 
+        value="{{searchQuery}}"
+      />
+    </view>
+    
+    <view class="filter-bar">
+      <picker mode="date" value="{{filterDate}}" bindchange="onDateFilterChange">
+        <view class="filter-item date-picker {{filterDate ? 'active' : ''}}">
+          <image class="filter-icon" src="/images/icons/clock.png"></image>
+          <text>{{filterDate || '选择日期'}}</text>
+          <icon wx:if="{{filterDate}}" type="clear" size="14" catchtap="clearDateFilter" />
+        </view>
+      </picker>
+
+      <view class="filter-item sort-btn" bindtap="toggleSort">
+        <image class="filter-icon" src="/images/icons/menu.png"></image>
+        <text>{{sortOrder === 'desc' ? '最新优先' : '最早优先'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <scroll-view scroll-y class="record-list">
+    <block wx:for="{{filteredRecords}}" wx:key="id">
+      <view class="record-card {{item.expanded ? 'expanded' : ''}}">
+        <!-- 卡片头部 -->
+        <view class="card-header" bindtap="toggleExpand" data-id="{{item.id}}">
+          <view class="header-main">
+            <view class="sn-row">
+              <text class="sn-label">SN:</text>
+              <text class="sn-value">{{item.sn}}</text>
+              <view class="status-tag tag-{{item.statusType}}">{{item.status}}</view>
+            </view>
+            <view class="sub-info">
+              <view class="sub-item">
+                <image class="sub-icon" src="/images/icons/desk.png" mode="aspectFit"></image>
+                <text>{{item.licensePlate}}</text>
+              </view>
+              <text class="divider">|</text>
+              <view class="sub-item">
+                <image class="sub-icon" src="/images/icons/phone.png" mode="aspectFit"></image>
+                <text>{{item.userPhone}}</text>
+              </view>
+              <text class="divider">|</text>
+              <view class="sub-item date-item">
+                <image class="sub-icon" src="/images/icons/clock.png" mode="aspectFit"></image>
+                <text>{{item.repairDate}}</text>
+              </view>
+            </view>
+          </view>
+          <view class="arrow-icon {{item.expanded ? 'up' : 'down'}}"></view>
+        </view>
+
+        <!-- 故障简述 (未展开时显示) -->
+        <view class="fault-summary" wx:if="{{!item.expanded}}">
+          <text class="summary-text">{{item.faultDescription}}</text>
+        </view>
+
+        <!-- 详细内容 (展开时显示) -->
+        <view class="card-detail" wx:if="{{item.expanded}}">
+          <view class="detail-section">
+            <view class="detail-item">
+              <text class="label">故障描述：</text>
+              <text class="value">{{item.faultDescription}}</text>
+            </view>
+            <view class="detail-item">
+              <text class="label">维修地址：</text>
+              <text class="value">{{item.location}}</text>
+            </view>
+          </view>
+
+          <view class="image-group" wx:if="{{item.beforeImages.length > 0}}">
+            <view class="image-title">维修前照片 ({{item.beforeImages.length}})</view>
+            <view class="image-grid">
+              <image 
+                wx:for="{{item.beforeImages}}" 
+                wx:key="*this"
+                src="{{item}}" 
+                mode="aspectFill"
+                bindtap="previewImage"
+                data-url="{{item}}"
+                data-images="{{item.beforeImages}}"
+              />
+            </view>
+          </view>
+
+          <view class="image-group" wx:if="{{item.afterImages.length > 0}}">
+            <view class="image-title">维修后照片 ({{item.afterImages.length}})</view>
+            <view class="image-grid">
+              <image 
+                wx:for="{{item.afterImages}}" 
+                wx:key="*this"
+                src="{{item}}" 
+                mode="aspectFill"
+                bindtap="previewImage"
+                data-url="{{item}}"
+                data-images="{{item.afterImages}}"
+              />
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="empty-state" wx:if="{{filteredRecords.length === 0}}">
+      <image src="/images/icons/note.png" mode="aspectFit" style="width: 120rpx; height: 120rpx; opacity: 0.2; filter: grayscale(1);"></image>
+      <text>暂无相关维修记录</text>
+    </view>
+    <view class="bottom-safe"></view>
+  </scroll-view>
+</view>
