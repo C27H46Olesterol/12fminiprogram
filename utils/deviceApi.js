@@ -36,8 +36,19 @@ function setDeviceDesiredProperty(deviceName, deviceProperty) {
     return app.apiRequest(`/onenet/device/set-desired-property/${deviceName}`, 'POST', deviceProperty);
 }
 
+//获取用户激活的设备
+function unbindDevice(deviceName){
+  return app.apiRequest('/pro/banding/unbind','GET',deviceName);
+}
+
+function getUserActiveDevice(){
+  return app.apiRequest('/pro/banding/my','GET');
+}
+
 module.exports = {
     getDeviceInfo,
     getDevicePropertyDetail,
-    setDeviceDesiredProperty
+    setDeviceDesiredProperty,
+    getUserActiveDevice,
+    unbindDevice
 };

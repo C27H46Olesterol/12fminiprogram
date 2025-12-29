@@ -31,7 +31,7 @@ Page({
     deviceStatus: {
       ps: 0,         // 开关状态 0:关, 1:开
       temp: 0,     // 设定温度 50-400 (对应5-40度)
-      fm: 0,         // 风扇模式 0:通风, 1:睡眠, 2:制冷, 3:强劲, (4:自动, 5:制热, 6:除湿)
+      fm: 8,         // 风扇模式 0:通风, 1:睡眠, 2:制冷, 3:强劲, (4:自动, 5:制热, 6:除湿)
       fs: 0,         // 风扇转速 1-5档
       fl: 0,         // 氛围灯 0:关, 1:开
       light: 0,      // 照明灯 0:关, 1:开
@@ -80,11 +80,11 @@ Page({
     setTimeout(() => {
       wx.hideLoading()
     }, 1500)
-    
+
     //停止下拉刷新
     wx.stopPullDownRefresh()
     // 启动定时任务
-    this.resetInactivityTimer();
+
     console.log('加载页面onLoad完毕')
   },
 
@@ -111,7 +111,7 @@ Page({
       wx.hideLoading();
     }, 1500)
     // 页面显示时重置计时
-    this.resetInactivityTimer();
+
     // 触发入门动画
     // this.triggerEntranceAnimation();
   },
@@ -268,7 +268,8 @@ Page({
     const hasUserInfo = this.data.hasUserInfo;
     if (hasUserInfo || userInfo) {
       try {
-        const result = await app.apiRequest('/pro/banding/my', 'GET');
+        // const result = await app.apiRequest('/pro/banding/my', 'GET');
+        const result = await deviceApi.getUserActiveDevice();
         if (result.code === 401) {
           wx.showToast({
             title: '授权信息过期，\n请重新登陆',
@@ -276,7 +277,6 @@ Page({
           }, 1500)
           // this.onGoLogin();
         }
-        console.log("返回数据", result);
         // 检查调用是否成功
         if (result && result.data) {
           const res = result.data;
@@ -363,7 +363,7 @@ Page({
 
   // 切换下拉菜单显示状态
   toggleDropdown() {
-    this.resetInactivityTimer();
+
     this.setData({
       showDropdown: !this.data.showDropdown,
       showDeviceModal: false, // 互斥显示
@@ -376,7 +376,7 @@ Page({
 
   // 切换添加设备下拉菜单
   toggleAddDeviceDropdown() {
-    this.resetInactivityTimer();
+
     this.setData({
       showAddDeviceDropdown: !this.data.showAddDeviceDropdown,
       showDropdown: false,
@@ -389,7 +389,7 @@ Page({
 
   // 关闭所有下拉菜单 (点击外部时触发)
   closeAllDropdowns() {
-    // this.resetInactivityTimer();
+    // 
     // 检查是否有任意菜单开启
     if (this.data.showDropdown || this.data.showDeviceModal || this.data.showAddDeviceDropdown ||
       this.data.showModeDropdown || this.data.showSwingDropdown || this.data.showFunctionDropdown) {
@@ -478,7 +478,7 @@ Page({
 
   // 切换设备选择弹窗
   toggleDeviceModal() {
-    // this.resetInactivityTimer();
+    // 
     this.setData({
       showDeviceModal: !this.data.showDeviceModal,
       showDropdown: false, // 互斥显示
@@ -498,14 +498,14 @@ Page({
       selectedDevice: device,
       showDeviceModal: false
     });
-    wx.setStorageSync('selectedDeviceImei', device.imei);
+    wx.setStorageSync('selectedDeviceImei', device.sn);
     wx.showToast({
       title: `已切换至 ${device.sn || '新设备'}`,
       icon: 'none'
     });
     // 切换设备后加载状态
     this.loadDeviceStatus();
-    this.resetInactivityTimer();
+
   },
 
   // 取消配对/删除设备
@@ -537,7 +537,9 @@ Page({
             try {
               // 如果是远程设备，通常需要调用解绑接口
               // 假设存在 /pro/banding/unbind，如果不存在则仅本地移除
-              const res = await app.apiRequest('/pro/banding/unbind', 'POST', { sn: device.sn });
+              // const res = await app.apiRequest('/pro/banding/unbind', 'POST', { sn: device.sn });
+              const res = await deviceApi.unbindDevice(device.sn)
+
               if (res && res.code == 200) {
                 this.removeDeviceFromList(index);
                 wx.showToast({ title: '解绑成功', icon: 'success' });
@@ -621,8 +623,8 @@ Page({
     };
     this.setData({
       showTimerModal: true,
-      timerMinutes: 60, // 默认 1 小时
-      formattedTimer: this.formatTimer(60)
+      timerMinutes: 30, // 默认 0.5 小时
+      formattedTimer: this.formatTimer(30)
     });
   },
 
@@ -631,14 +633,14 @@ Page({
     wx.vibrateShort({ type: 'medium' });
     const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
     let m = this.data.timerMinutes + delta;
-    if (m < 60) m = 60;
+    if (m < 0) m = 0;
     if (m > 480) m = 480;
 
     this.setData({
       timerMinutes: m,
       formattedTimer: this.formatTimer(m)
     });
-    this.resetInactivityTimer();
+
   },
 
   closeTimerModal() {
@@ -667,34 +669,39 @@ Page({
     this.setData({ wxTimerList });
 
     // 初始化计时器
-    const timerInstance = new timer({
-      beginTime: formattedHMS,
-      name: 'timerBtn',
-      complete: () => {
-        wx.showToast({ title: '定时结束', icon: 'none' });
-        // 清理状态
-        let list = this.data.wxTimerList;
-        delete list['timerBtn'];
-        this.setData({
-          wxTimerList: list,
-          'deviceStatus.clock': false
-        });
-        this.timerInstance = null;
-      }
-    });
+    if (minutes > 0) {
+      const timerInstance = new timer({
+        beginTime: formattedHMS,
+        name: 'timerBtn',
+        complete: () => {
+          wx.showToast({ title: '定时结束', icon: 'none' });
+          // 清理状态
+          let list = this.data.wxTimerList;
+          delete list['timerBtn'];
+          this.setData({
+            wxTimerList: list,
+            'deviceStatus.clock': false
+          });
+          this.timerInstance = null;
+        }
+      });
 
-    timerInstance.start(this);
-    this.timerInstance = timerInstance;
+      timerInstance.start(this);
+      this.timerInstance = timerInstance;
+    } else {
+      this.timerInstance = null;
+    }
 
     this.setData({
       showTimerModal: false,
-      'deviceStatus.clock': true,
+      'deviceStatus.clock': minutes > 0,
       'deviceStatus.timer': minutes
     });
 
     this.bufferCommand('setTimer', minutes);
-    this.resetInactivityTimer();
-    wx.showToast({ title: `已设置定时 ${this.data.formattedTimer}`, icon: 'none' });
+
+    const toastTitle = minutes > 0 ? `已设置定时 ${this.data.formattedTimer}` : '定时已取消';
+    wx.showToast({ title: toastTitle, icon: 'none' });
   },
 
   formatTimer(mins) {
@@ -725,7 +732,7 @@ Page({
 
       if (res && res.code === 200 && res.data && res.data.data) {
         const props = res.data.data;
-        console.log("查询到的设备状态:",props)
+        console.log("查询到的设备状态:", props)
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
         if (force || !this.lastCommandTime || Date.now() - this.lastCommandTime > 2000) {
           this.setData({
@@ -738,7 +745,7 @@ Page({
             }
           });
         }
-        console.log("本地保存设备状态:",this.data.deviceStatus)
+        console.log("本地保存设备状态:", this.data.deviceStatus)
       }
     } catch (error) {
       console.error('加载设备状态失败:', error);
@@ -754,13 +761,13 @@ Page({
     const deiveiceOnline = this.data.deviceStatus.online;
     const selectedDevice = this.data.selectedDevice
 
-    console.log("计时器启动状态查询userInfo:",userInfo);
-    console.log("计时器启动状态查询hasUserInfo:",hasUserInfo);
-    console.log("计时器启动状态查询deiveiceOnline:",deiveiceOnline);
-    console.log("计时器启动状态查询selectedDevice:",selectedDevice);
+    console.log("计时器启动状态查询userInfo:", userInfo);
+    console.log("计时器启动状态查询hasUserInfo:", hasUserInfo);
+    console.log("计时器启动状态查询deiveiceOnline:", deiveiceOnline);
+    console.log("计时器启动状态查询selectedDevice:", selectedDevice);
 
     //登陆后，选中设备后开始刷新
-    if (userInfo && hasUserInfo && deiveiceOnline  && selectedDevice) {
+    if (userInfo && hasUserInfo && deiveiceOnline && selectedDevice) {
 
       this.setData({ showRefreshNotify: false });
 
@@ -818,12 +825,12 @@ Page({
   // 点击通知恢复刷新
   resumeRefresh() {
     wx.vibrateShort({ type: 'light' });
-    this.resetInactivityTimer();
+
   },
 
   // 开关机
   async togglePower() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
 
     wx.showLoading({ title: '正在连接设备...', mask: true });
@@ -832,16 +839,16 @@ Page({
     wx.hideLoading();
     wx.showToast({
       title: '设备连接成功',
-      icon:'success'
+      icon: 'success'
     })
-    
+
     const deviceStatus = this.data.deviceStatus;
 
     //设备在线状态判断
-    if(!deviceStatus.online){
+    if (!deviceStatus.online) {
       wx.showToast({
-        title:'设备不在线！',
-        icon:'error'
+        title: '设备不在线！',
+        icon: 'error'
       })
       return;
     }
@@ -866,7 +873,7 @@ Page({
 
   // 增加风速
   increaseWindSpeed() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     let speed = this.data.deviceStatus.fs || 1;
@@ -887,7 +894,7 @@ Page({
 
   // 减少风速
   decreaseWindSpeed() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     let speed = this.data.deviceStatus.fs || 1;
@@ -908,7 +915,7 @@ Page({
 
   // 增加温度
   increaseTemperature() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
@@ -929,7 +936,7 @@ Page({
 
   // 减少温度
   decreaseTemperature() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'light' });
     if (!this.checkPower()) return;
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
@@ -950,7 +957,7 @@ Page({
 
   // 照明开关
   toggleLighting() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     const newStatus = this.data.deviceStatus.light === 1 ? 0 : 1;
@@ -963,11 +970,11 @@ Page({
 
   // 强劲模式
   setStrongMode() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     if (this.data.deviceStatus.fm === 3) {
-      this.switchMode(2); // 切换回自动(3为制冷,5为自动,此处切回自动)
+      this.switchMode(2);
     } else {
       this.switchMode(3);
       this.showControlToast('强劲模式');
@@ -982,7 +989,7 @@ Page({
 
   // 节能模式
   setEcoMode() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     if (this.data.deviceStatus.fm === 1) {
@@ -995,7 +1002,7 @@ Page({
 
   // 制热模式
   toggleHeating() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     if (this.data.deviceStatus.fm === 5) {
@@ -1007,7 +1014,7 @@ Page({
   },
 
   toggleFan() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     if (this.data.deviceStatus.fm === 0) {
@@ -1020,7 +1027,7 @@ Page({
 
   // 上下摆风开关 ty
   toggleSwingUpDown() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     const newStatus = this.data.deviceStatus.sxbf === 1 ? 0 : 1;
@@ -1033,7 +1040,7 @@ Page({
 
   // 左右摆风开关 ty
   toggleSwingLeftRight() {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     const newStatus = this.data.deviceStatus.zybf === 1 ? 0 : 1;
@@ -1075,14 +1082,14 @@ Page({
   },
 
   switchMode(mode) {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
 
     let windSpeed = this.data.deviceStatus.fs;
-    if (mode === 4) windSpeed = 5; 
-    if (mode === 2) windSpeed = 1; 
-    if (mode === 5 || mode === 3) windSpeed = 3; 
+    if (mode === 4) windSpeed = 5;
+    if (mode === 2) windSpeed = 1;
+    if (mode === 5 || mode === 3) windSpeed = 3;
 
     this.setData({
       'deviceStatus.fm': mode,
@@ -1122,53 +1129,52 @@ Page({
 
   selectSwing(e) {
     const type = e.currentTarget.dataset.type; // 'off', 'ud', 'lr', 'both'
-    let state = 0;
+
     if (type === 'ud') {
-      state = 1;
-      this.setSXBF(state);
+      const isSXBFOn = this.data.deviceStatus.sxbf === 1;
+      this.setSXBF(isSXBFOn ? 0 : 1);
     }
     else if (type === 'lr') {
-      state = 2;
-      this.setZYBF(state)
+      const isZYBFOn = this.data.deviceStatus.zybf === 1;
+      this.setZYBF(isZYBFOn ? 0 : 1);
     }
 
-    // this.setSwingState(state);
     this.setData({ showSwingDropdown: false });
   },
 
-  setZYBF(state){
+  setZYBF(state) {
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
-    console.log('左右摆风：',this.data.deviceStatus.zybf);
+    console.log('左右摆风：', this.data.deviceStatus.zybf);
     const lr = (state === 2 || state === 3);
     this.setData({
-      'deviceStatus.zybf':lr ? 1 : 0
+      'deviceStatus.zybf': lr ? 1 : 0
     })
-    let name = ['左右摆风'][state];
+    let name = lr ? '左右摆风开启' : '左右摆风关闭';
     this.showControlToast(name);
     this.bufferCommand('setSwingLeftRight', lr);
   },
 
-  setSXBF(state){
+  setSXBF(state) {
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
-    console.log('上下摆风：',this.data.deviceStatus.sxbf);
+    console.log('上下摆风：', this.data.deviceStatus.sxbf);
     const ud = (state === 1 || state === 3);
     this.setData({
-      'deviceStatus.zybf':ud ? 1 : 0
+      'deviceStatus.sxbf': ud ? 1 : 0
     })
-    let name = ['上下摆风'][state];
+    let name = ud ? '上下摆风开启' : '上下摆风关闭';
     this.showControlToast(name);
     this.bufferCommand('setSwingUpDown', ud);
   },
 
   setSwingState(state) {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     console.log('当前摆风状态：')
-    console.log('上下摆风：',this.data.deviceStatus.sxbf);
-    console.log('左右摆风：',this.data.deviceStatus.zybf);
+    console.log('上下摆风：', this.data.deviceStatus.sxbf);
+    console.log('左右摆风：', this.data.deviceStatus.zybf);
 
     const ud = (state === 1 || state === 3);
     const lr = (state === 2 || state === 3);
@@ -1202,14 +1208,14 @@ Page({
   },
 
   selectFunction(e) {
-    this.resetInactivityTimer();
+
     wx.vibrateShort({ type: 'medium' });
     // if (!this.checkPower()) return;
-    if(!this.data.selectedDevice.online){
+    if (!this.data.deviceStatus.online) {
       wx.showToast({
-        title:'设备不在线',
-        icon:'error'
-      })  
+        title: '设备不在线',
+        icon: 'error'
+      })
       return;
     };
 
@@ -1247,6 +1253,9 @@ Page({
     if (!this.commandTimers) {
       this.commandTimers = {};
     }
+
+    // 停止后台持续刷新
+    this.stopAutoRefresh();
 
     // 清除该动作类型的现有定时器
     if (this.commandTimers[action]) {
@@ -1334,6 +1343,9 @@ Page({
     } catch (err) {
       console.error('指令发送失败:', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
+    } finally {
+      // 确认返回后（无论成功失败），继续定时刷新
+      this.startAutoRefresh();
     }
   },
 
@@ -1388,8 +1400,6 @@ Page({
       }
     }, 1000);
   },
-
-
 
   startSearch() {
     function filterFunc(d) {
@@ -1539,7 +1549,6 @@ Page({
       }
     });
   },
-
 
   // ==================== 蓝牙通信完整实现 ====================
   // 基于绿色图协议（集控中心发送到显示屏）

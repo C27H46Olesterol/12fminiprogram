@@ -48,7 +48,7 @@
           <block wx:else>
             <view class="device-list-container">
               <view 
-                class="device-list-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
+                class="device-list-item {{selectedDeviceIndex === index ? 'selecte d' : ''}}" 
                 wx:for="{{deviceList}}" 
                 wx:key="sn" 
                 bindtap="onSelectDevice" 
