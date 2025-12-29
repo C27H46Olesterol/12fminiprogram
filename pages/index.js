@@ -1,4 +1,5 @@
 // pages/index.js
+const app = getApp();
 Page({
   /**
    * 页面的初始数据
@@ -32,9 +33,11 @@ Page({
    * 初始化页面逻辑
    */
   initPage() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    const userInfo = app.globalData.userInfo
+    const hasUserInfo = app.globalData.hasUserInfo
 
+    // const userInfo = wx.getStorageSync('userInfo');
+    // const hasUserInfo = wx.getStorageSync('hasUserInfo');
     if (!hasUserInfo || !userInfo) {
       // 未登录直接重定向到客户端首页
       wx.reLaunch({ url: '/pages/client/index/index' });

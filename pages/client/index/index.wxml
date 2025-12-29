@@ -20,7 +20,7 @@
       </view>
 
       <!-- 2. 设备选择 -->
-      <view class="device-selector-container" catchtap="noOp" catchtap="toggleDeviceModal">
+      <view class="device-selector-container" catchtap="toggleDeviceModal">
         <view class="device-selector">
           <view class="device-picker-wrap {{deviceStatus.online ? 'online' : 'offline'}}">
             <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -175,7 +175,7 @@
           <text class="temp-unit">°C</text>
         </view>
         <view class="display-item mode-display">
-          <text class="mode-text">{{deviceStatus.fm === 5 || deviceStatus.fm === 3 ? '制冷' : (deviceStatus.fm === 4 ? '强劲' : (deviceStatus.fm === 2 ? '节能' : (deviceStatus.fm === 6 ? '制热' : deviceStatus.fm === 1 ? '通风':'--')))}}</text>
+          <text class="mode-text">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 4 ? '制热' : deviceStatus.fm === 0 ? '通风':'--')))}}</text>
         </view>
       </view>
 
@@ -268,33 +268,33 @@
         <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
         <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
           <view class="func-btn circle {{deviceStatus.ps === 1 ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 4 ? 'strong' : (deviceStatus.fm === 2 ? 'eco' : (deviceStatus.fm === 1 ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
+            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
-          <text class="func-label">{{deviceStatus.fm === 3 || deviceStatus.fm === 5 ? '制冷' : (deviceStatus.fm === 4 ? '强劲' : (deviceStatus.fm === 2 ? '节能' : (deviceStatus.fm === 1 ? '通风' : '模式')))}}</text>
+          <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>
           
           <!-- Mode Expandable -->
           <view class="expand-menu {{showModeDropdown ? 'show' : ''}}">
-             <view class="expand-item" catchtap="selectMode" data-mode="5" style="--i:1">
-               <view class="expand-btn-circle {{deviceStatus.fm === 5 || deviceStatus.fm === 3 ? 'active' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="2" style="--i:1">
+               <view class="expand-btn-circle {{deviceStatus.fm === 2 ? 'active' : ''}}">
                  <image src="/images/icons/auto.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">制冷</text>
              </view>
-             <view class="expand-item" catchtap="selectMode" data-mode="4" style="--i:2">
-               <view class="expand-btn-circle {{deviceStatus.fm === 4 ? 'active' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="3" style="--i:2">
+               <view class="expand-btn-circle {{deviceStatus.fm === 3 ? 'active' : ''}}">
                  <image src="/images/icons/strong.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">强劲</text>
              </view>
-             <view class="expand-item" catchtap="selectMode" data-mode="2" style="--i:3">
-               <view class="expand-btn-circle {{deviceStatus.fm === 2 ? 'active' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="1" style="--i:3">
+               <view class="expand-btn-circle {{deviceStatus.fm === 1 ? 'active' : ''}}">
                  <image src="/images/icons/eco.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">节能</text>
              </view>
-             <view class="expand-item" catchtap="selectMode" data-mode="1" style="--i:4">
-               <view class="expand-btn-circle {{deviceStatus.fm === 1 ? 'active' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="0" style="--i:4">
+               <view class="expand-btn-circle {{deviceStatus.fm === 0 ? 'active' : ''}}">
                  <image src="/images/icons/wind.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">通风</text>
@@ -312,37 +312,37 @@
 
           <!-- Swing Expandable -->
           <view class="expand-menu {{showSwingDropdown ? 'show' : ''}}">
-             <view class="expand-item" catchtap="selectSwing" data-type="off" style="--i:1">
-                <view class="expand-btn-circle {{deviceStatus.sxbf === 0 && deviceStatus.zybf === 0 ? 'active' : ''}}">
-                  <image src="/images/icons/wind5.png" mode="aspectFit" style="opacity: 0.5;"></image>
+             <!-- <view class="expand-item" catchtap="selectSwing" data-type="off" style="--i:1">
+                <view class="expand-btn-circle {{deviceStatus.sxbf === 0 && deviceStatus.zybf === 0 ? '' : ''}}">
+                  <image src="/images/icons/baned.png" mode="aspectFit" style="opacity: 0.5;"></image>
                 </view>
                 <text class="expand-text">关闭</text>
-             </view>
+             </view> -->
              <view class="expand-item" catchtap="selectSwing" data-type="ud" style="--i:2">
-                <view class="expand-btn-circle {{deviceStatus.sxbf === 1 && deviceStatus.zybf === 0 ? 'active' : ''}}">
+                <view class="expand-btn-circle {{deviceStatus.sxbf === 1 ? 'active' : ''}}">
                   <image src="/images/icons/uptodown.png" mode="aspectFit"></image>
                 </view>
                 <text class="expand-text">上下</text>
              </view>
              <view class="expand-item" catchtap="selectSwing" data-type="lr" style="--i:3">
-                <view class="expand-btn-circle {{deviceStatus.zybf === 1 && deviceStatus.sxbf === 0 ? 'active' : ''}}">
+                <view class="expand-btn-circle {{deviceStatus.zybf === 1 ? 'active' : ''}}">
                   <image src="/images/icons/sidetoside.png" mode="aspectFit"></image>
                 </view>
                 <text class="expand-text">左右</text>
              </view>
-             <view class="expand-item" catchtap="selectSwing" data-type="both" style="--i:4">
+             <!-- <view class="expand-item" catchtap="selectSwing" data-type="both" style="--i:4">
                 <view class="expand-btn-circle {{deviceStatus.sxbf === 1 && deviceStatus.zybf === 1 ? 'active' : ''}}">
                   <image src="/images/icons/wind5.png" mode="aspectFit"></image>
                 </view>
                 <text class="expand-text">全向</text>
-             </view>
+             </view> -->
           </view>
         </view>
 
         <!-- 3. 功能键 (Lighting/Surround/Anion) -->
         <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown" catchlongpress="">
           <view class="func-btn circle {{deviceStatus.ps === 1 && (deviceStatus.light === 1 || deviceStatus.fl === 1 || deviceStatus.fu === 1) ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
+            <image class="func-icon-img" src="/images/icons/wrench.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">功能</text>

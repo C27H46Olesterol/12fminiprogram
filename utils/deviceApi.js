@@ -9,11 +9,24 @@ function getDeviceInfo(deviceName) {
 }
 
 /**
+ * 递归将对象的所有 key 转换为小写
+ */
+function toLowerKeys(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(toLowerKeys);
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key.toLowerCase()] = toLowerKeys(obj[key]);
+        return acc;
+    }, {});
+}
+
+/**
  * 获取设备最新属性
  */
-function getDevicePropertyDetail(deviceName, params = null) {
+async function getDevicePropertyDetail(deviceName, params = null) {
     const data = params ? { params: params } : {};
-    return app.apiRequest(`/onenet/device/property-detail/${deviceName}`, 'POST', data);
+    const res = await app.apiRequest(`/onenet/device/property-detail/${deviceName}`, 'POST', data);
+    return toLowerKeys(res);
 }
 
 /**

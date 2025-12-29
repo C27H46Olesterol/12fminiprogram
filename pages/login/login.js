@@ -12,7 +12,6 @@ Page({
     console.log('登录页面加载');
     // 延迟检查登录状态，确保页面先渲染
     setTimeout(() => {
-
     }, 500);
   },
 
@@ -66,12 +65,12 @@ Page({
                 wx.setStorageSync('token', 'Bearer ' + loginRes.data.data.access_token)
                 wx.setStorageSync('userInfo', this.data.userInfo)
                 wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
+
                 console.log("token", wx.getStorageSync('token'))
                 console.log("clientid", wx.getStorageSync('clientid'))
                 console.log("userInfo", wx.getStorageSync('userInfo'))
                 // 登录成功后跳转到角色选择页
                 this.getRole();
-
                 wx.hideLoading();
                 wx.showToast({
                   tittle: '登陆成功',
