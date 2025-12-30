@@ -7,20 +7,23 @@
   </view>
 
   <!-- 远程遥控界面 -->
+
+
+
   <view class="section remote-control-section">
     
     <!-- 新的综合头部栏 -->
     <view class="remote-header">
       <!-- 1. 开关 -->
       <view class="header-btn-item" bindtap="togglePower">
-        <view class="power-btn {{remoteState.powerOn ? 'active' : ''}}">
+        <view class="power-btn {{deviceStatus.ps === 1 ? 'active' : ''}}">
           <image class="btn-icon-img" src="/images/icons/power.png" mode="aspectFit"></image>
         </view>
         <text class="btn-label">开关</text>
       </view>
 
       <!-- 2. 设备选择 -->
-      <view class="device-selector-container" catchtap="noOp" catchtap="toggleDeviceModal">
+      <view class="device-selector-container" catchtap="toggleDeviceModal">
         <view class="device-selector">
           <view class="device-picker-wrap {{deviceStatus.online ? 'online' : 'offline'}}">
             <image class="selected-device-img-large" src="{{selectedDevice.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -48,7 +51,7 @@
           <block wx:else>
             <view class="device-list-container">
               <view 
-                class="device-list-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
+                class="device-list-item {{selectedDeviceIndex === index ? 'selecte d' : ''}}" 
                 wx:for="{{deviceList}}" 
                 wx:key="sn" 
                 bindtap="onSelectDevice" 
@@ -109,7 +112,7 @@
       <!-- 3. 添加设备 -->
       <view class="header-btn-item menu-trigger" catchtap="toggleAddDeviceDropdown">
         <view class="icon-btn">
-          <image class="btn-icon-img" src="/images/icons/add.png" mode="aspectFit"></image>
+          <image class="btn-icon-img" src="/images/icons/wirelessconnect.png" mode="aspectFit"></image>
         </view>
         <text class="btn-label">连接方式</text>
 
@@ -118,7 +121,7 @@
            <view class="expand-item left-text" catchtap="onActivateProduct" style="--i:1">
              <text class="expand-text">4G连接</text>
              <view class="expand-btn-circle">
-               <image src="/images/icons/4gconn.png" mode="aspectFit"></image>
+               <image src="/images/icons/4g.png" mode="aspectFit"></image>
              </view>
            </view>
            <view class="expand-item left-text" catchtap="onApiTest" style="--i:2">
@@ -137,7 +140,7 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">A/C</text>
-          <text class="display-value {{remoteState.powerOn ? 'active' : ''}}">{{remoteState.powerOn ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.ps === 1 ? 'active' : ''}}">{{deviceStatus.ps === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">信号</text>
@@ -168,14 +171,14 @@
         <!-- 左侧：故障码显示 -->
         <view class="display-item fault-status">
           <text class="display-label-mini">故障码</text>
-          <text class="display-value fault-code {{deviceStatus.faultCode ? 'error' : 'nomal'}}">{{deviceStatus.faultCode || '--'}}</text>
+          <text class="display-value fault-code {{deviceStatus.err > 0 ? 'error' : 'nomal'}}">{{deviceStatus.err > 0 ? 'E' + deviceStatus.err : '--'}}</text>
         </view>
         <view class="display-item temp-display">
-          <text class="temp-value">{{remoteState.targetTemperature || '--'}}</text>
+          <text class="temp-value">{{deviceStatus.temp ? deviceStatus.temp / 10 : '--'}}</text>
           <text class="temp-unit">°C</text>
         </view>
         <view class="display-item mode-display">
-          <text class="mode-text">{{remoteState.mode === 'auto' ? '制冷' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'heat' ? '制热' : remoteState.mode === 'fan' ? '通风':'--')))}}</text>
+          <text class="mode-text">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 4 ? '制热' : deviceStatus.fm === 0 ? '通风':'--')))}}</text>
         </view>
       </view>
 
@@ -183,15 +186,15 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">风速</text>
-          <text class="display-value">{{remoteState.windSpeed+'档' || '--'}}</text>
+          <text class="display-value">{{deviceStatus.fs ? deviceStatus.fs + '档' : '--'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">出风温度</text>
-          <text class="display-value">{{deviceStatus.outletTemp}}°C</text>
+          <text class="display-value">{{deviceStatus.ot ? deviceStatus.ot / 10 : '--'}}°C</text>
         </view>
         <view class="display-item">
           <text class="display-label">进风温度</text>
-          <text class="display-value">{{deviceStatus.inletTemp}}°C</text>
+          <text class="display-value">{{deviceStatus.it ? deviceStatus.it / 10 : '--'}}°C</text>
         </view>
       </view>
 
@@ -199,15 +202,15 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">上下摆风</text>
-          <text class="display-value {{remoteState.swingUpDown ? 'active' : ''}}">{{remoteState.swingUpDown ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.sxbf === 1 ? 'active' : ''}}">{{deviceStatus.sxbf === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">左右摆风</text>
-          <text class="display-value {{remoteState.swingLeftRight ? 'active' : ''}}">{{remoteState.swingLeftRight ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.zybf === 1 ? 'active' : ''}}">{{deviceStatus.zybf === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">电压</text>
-          <text class="display-value">{{deviceStatus.voltage}}V</text>
+          <text class="display-value">{{deviceStatus.bv ? deviceStatus.bv / 10 : '--'}}V</text>
         </view>
       </view>
 
@@ -215,15 +218,15 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">照明灯</text>
-          <text class="display-value {{remoteState.lightingOn ? 'active' : ''}}">{{remoteState.lightingOn ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.light === 1 ? 'active' : ''}}">{{deviceStatus.light === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">氛围灯</text>
-          <text class="display-value {{remoteState.lightSurround ? 'active' : ''}}">{{remoteState.lightSurround ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.fl === 1 ? 'active' : ''}}">{{deviceStatus.fl === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">负离子</text>
-          <text class="display-value {{remoteState.lightClean ? 'active' : ''}}">{{remoteState.lightClean ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.fu === 1 ? 'active' : ''}}">{{deviceStatus.fu === 1 ? 'ON' : 'OFF'}}</text>
         </view>
       </view>
     </view>
@@ -265,132 +268,123 @@
     <view class="function-area">
       <view class="func-grid-row">
         
-        <!-- 1. 模式键 (Only Toggle Menu Now) -->
-        <view class="func-btn-wrapper" catchtap="toggleModeDropdown">
-          <view class="func-btn circle {{remoteState.powerOn ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/{{remoteState.mode === 'strong' ? 'strong' : (remoteState.mode === 'eco' ? 'eco' : (remoteState.mode === 'fan' ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
+        <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
+        <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
+          <view class="func-btn circle {{deviceStatus.ps === 1 ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
-          <text class="func-label">{{remoteState.mode === 'auto' ? '制冷' : (remoteState.mode === 'strong' ? '强劲' : (remoteState.mode === 'eco' ? '节能' : (remoteState.mode === 'fan' ? '通风' : '模式')))}}</text>
+          <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>
           
-          <!-- Mode Expandable (Orbital Style - Top to Right 60deg) -->
-          <view class="expand-menu mode-orbit {{showModeDropdown ? 'show' : ''}}">
-             <view class="expand-item {{menuStyle}}" catchtap="selectMode" data-mode="auto" style="--i:1; --angle:0deg">
-               <view class="expand-btn-circle {{remoteState.mode === 'auto' ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/auto.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">制冷</text>
+          <!-- Mode Expandable -->
+          <view class="expand-menu {{showModeDropdown ? 'show' : ''}}">
+             <view class="expand-item" catchtap="selectMode" data-mode="2" style="--i:1">
+               <view class="expand-btn-circle {{deviceStatus.fm === 2 ? 'active' : ''}}">
+                 <image src="/images/icons/auto.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">制冷</text>
+               <text class="expand-text">制冷</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectMode" data-mode="strong" style="--i:2; --angle:60deg">
-               <view class="expand-btn-circle {{remoteState.mode === 'strong' ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/strong.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">强劲</text>
+             <view class="expand-item" catchtap="selectMode" data-mode="3" style="--i:2">
+               <view class="expand-btn-circle {{deviceStatus.fm === 3 ? 'active' : ''}}">
+                 <image src="/images/icons/strong.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">强劲</text>
+               <text class="expand-text">强劲</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectMode" data-mode="eco" style="--i:3; --angle:120deg">
-               <view class="expand-btn-circle {{remoteState.mode === 'eco' ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/eco.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">节能</text>
+             <view class="expand-item" catchtap="selectMode" data-mode="1" style="--i:3">
+               <view class="expand-btn-circle {{deviceStatus.fm === 1 ? 'active' : ''}}">
+                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">节能</text>
+               <text class="expand-text">节能</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectMode" data-mode="fan" style="--i:4; --angle:180deg">
-               <view class="expand-btn-circle {{remoteState.mode === 'fan' ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/wind.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">通风</text>
+             <view class="expand-item" catchtap="selectMode" data-mode="0" style="--i:4">
+               <view class="expand-btn-circle {{deviceStatus.fm === 0 ? 'active' : ''}}">
+                 <image src="/images/icons/wind.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">通风</text>
+               <text class="expand-text">通风</text>
              </view>
           </view>
         </view>
 
-        <!-- 2. 摆风键 (Only Toggle Menu Now) -->
-        <view class="func-btn-wrapper" catchtap="toggleSwingDropdown">
-          <view class="func-btn circle {{remoteState.powerOn && (remoteState.swingUpDown || remoteState.swingLeftRight) ? 'active' : ''}}">
-            <image class="func-icon-img" src="{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '/images/icons/wind5.png' : (remoteState.swingLeftRight ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
+        <!-- 2. 摆风键 (Up/Down, Left/Right) -->
+        <view class="func-btn-wrapper" catchtap="toggleSwingDropdown" catchlongpress="">
+          <view class="func-btn circle {{deviceStatus.ps === 1 && (deviceStatus.sxbf === 1 || deviceStatus.zybf === 1) ? 'active' : ''}}">
+            <image class="func-icon-img" src="{{(deviceStatus.sxbf === 1 && deviceStatus.zybf === 1) ? '/images/icons/wind5.png' : (deviceStatus.zybf === 1 ? '/images/icons/sidetoside.png' : '/images/icons/uptodown.png')}}" mode="aspectFit"></image>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
-          <text class="func-label">{{(remoteState.swingUpDown && remoteState.swingLeftRight) ? '全向摆风' : (remoteState.swingLeftRight ? '左右摆风' : (remoteState.swingUpDown ? '上下摆风' : '摆风'))}}</text>
+          <text class="func-label">{{(deviceStatus.sxbf === 1 && deviceStatus.zybf === 1) ? '全向摆风' : (deviceStatus.zybf === 1 ? '左右摆风' : (deviceStatus.sxbf === 1 ? '上下摆风' : '摆风'))}}</text>
 
-          <!-- Swing Expandable (Orbital Style - Top to Right 60deg) -->
-          <view class="expand-menu swing-orbit {{showSwingDropdown ? 'show' : ''}}">
-             <view class="expand-item {{menuStyle}}" catchtap="selectSwing" data-type="off" style="--i:1; --angle:0deg">
-                <view class="expand-btn-circle {{(!remoteState.swingUpDown && !remoteState.swingLeftRight) ? 'active' : ''}}">
-                  <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/wind5.png" mode="aspectFit" style="opacity: 0.5;"></image>
-                  <text wx:else class="inside-text">关闭</text>
+          <!-- Swing Expandable -->
+          <view class="expand-menu {{showSwingDropdown ? 'show' : ''}}">
+             <!-- <view class="expand-item" catchtap="selectSwing" data-type="off" style="--i:1">
+                <view class="expand-btn-circle {{deviceStatus.sxbf === 0 && deviceStatus.zybf === 0 ? '' : ''}}">
+                  <image src="/images/icons/baned.png" mode="aspectFit" style="opacity: 0.5;"></image>
                 </view>
-                <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">关闭</text>
-             </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectSwing" data-type="ud" style="--i:2; --angle:60deg">
-                <view class="expand-btn-circle {{remoteState.swingUpDown && !remoteState.swingLeftRight ? 'active' : ''}}">
-                  <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/uptodown.png" mode="aspectFit"></image>
-                  <text wx:else class="inside-text">上下</text>
+                <text class="expand-text">关闭</text>
+             </view> -->
+             <view class="expand-item" catchtap="selectSwing" data-type="ud" style="--i:2">
+                <view class="expand-btn-circle {{deviceStatus.sxbf === 1 ? 'active' : ''}}">
+                  <image src="/images/icons/uptodown.png" mode="aspectFit"></image>
                 </view>
-                <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">上下</text>
+                <text class="expand-text">上下</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectSwing" data-type="lr" style="--i:3; --angle:120deg">
-                <view class="expand-btn-circle {{remoteState.swingLeftRight && !remoteState.swingUpDown ? 'active' : ''}}">
-                  <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/sidetoside.png" mode="aspectFit"></image>
-                  <text wx:else class="inside-text">左右</text>
+             <view class="expand-item" catchtap="selectSwing" data-type="lr" style="--i:3">
+                <view class="expand-btn-circle {{deviceStatus.zybf === 1 ? 'active' : ''}}">
+                  <image src="/images/icons/sidetoside.png" mode="aspectFit"></image>
                 </view>
-                <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">左右</text>
+                <text class="expand-text">左右</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectSwing" data-type="both" style="--i:4; --angle:180deg">
-                <view class="expand-btn-circle {{remoteState.swingUpDown && remoteState.swingLeftRight ? 'active' : ''}}">
-                  <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/wind5.png" mode="aspectFit"></image>
-                  <text wx:else class="inside-text">全向</text>
+             <!-- <view class="expand-item" catchtap="selectSwing" data-type="both" style="--i:4">
+                <view class="expand-btn-circle {{deviceStatus.sxbf === 1 && deviceStatus.zybf === 1 ? 'active' : ''}}">
+                  <image src="/images/icons/wind5.png" mode="aspectFit"></image>
                 </view>
-                <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">全向</text>
-             </view>
+                <text class="expand-text">全向</text>
+             </view> -->
           </view>
         </view>
 
-        <!-- 3. 功能键 (Only Toggle Menu Now) -->
-        <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown">
-          <view class="func-btn circle {{remoteState.powerOn && (remoteState.lightingOn || remoteState.lightSurround || remoteState.lightClean) ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/Wrench.png" mode="aspectFit"></image>
+        <!-- 3. 功能键 (Lighting/Surround/Anion) -->
+        <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown" catchlongpress="">
+          <view class="func-btn circle {{deviceStatus.ps === 1 && (deviceStatus.light === 1 || deviceStatus.fl === 1 || deviceStatus.fu === 1) ? 'active' : ''}}">
+            <image class="func-icon-img" src="/images/icons/wrench.png" mode="aspectFit"></image>
+            <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">功能</text>
 
-          <!-- Function Expandable (Orbital Style - Top to Right 60deg) -->
-          <view class="expand-menu func-orbit {{showFunctionDropdown ? 'show' : ''}}">
-             <view class="expand-item {{menuStyle}}" catchtap="selectFunction" data-func="off" style="--i:1; --angle:0deg">
+          <!-- Function Expandable -->
+          <view class="expand-menu {{showFunctionDropdown ? 'show' : ''}}">
+             <view class="expand-item" catchtap="selectFunction" data-func="off" style="--i:1">
                <view class="expand-btn-circle">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/light_off.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">关闭</text>
+                 <image src="/images/icons/light_off.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">关闭</text>
+               <text class="expand-text">全部关闭</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectFunction" data-func="light" style="--i:2; --angle:60deg">
-               <view class="expand-btn-circle {{remoteState.lightingOn ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/light_on.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">照明</text>
+             <view class="expand-item" catchtap="selectFunction" data-func="light" style="--i:2">
+               <view class="expand-btn-circle {{deviceStatus.light === 1 ? 'active' : ''}}">
+                 <image src="/images/icons/light_on.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">照明灯</text>
+               <text class="expand-text">照明灯</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectFunction" data-func="surround" style="--i:3; --angle:120deg">
-               <view class="expand-btn-circle {{remoteState.lightSurround ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/sun.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">氛围</text>
+             <view class="expand-item" catchtap="selectFunction" data-func="surround" style="--i:3">
+               <view class="expand-btn-circle {{deviceStatus.fl === 1 ? 'active' : ''}}">
+                 <image src="/images/icons/sun.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">氛围灯</text>
+               <text class="expand-text">氛围灯</text>
              </view>
-             <view class="expand-item {{menuStyle}}" catchtap="selectFunction" data-func="clean" style="--i:4; --angle:180deg">
-               <view class="expand-btn-circle {{remoteState.lightClean ? 'active' : ''}}">
-                 <image wx:if="{{menuStyle === 'outside'}}" src="/images/icons/eco.png" mode="aspectFit"></image>
-                 <text wx:else class="inside-text">离子</text>
+             <view class="expand-item" catchtap="selectFunction" data-func="clean" style="--i:4">
+               <view class="expand-btn-circle {{deviceStatus.fu === 1 ? 'active' : ''}}">
+                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
                </view>
-               <text wx:if="{{menuStyle === 'outside'}}" class="expand-text">负离子</text>
+               <text class="expand-text">负离子</text>
              </view>
           </view>
         </view>
 
         <!-- 4. 定时 (Existing) -->
         <view class="func-btn-wrapper" bindtap="timerTest">
-          <view class="func-btn circle {{(remoteState.powerOn && remoteState.clock) ? 'active' : ''}}" >
+          <view class="func-btn circle {{deviceStatus.ps === 1 && deviceStatus.clock ? 'active' : ''}}" >
             <image class="func-icon-img" src="/images/icons/clock.png" mode="aspectFit"></image>
           </view>
-          <text class="func-label">{{(remoteState.powerOn && wxTimerList.timerBtn.wxTimer) ? wxTimerList.timerBtn.wxTimer : '定时'}}</text>
+          <text class="func-label">{{(deviceStatus.ps === 1 && wxTimerList.timerBtn.wxTimer) ? wxTimerList.timerBtn.wxTimer : '定时'}}</text>
         </view>
       </view>
     </view>

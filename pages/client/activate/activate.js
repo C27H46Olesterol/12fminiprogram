@@ -193,12 +193,12 @@ Page({
     const phoneRegex = /^1[3-9]\d{9}$/;
 
     const isValid =
-      formData.productCode.trim() !== '' &&
-      formData.licensePlate.trim() !== '' &&
-      phoneRegex.test(formData.userPhone) &&
-      phoneRegex.test(formData.installerPhone)
-      // formData.processImages.length < 0 &&
-      // formData.finishImages.length < 0;
+      formData.productCode.trim() !== ''
+    // formData.licensePlate.trim() !== '' &&
+    // phoneRegex.test(formData.userPhone) &&
+    // phoneRegex.test(formData.installerPhone)
+    // formData.processImages.length < 0 &&
+    // formData.finishImages.length < 0;
 
     this.setData({ canSubmit: isValid });
   },
@@ -219,78 +219,25 @@ Page({
   // 提交表单
   async onSubmit() {
     if (!this.data.canSubmit) return;
-
-    // 再次检查定位，如果之前失败了
-    if (!this.data.location) {
-      wx.showToast({
-        title: '正在获取定位...',
-        icon: 'loading'
-      });
-      this.getCurrentLocation();
-      // 给定位一点时间，或者直接允许提交但标记无定位
-      // 这里选择必须有定位才能提交
-      setTimeout(() => {
-        if (!this.data.location) {
-          wx.showToast({
-            title: '无法获取定位，请检查权限',
-            icon: 'none'
-          });
-        } else {
-          this.startSubmit();
-        }
-      }, 1000);
-      return;
-    }
-
     this.startSubmit();
   },
 
   async startSubmit() {
     this.setData({ isSubmitting: true });
-    wx.showLoading({ title: '提交中...' });
+    wx.showLoading({ title: '正在激活...' });
 
     try {
-      // 1. 上传图片
-      const processImageIds = await this.uploadImages(this.data.formData.processImages, 'process');
-      const finishImageIds = await this.uploadImages(this.data.formData.finishImages, 'finish');
-
-      // 2. 准备提交数据
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      const submitTime = new Date().toISOString(); // 提交时间
-
-      // 3. 调用云函数
-      const result = await wx.cloud.callFunction({
-        name: 'activateProduct',
-        data: {
-          action: 'submitProductActivation',
-          userId: userInfo._id || userInfo.userId,
-          openId: userInfo.openid,
-          submitterPhone: userInfo.phone || userInfo.phoneNumber,
-          submitterRole: userInfo.role || 'user',
-
-          productCode: this.data.formData.productCode,
-          licensePlate: this.data.formData.licensePlate,
-          userPhone: this.data.formData.userPhone,
-          installerPhone: this.data.formData.installerPhone,
-
-          processImages: processImageIds,
-          finishImages: finishImageIds,
-
-          location: this.data.location, // 包含 latitude, longitude, timestamp
-          submitTime: submitTime // 记录提交时间
-        }
-
+      // 调用新的绑定接口，仅需提交 SN 码
+      const result = await app.apiRequest("/pro/banding/bind", "POST", {
+        sn: this.data.formData.productCode
       });
-      console.log('云函数返回:', result);
 
-      // wx.cloud.callFunction 返回的对象结构为 { result: { ... }, requestID: ... }
-      // 实际的业务返回值在 result.result 中
-      const res = result.result;
+      console.log('绑定结果:', result);
 
-      if (res && res.success) {
+      if (result && (result.code === 200 || result.code === 0)) {
         wx.hideLoading();
         wx.showToast({
-          title: '提交成功',
+          title: '激活成功',
           icon: 'success',
           duration: 2000
         });
@@ -299,11 +246,15 @@ Page({
           wx.navigateBack();
         }, 2000);
       } else {
-        throw new Error(res?.message || '提交失败');
+        throw new Error(result && (result.msg || result.message) ? (result.msg || result.message) : '激活失败');
       }
 
     } catch (error) {
-      console.error('提交失败:', error);
+      console.error('激活失败:', error);
+      wx.showToast({
+        title: error.message || '服务器连接失败',
+        icon: 'none'
+      });
     } finally {
       this.setData({ isSubmitting: false });
     }

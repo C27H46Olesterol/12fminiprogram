@@ -3,15 +3,10 @@ const app = getApp();
 Page({
   data: {
     hasUserInfo: false,
-    userInfo: {},
-    menuStyle: 'outside' // 'outside' or 'inside'
+    userInfo: {}
   },
   onShow() {
     this.checkLoginStatus();
-    // 读取菜单样式设置
-    const menuStyle = wx.getStorageSync('menuStyle') || 'outside';
-    this.setData({ menuStyle });
-
     if (typeof this.getTabBar === 'function' &&
       this.getTabBar()) {
       this.getTabBar().setData({
@@ -20,20 +15,9 @@ Page({
     }
   },
 
-  // 切换菜单样式
-  onMenuStyleChange(e) {
-    const newStyle = e.detail.value ? 'inside' : 'outside';
-    this.setData({ menuStyle: newStyle });
-    wx.setStorageSync('menuStyle', newStyle);
-    wx.showToast({
-      title: newStyle === 'inside' ? '已切换至文字内置' : '已切换至文字外置',
-      icon: 'none'
-    });
-  },
-
   async checkLoginStatus() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    const userInfo = app.globalData.userInfo;
+    const hasUserInfo = app.globalData.userInfo;
 
     if (hasUserInfo && userInfo) {
       this.setData({
@@ -44,9 +28,7 @@ Page({
   },
 
   onGoLogin() {
-    wx.navigateTo({
-      url: '/pages/login/login'
-    });
+    wx.navigateTo({ url: '/pages/login/login' });
   },
 
   handleLogout() {
@@ -68,15 +50,39 @@ Page({
     })
   },
 
-  goWorker() {
-    wx.navigateTo({
-      url: '/pages/worker/worker',
-    })
-  },
-
   goManual() {
     wx.navigateTo({
       url: '/pages/manual/manual',
+    })
+  },
+
+  goDevices() {
+    wx.navigateTo({
+      url: '/pages/client/devices/devices',
+    })
+  },
+
+  goActivateLog() {
+    wx.navigateTo({
+      url: '/pages/worker/activateLog/activateLog',
+    })
+  },
+
+  goIssuesLog() {
+    wx.navigateTo({
+      url: '/pages/client/issuesLog/issuesLog',
+    })
+  },
+
+  goRepairLog() {
+    wx.navigateTo({
+      url: '/pages/worker/repairLog/repairLog',
+    })
+  },
+
+  goWorker() {
+    wx.navigateTo({
+      url: '/pages/worker/worker',
     })
   },
 
@@ -95,7 +101,7 @@ Page({
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
     if (res.data.code === 200) {
-      const userInfo = wx.getStorageSync('userInfo');
+      const userInfo = app.globalData.userInfo;
       // userInfo.userRole.push('维修工')
       console.log('接口调用成功:', userInfo)
     }
@@ -106,7 +112,6 @@ Page({
     // const roles = result.data.user.roles
     // const userRole = roles.map(i=>i.roleName)
     console.log('userInfo', this.data.userInfo)
-    console.log(roles[0])
   },
 
   async apiTest() {
@@ -115,13 +120,18 @@ Page({
   },
 
   roleChange() {
-    const userInfo = wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo
     if (userInfo.userRole === '维修工') {
       userInfo.userRole = '普通用户'
     }
     else {
       userInfo.userRole = '维修工'
     }
-    wx.setStorageSync('userInfo', userInfo)
+    app.globalData.userInfo = userInfo
+    wx.showLoading({ title: "加载中", mask: true })
+    this.onShow();
+    setTimeout(() => {
+      wx.hideLoading();
+    }, 1000);
   }
 })

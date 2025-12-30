@@ -49,11 +49,11 @@ Page({
         const key = `formData.${type}`;
         const currentImages = this.data.formData[type];
         const newImages = [...currentImages, ...res.tempFilePaths];
-        
+
         // 限制最大数量
         if (newImages.length > maxCount) {
-           // 如果这批加起来超过了，可以截断或者提示，这里由chooseImage count限制了一次，但多次选择需要注意
-           // 由于 chooseImage 是单次限制，这里直接追加，但调用前已判断剩余名额
+          // 如果这批加起来超过了，可以截断或者提示，这里由chooseImage count限制了一次，但多次选择需要注意
+          // 由于 chooseImage 是单次限制，这里直接追加，但调用前已判断剩余名额
         }
 
         this.setData({
@@ -119,11 +119,11 @@ Page({
   // 检查是否可提交
   checkCanSubmit() {
     const { storeName, storeAddress, storeImages, licenseImages } = this.data.formData;
-    const isValid = storeName.trim() && 
-                    storeAddress.trim() && 
-                    storeImages.length > 0 && 
-                    licenseImages.length > 0;
-    
+    const isValid = storeName.trim() &&
+      storeAddress.trim() &&
+      storeImages.length > 0 &&
+      licenseImages.length > 0;
+
     this.setData({
       canSubmit: !!isValid
     });
@@ -151,7 +151,7 @@ Page({
           icon: 'success',
           duration: 2000
         });
-        
+
         setTimeout(() => {
           wx.navigateBack();
         }, 2000);

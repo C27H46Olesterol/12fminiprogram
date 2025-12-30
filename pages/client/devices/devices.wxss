@@ -1,0 +1,169 @@
+/* pages/client/devices/devices.wxss */
+.container {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 40rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.subtitle {
+  font-size: 26rpx;
+  color: #94a3b8;
+}
+
+.device-list {
+  width: 100%;
+}
+
+.device-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  margin-bottom: 30rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid rgba(226, 232, 240, 0.5);
+  transition: all 0.3s ease;
+}
+
+.device-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.02);
+}
+
+.card-body {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.device-img {
+  width: 120rpx;
+  height: 120rpx;
+  background: #f1f5f9;
+  border-radius: 16rpx;
+  margin-right: 24rpx;
+}
+
+.device-info {
+  flex: 1;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.device-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.status-tag {
+  font-size: 22rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+  font-weight: 600;
+}
+
+.tag-active {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.tag-expired {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.sn-text {
+  font-size: 24rpx;
+  color: #64748b;
+  margin-bottom: 20rpx;
+}
+
+.date-grid {
+  display: flex;
+  gap: 40rpx;
+  border-top: 1rpx solid #f1f5f9;
+  padding-top: 20rpx;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-label {
+  font-size: 20rpx;
+  color: #94a3b8;
+  margin-bottom: 4rpx;
+  text-transform: uppercase;
+  letter-spacing: 1rpx;
+}
+
+.date-value {
+  font-size: 24rpx;
+  color: #475569;
+  font-weight: 500;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #f8fafc;
+}
+
+.action-text {
+  font-size: 24rpx;
+  color: #1677ff;
+  margin-right: 8rpx;
+}
+
+.arrow {
+  width: 12rpx;
+  height: 12rpx;
+  border-right: 2rpx solid #1677ff;
+  border-bottom: 2rpx solid #1677ff;
+  transform: rotate(-45deg);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 200rpx;
+}
+
+.empty-img {
+  width: 160rpx;
+  height: 160rpx;
+  opacity: 0.2;
+  margin-bottom: 24rpx;
+  filter: grayscale(1);
+}
+
+.empty-state text {
+  color: #94a3b8;
+  font-size: 28rpx;
+}
+
+.bottom-safe {
+  height: 60rpx;
+}

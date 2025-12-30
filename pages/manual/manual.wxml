@@ -1,75 +1,167 @@
-<!--pages/manual/manual.wxml-->
+<!-- pages/manual/manual.wxml -->
 <view class="container">
-  <!-- 顶部标题区 -->
-  <view class="header">
-    <view class="title-section">
-      <text class="main-title">驻车空调维修手册</text>
-      <text class="sub-title">故障代码排除与解决方法</text>
-    </view>
-    
-    <!-- 搜索栏 -->
+  <!-- 头部搜索区 -->
+  <view class="header-section">
     <view class="search-bar">
-      <icon type="search" size="18" color="#999"></icon>
+      <icon type="search" size="18" color="#999" />
       <input 
-        placeholder="搜索错误代码或关键字..." 
-        placeholder-style="color: #bbb;" 
-        bindinput="onSearch"
+        type="text" 
+        placeholder="搜索故障代码或关键词" 
+        bindinput="onSearch" 
         value="{{searchQuery}}"
       />
     </view>
   </view>
 
-  <!-- 故障列表 -->
-  <scroll-view scroll-y class="content-scroll">
-    <view class="fault-list">
-      <block wx:for="{{displayList}}" wx:key="code">
-        <view class="fault-card {{item.expanded ? 'expanded' : ''}}" bindtap="toggleExpand" data-index="{{index}}">
-          <view class="card-header">
-            <view class="code-badge">{{item.code}}</view>
-            <view class="title-box">
-              <text class="fault-title">{{item.title}}</text>
-            </view>
-            <view class="arrow-icon {{item.expanded ? 'up' : 'down'}}">
-              <image src="/images/icons/arrow-down.png" mode="aspectFit" wx:if="{{!item.expanded}}"></image>
-              <image src="/images/icons/arrow-up.png" mode="aspectFit" wx:else></image>
-            </view>
+  <!-- 分类页签 -->
+  <view class="tabs">
+    <view 
+      class="tab-item {{activeTab === 'fault' ? 'active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="fault"
+    >故障诊断</view>
+    <view 
+      class="tab-item {{activeTab === 'basic' ? 'active' : ''}}" 
+      bindtap="switchTab" 
+      data-tab="basic"
+    >使用指南</view>
+  </view>
+
+  <!-- 故障代码列表 -->
+  <scroll-view scroll-y class="content-scroll" wx:if="{{activeTab === 'fault'}}">
+    <view class="list-count" wx:if="{{searchQuery}}">
+      找到 {{filteredFaultCodes.length}} 条相关结果
+    </view>
+    
+    <block wx:for="{{filteredFaultCodes}}" wx:key="code">
+      <view class="manual-card {{item.expanded ? 'expanded' : ''}}" bindtap="toggleExpand" data-index="{{index}}">
+        <view class="card-header">
+          <view class="code-badge">{{item.code}}</view>
+          <view class="title-area">
+            <text class="fault-title">{{item.title}}</text>
+            <text class="fault-cause">{{item.cause}}</text>
           </view>
-          
-          <!-- 展开内容 -->
-          <view class="card-content" wx:if="{{item.expanded}}" catchtap="stopBubble">
-            <view class="info-row">
-              <text class="label">引起原因</text>
-              <text class="value">{{item.cause}}</text>
+          <view class="arrow-icon {{item.expanded ? 'up' : 'down'}}"></view>
+        </view>
+
+        <view class="card-body" wx:if="{{item.expanded}}">
+          <view class="info-section" wx:if="{{item.checks.length}}">
+            <view class="label">
+              <view class="dot blue"></view>检查部位：
             </view>
-            <view class="info-row">
-              <text class="label">检查部位</text>
-              <text class="value">{{item.check}}</text>
+            <view class="text">{{item.checks}}</view>
+          </view>
+
+          <view class="info-section" wx:if="{{item.analysis}}">
+            <view class="label">
+              <view class="dot orange"></view>情况分析：
             </view>
-            <view class="info-row">
-              <text class="label">情况分析</text>
-              <text class="value">{{item.analysis}}</text>
+            <view class="text">{{item.analysis}}</view>
+          </view>
+
+          <view class="info-section">
+            <view class="label">
+              <view class="dot green"></view>解决方法：
             </view>
-            
-            <view class="solution-section">
-              <text class="section-label">解决步骤</text>
-              <block wx:for="{{item.solution}}" wx:for-item="step" wx:for-index="sIdx" wx:key="sIdx">
-                <view class="step-item">
-                  <view class="step-num">{{sIdx + 1}}</view>
-                  <text class="step-text">{{step}}</text>
-                </view>
-              </block>
+            <view class="solution-list">
+              <view class="solution-item" wx:for="{{item.solutions}}" wx:for-item="sol" wx:key="*this">
+                <text class="num">{{index + 1}}.</text>
+                <text class="sol-text">{{sol}}</text>
+              </view>
             </view>
           </view>
         </view>
-      </block>
-      
-      <!-- 无搜索结果 -->
-      <view class="empty-state" wx:if="{{displayList.length === 0}}">
-        <image src="/images/icons/manual.png" mode="aspectFit"></image>
-        <text>未找到相关故障代码</text>
       </view>
-      
-      <view class="footer-tip">-- 查阅完毕请根据实际情况由专业人士维修 --</view>
+    </block>
+    
+    <view class="empty-state" wx:if="{{filteredFaultCodes.length === 0}}">
+      <text>未找到相关故障代码</text>
     </view>
+    <view style="height: 140rpx;"></view> <!-- 占位 -->
   </scroll-view>
+
+  <!-- 使用指南 -->
+  <scroll-view scroll-y class="content-scroll" wx:if="{{activeTab === 'basic'}}">
+    <view class="guide-container">
+      <view class="guide-card">
+        <view class="guide-header">
+          <image class="guide-icon" src="/images/icons/power.png"></image>
+          <text class="guide-title">快速入门</text>
+        </view>
+        <view class="guide-content">
+          <view class="guide-item">
+            <view class="guide-num">01</view>
+            <view class="guide-info">
+              <text class="guide-label">设备连接</text>
+              <text class="guide-text">确保驻车空调电源已开启，打开手机蓝牙或4G网络，在“远程遥控”页面点击“连接设备”进行匹配。</text>
+            </view>
+          </view>
+          <view class="guide-item">
+            <view class="guide-num">02</view>
+            <view class="guide-info">
+              <text class="guide-label">开关机设置</text>
+              <text class="guide-text">点击首页“电源”图标即可开关机。关机后，系统会记录当前设置，下次开机自动恢复。</text>
+            </view>
+          </view>
+          <view class="guide-item">
+            <view class="guide-num">03</view>
+            <view class="guide-info">
+              <text class="guide-label">温度调节</text>
+              <text class="guide-text">使用“+”或“-”按钮调节设定温度。建议夏季设置在24-26℃，以平衡效率与功耗。</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="guide-card">
+        <view class="guide-header">
+          <image class="guide-icon" src="/images/icons/sun.png"></image>
+          <text class="guide-title">功能说明</text>
+        </view>
+        <view class="guide-content">
+          <view class="feature-row">
+            <view class="feature-item">
+              <text class="feature-name">模式切换</text>
+              <text class="feature-desc">支持制冷、强劲、节能、通风模式，应对各种气候情况。</text>
+            </view>
+            <view class="feature-item">
+              <text class="feature-name">扫风功能</text>
+              <text class="feature-desc">支持多级扫风，可在控制器面板中左右独立开启。</text>
+            </view>
+          </view>
+          <view class="feature-row">
+            <view class="feature-item">
+              <text class="feature-name">照明设置</text>
+              <text class="feature-desc">支持夜间模式并根据需要开启强力照明或氛围灯光。</text>
+            </view>
+            <view class="feature-item">
+              <text class="feature-name">定时关机</text>
+              <text class="feature-desc">可在操作面板点击闹钟图标设置30-360分钟定时关机。</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="guide-card no-margin">
+        <view class="guide-header">
+          <image class="guide-icon" src="/images/icons/repair-form.png"></image>
+          <text class="guide-title">日常维护</text>
+        </view>
+        <view class="guide-content">
+          <view class="maintenance-item">• 定期清理：建议每季度用低压水冲洗冷凝器及蒸发器灰尘。</view>
+          <view class="maintenance-item">• 电压检查：若出现电压过低报警，请检查电瓶充电状态及线径。</view>
+          <view class="maintenance-item">• 异味处理：若出风有异味，请检查过滤网或清洗蒸发箱。</view>
+        </view>
+      </view>
+    </view>
+    <view style="height: 140rpx;"></view> <!-- 占位 -->
+  </scroll-view>
+
+  <!-- 底部固定操作栏 -->
+  <view class="bottom-action">
+    <button class="action-btn report" bindtap="goReport">
+      <image class="btn-icon" src="/images/icons/wrench.png" mode="aspectFit"></image>
+      <text>遇到问题？一键报修</text>
+    </button>
+  </view>
 </view>

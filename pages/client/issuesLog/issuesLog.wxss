@@ -1,0 +1,26 @@
+/* pages/client/issuesLog/issuesLog.wxss */
+@import "/pages/worker/activateLog/activateLog.wxss";
+
+.fault-summary {
+  padding: 0 32rpx 24rpx;
+}
+
+.summary-text {
+  font-size: 26rpx;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  background: #f1f5f9;
+  padding: 12rpx 20rpx;
+  border-radius: 8rpx;
+}
+
+.text-primary {
+  color: #1677ff;
+}
+
+.detail-item .label {
+  width: 140rpx;
+}

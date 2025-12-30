@@ -1,8 +1,10 @@
 // app.js
 App({
   globalData: {
-    userInfo: null,
+    userInfo: '',
     hasUserInfo: false,
+    clientid:'',
+    token:'',
   },
 
   onLaunch() {
@@ -15,6 +17,22 @@ App({
     this.getSystemInfo();
     // 不在app.js中检查登录状态，让各页面自己处理
     // 这样可以避免在登录页面被重定向
+
+    this.getUser()
+  },
+
+  //通过缓存获取用户信息
+  getUser(){
+    this.globalData.hasUserInfo = wx.getStorageSync('hasUserInfo')
+    this.globalData.userInfo = wx.getStorageSync('userInfo')
+    this.globalData.clientid = wx.getStorageSync('clientid')
+    this.globalData.token = wx.getStorageSync('token')
+    if(this.globalData.hasUserInfo && this.globalData.userInfo && this.globalData.clientid && this.globalData.token){
+      console.log('缓存存在用户信息，直接登陆')
+      wx.redirectTo({
+        url: '/pages/login/role/role',
+      })
+    }
   },
 
   // 初始化云开发
@@ -37,6 +55,7 @@ App({
     }
   },
 
+
   //api通过ji
   async apiRequest(api, method = 'GET', data = {}){
     return new Promise((resolve, reject) => {
@@ -53,7 +72,7 @@ App({
         success:(res)=>{
           if(res.statusCode === 200){
             console.log("调用api成功",baseURL+api)
-            console.log("res1",res)
+            console.log("调用结果",res.data)
             resolve(res.data);
           }
           else{

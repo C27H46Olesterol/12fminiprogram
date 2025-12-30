@@ -94,15 +94,14 @@
 
 /* 电源键 */
 .power-btn {
-  width: 120rpx;
-  height: 120rpx;
+  width: 120rpx; /* Increased from 100rpx */
+  height: 120rpx; /* Increased from 100rpx */
   border-radius: 50%;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
-  border: 4rpx solid #ffffff; /* 增加边框 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
   transition: all 0.2s;
   flex-shrink: 0;
 }
@@ -232,15 +231,15 @@
 /* 移除了旧容器 */
 
 .icon-btn {
-  width: 100rpx;
-  height: 100rpx;
+  width: 100rpx; /* 统一按钮宽度 */
+  height: 100rpx; /* 统一按钮高度 */
   background-color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  border: 4rpx solid #ffffff; /* 增加边框 */
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #f0f0f0;
   position: relative;
   flex-shrink: 0;
 }
@@ -552,8 +551,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.1);
-  border: 4rpx solid #ffffff; /* 增加边框 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid #f0f0f0;
   flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
   position: relative; /* 为指示标记定位 */
@@ -590,13 +589,12 @@
 .func-btn.circle:active {
   transform: scale(0.92);
   background-color: #f5f5f5;
-  border-color: #1890ff; /* 按下时显示主题色边框 */
 }
 
 .func-btn.circle.active {
   background-color: #1890ff;
-  border-color: #ffffff; /* 激活时保持白色边框，增加层级感 */
-  box-shadow: 0 8rpx 24rpx rgba(24, 144, 255, 0.4);
+  border-color: #1890ff;
+  box-shadow: 0 6rpx 20rpx rgba(24, 144, 255, 0.3);
 }
 
 .func-btn .func-icon-img {
@@ -627,11 +625,10 @@
   font-weight: bold;
 }
 
-/* 展开式二级菜单 - 基础样式 (原直列式已注释) */
-/*
+/* 展开式二级菜单 - 基础样式 */
 .expand-menu {
   position: absolute;
-  bottom: 160rpx;
+  bottom: 160rpx; /* 默认向上弹出 */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -641,31 +638,14 @@
   pointer-events: none;
   width: 350rpx;
   align-items: flex-start;
-  padding-left: 122rpx;
-}
-*/
-
-/* ================= 环形旋转弹出菜单 (New - 精确居中版) ================= */
-.expand-menu {
-  position: absolute;
-  top: 55rpx; /* 彻底对齐 110rpx 按钮的垂直中心 */
-  left: 50%; /* 使用 50% 配合 wrapper 的 align-items: center 实现水平完美居中 */
-  width: 0;
-  height: 0;
-  z-index: 1000;
-  pointer-events: none;
-  visibility: visible;
-}
-
-.expand-menu.show {
-  pointer-events: auto;
+  padding-left: 114rpx;
 }
 
 /* 连接方式专用弹出菜单 (向下弹出，精确中心对齐) */
 .connect-menu {
   top: 130rpx !important; 
   bottom: auto !important;
-  right: calc(50% - 53rpx) !important; /* 50%是父容器中心，53rpx是二级图标半径。整体效果：二级图标中心对齐父容器中心 */
+  right: calc(50% - 61rpx) !important; /* 50%是父容器中心，61rpx是二级图标半径+内边距补正。 */
   left: auto !important;
   transform: none !important;
   flex-direction: column !important; /* 向下扩展 */
@@ -675,99 +655,45 @@
 }
 
 .connect-menu .expand-item {
-  position: relative !important;
-  left: auto !important;
-  top: auto !important;
-  width: auto !important;
-  height: auto !important;
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: flex-end !important;
-  opacity: 0 !important;
-  transform: translateY(-40rpx) scale(0.8) !important;
-  transition: all 0.3s ease !important;
-  transition-delay: calc(var(--i) * 0.08s) !important;
-  pointer-events: auto !important;
+  flex-direction: row; /* WXML中Text在前，View在后，Row即为Text左Icon右 */
+  justify-content: flex-end;
+  transform: translateY(-40rpx) scale(0.8); /* 从上方淡入 */
+  transition-delay: calc(var(--i) * 0.08s);
 }
 
 .connect-menu.show .expand-item {
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
+  transform: translateY(0) scale(1);
 }
 
-
-.connect-menu .expand-item.left-text .expand-text {
-  position: static !important; /* 覆盖全局的 absolute */
-  margin-left: 0 !important;
-  margin-right: 20rpx !important;
-  text-align: right !important;
-  transform: none !important;
-  font-size: 24rpx !important; /* 顶部菜单文字大一点 */
-  background: rgba(255, 255, 255, 0.85) !important;
-  padding: 8rpx 20rpx !important;
-  border-radius: 30rpx !important;
-  bottom: auto !important; /* 确保不被全局的bottom影响 */
-  left: auto !important; /* 确保不被全局的left影响 */
-  box-shadow: none !important; /* 移除阴影 */
-  border: none !important; /* 移除边框 */
-  font-weight: normal !important; /* 恢复正常字重 */
-  backdrop-filter: none !important; /* 移除模糊 */
-  -webkit-backdrop-filter: none !important; /* 移除模糊 */
+.expand-item.left-text .expand-text {
+  margin-left: 0;
+  margin-right: 20rpx; /* 文字在图标左侧，间距在右 */
+  text-align: right;
 }
 
-/*
+.expand-menu.show {
+  pointer-events: auto;
+}
+
 .expand-item {
   display: flex;
-  flex-direction: row;
+  flex-direction: row; /* 水平排列，文字在右 */
   align-items: center;
   opacity: 0;
   transform: translateY(40rpx) scale(0.8);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   transition-delay: calc(var(--i) * 0.05s);
-  width: 100%;
+  width: fit-content;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2rpx solid #e0e0e0;
+  border-radius: 64rpx;
+  padding: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1);
 }
 
 .expand-menu.show .expand-item {
   opacity: 1;
   transform: translateY(0) scale(1);
-}
-*/
-
-.expand-item {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 106rpx;
-  height: 106rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  
-  /* 初始状态：围绕主按钮边缘的多个“小圆点” - 进一步向中心收紧 */
-  opacity: 1;
-  transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-55rpx) scale(0.08); /* 半径由 62rpx 缩减至 55rpx (刚好在圆周上) */
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
-}
-
-/* 未展开时，隐藏圆点内的图标和文字 */
-.expand-item .expand-btn-circle image,
-.expand-item .expand-text {
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.expand-menu.show .expand-item {
-  opacity: 1;
-  pointer-events: auto;
-  /* 旋转并变大：进一步缩短弹出半径 (从 -145rpx 改为 -125rpx) */
-  transform: translate(-50%, -50%) rotate(calc(var(--angle) + 360deg)) translateY(-125rpx) rotate(calc(-1 * (var(--angle) + 360deg))) scale(1);
-}
-
-.expand-menu.show .expand-item .expand-btn-circle image,
-.expand-menu.show .expand-item .expand-text {
-  opacity: 1;
 }
 
 /* 二级按钮样式 - 放大版 */
@@ -779,10 +705,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10rpx 25rpx rgba(0, 0, 0, 0.2); /* 加深阴影增加浮动感 */
-  border: 4rpx solid #ffffff; /* 增加白色描边，在缩小为点时更有实体感 */
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.15);
+  border: 1rpx solid #f0f0f0;
   flex-shrink: 0;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .expand-btn-circle image {
@@ -792,14 +718,8 @@
 
 .expand-btn-circle.active {
   background-color: #1890ff;
-  border-color: #ffffff; /* 激活时保持白色边框 */
-  box-shadow: 0 8rpx 24rpx rgba(24, 144, 255, 0.4);
-}
-
-.expand-btn-circle:active {
-  transform: scale(0.85); /* 弹出按钮按下缩放更明显 */
-  background-color: #f5f5f5;
   border-color: #1890ff;
+  box-shadow: 0 6rpx 20rpx rgba(24, 144, 255, 0.3);
 }
 
 .expand-btn-circle.active image {
@@ -807,30 +727,18 @@
 }
 
 .expand-text {
-  position: absolute;
-  top: -5rpx; /* 向上偏移至顶部 */
-  left: 85rpx; /* 向右偏移 */
-  font-size: 20rpx;
-  color: #333;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 4rpx 14rpx;
-  border-radius: 20rpx;
-  white-space: nowrap;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
-  font-weight: bold;
-  border: 1rpx solid rgba(255,255,255,0.4);
-}
-
-.inside-text {
   font-size: 24rpx;
   color: #333;
+  margin-left: 20rpx; /* 增加与按钮的间距，防止背景盖住按钮阴影 */
+  /* background: rgba(255, 255, 255, 0.85); */
+  /* backdrop-filter: blur(8px); */
+  /* -webkit-backdrop-filter: blur(8px); */
+  padding: 8rpx 20rpx;
+  /* border-radius: 30rpx; */
+  white-space: nowrap;
+  /* box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06); */
   font-weight: bold;
-}
-
-.expand-btn-circle.active .inside-text {
-  color: #fff;
+  /* border: 1rpx solid rgba(255,255,255,0.4); */
 }
 
 /* 中间控制区域 (优化防误触) */
@@ -864,8 +772,6 @@
   align-items: center;
   justify-content: center;
   background-color: #f8f9fa;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  border: 4rpx solid #ffffff; /* 增加边框 */
   transition: all 0.2s;
 }
 

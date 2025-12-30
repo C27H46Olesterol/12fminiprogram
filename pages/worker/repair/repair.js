@@ -171,14 +171,14 @@ Page({
   checkCanSubmit() {
     const { formData } = this.data;
     const phoneRegex = /^1[3-9]\d{9}$/;
-    
+
     const isValid =
       formData.productCode.trim() !== '' &&
       formData.description.trim() !== '' &&
       phoneRegex.test(formData.userPhone) &&
       formData.licensePlate.trim() !== '';
-      // formData.beforeImages.length > 0 &&
-      // formData.afterImages.length > 0;
+    // formData.beforeImages.length > 0 &&
+    // formData.afterImages.length > 0;
 
     this.setData({ canSubmit: isValid });
   },

@@ -66,8 +66,8 @@
 }
 
 .role-icon {
-  width: 56rpx;
-  height: 56rpx;
+  width: 96rpx;
+  height: 96rpx;
 }
 
 .role-info {

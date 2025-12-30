@@ -1,18 +1,20 @@
 {
   "pages": [
-    "pages/index",
-    "pages/client/index/index",
     "pages/login/login",
+    "pages/client/index/index",
+    "pages/index",
     "pages/client/activate/activate",
-    "pages/worker/worker",
     "pages/profile/profile",
     "pages/login/role/role",
     "pages/profile/resign/resign",
     "pages/worker/repair/repair",
     "pages/worker/activate/activate",
-    "pages/client/problem/problem",
-    "pages/client/problem/issues/issues",
-    "pages/manual/manual"
+    "pages/client/issues/issues",
+    "pages/manual/manual",
+    "pages/worker/repairLog/repairLog",
+    "pages/worker/activateLog/activateLog",
+    "pages/client/issuesLog/issuesLog",
+    "pages/client/devices/devices"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -35,7 +37,7 @@
     "list": [
       {
         "pagePath": "pages/index",
-        "text": "首页"
+        "text": "工作台"
       },
       {
         "pagePath": "pages/client/index/index",

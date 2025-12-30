@@ -17,8 +17,8 @@
     </view>
     <!-- <view class="arrow"></view> -->
   </view>
-  <view class="menu-group">
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goResign' wx:if='{{userInfo.userRole && userInfo.userRole.indexOf("维修工") === -1}}'>
+  <view class="menu-group" wx:if="{{userInfo.userRole === '普通用户'}}">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goResign' >
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">申请成为维修工</text>
       <view class="arrow"></view>
@@ -37,24 +37,24 @@
 
   <!-- 功能菜单组 -->
   <view class="menu-group">
-    <view class="menu-item" hover-class="menu-item-hover">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDevices' wx:if="{{userInfo.userRole === '普通用户'}}">
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">我的设备</text>
       <view class="arrow"></view>
     </view>
-    <!-- <view class="menu-item" hover-class="menu-item-hover">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goIssuesLog' wx:if="{{userInfo.userRole === '普通用户'}}">
+      <image class="menu-icon" src="/images/icons/note.png"></image>
+      <text class="menu-text">报修记录</text>
+      <view class="arrow"></view>
+    </view>
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goActivateLog" wx:if="{{userInfo.userRole === '维修工'}}">
       <image class="menu-icon" src="/images/icons/note.png"></image>
       <text class="menu-text">安装记录</text>
       <view class="arrow"></view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepair">
+    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">
       <image class="menu-icon" src="/images/icons/wrench.png"></image>
       <text class="menu-text">维修记录</text>
-      <view class="arrow"></view>
-    </view> -->
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goWorker">
-      <image class="menu-icon" src="/images/icons/desk.png"></image>
-      <text class="menu-text">我的工作台</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="goManual">

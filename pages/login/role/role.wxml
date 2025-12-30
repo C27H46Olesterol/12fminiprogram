@@ -7,7 +7,7 @@
 
   <view class="role-list">
     <!-- 普通用户 -->
-    <view class="role-card user-card" bindtap="selectUser">
+    <view class="role-card user-card" bindtap="selectUser" wx:if="{{isNormal}}">
       <view class="icon-bg blue">
         <image class="role-icon" src="/images/icons/user.png" mode="aspectFit"></image>
       </view>
@@ -19,9 +19,9 @@
     </view>
 
     <!-- 维修工 -->
-    <view class="role-card worker-card" bindtap="selectWorker">
+    <view class="role-card worker-card" bindtap="selectWorker" wx:if="{{isWorker}}">
       <view class="icon-bg orange">
-        <image class="role-icon" src="/images/icons/auto.png" mode="aspectFit"></image>
+        <image class="role-icon" src="/images/icons/worker.png" mode="aspectFit"></image>
       </view>
       <view class="role-info">
         <text class="role-name">安装/维修工</text>

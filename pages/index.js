@@ -1,4 +1,5 @@
 // pages/index.js
+const app = getApp();
 Page({
   /**
    * 页面的初始数据
@@ -21,6 +22,7 @@ Page({
   onShow() {
     this.initPage();
     // 更新自定义 TabBar 状态
+    console.log(this.data.userInfo)
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 0
@@ -32,9 +34,11 @@ Page({
    * 初始化页面逻辑
    */
   initPage() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    const userInfo = app.globalData.userInfo
+    const hasUserInfo = app.globalData.hasUserInfo
 
+    // const userInfo = wx.getStorageSync('userInfo');
+    // const hasUserInfo = wx.getStorageSync('hasUserInfo');
     if (!hasUserInfo || !userInfo) {
       // 未登录直接重定向到客户端首页
       wx.reLaunch({ url: '/pages/client/index/index' });
@@ -62,19 +66,15 @@ Page({
 
   // ===================== 普通用户逻辑 =====================
   handleReport() {
-    wx.navigateTo({ url: '/pages/client/problem/issues/issues' });
+    wx.navigateTo({ url: '/pages/client/issues/issues' });
+  },
+
+  handleReportLog(){
+    wx.navigateTo({ url:'/pages/client/issuesLog/issuesLog'})
   },
 
   // ===================== 共享逻辑 =====================
   handleManual() {
-    wx.navigateTo({
-      url: '/pages/manual/manual',
-      fail: () => {
-        wx.showToast({
-          title: '功能开发中',
-          icon: 'none'
-        })
-      }
-    })
+    wx.navigateTo({ url: '/pages/manual/manual' });
   }
 })
