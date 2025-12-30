@@ -21,7 +21,7 @@
     <!-- 维修工 -->
     <view class="role-card worker-card" bindtap="selectWorker" wx:if="{{isWorker}}">
       <view class="icon-bg orange">
-        <image class="role-icon" src="/images/icons/auto.png" mode="aspectFit"></image>
+        <image class="role-icon" src="/images/icons/worker.png" mode="aspectFit"></image>
       </view>
       <view class="role-info">
         <text class="role-name">安装/维修工</text>

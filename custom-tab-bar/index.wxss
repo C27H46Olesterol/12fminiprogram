@@ -96,8 +96,8 @@
 }
 
 .center-image {
-  width: 76rpx; /* 从 86rpx 进一步放大 */
-  height: 76rpx;
+  width: 128rpx; /* 从 86rpx 进一步放大 */
+  height: 128rpx;
   transition: all 0.3s ease;
 }
 

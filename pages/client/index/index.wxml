@@ -109,7 +109,7 @@
       <!-- 3. 添加设备 -->
       <view class="header-btn-item menu-trigger" catchtap="toggleAddDeviceDropdown">
         <view class="icon-btn">
-          <image class="btn-icon-img" src="/images/icons/add.png" mode="aspectFit"></image>
+          <image class="btn-icon-img" src="/images/icons/wirelessconnect.png" mode="aspectFit"></image>
         </view>
         <text class="btn-label">连接方式</text>
 
@@ -118,7 +118,7 @@
            <view class="expand-item left-text" catchtap="onActivateProduct" style="--i:1">
              <text class="expand-text">4G连接</text>
              <view class="expand-btn-circle">
-               <image src="/images/icons/4gconn.png" mode="aspectFit"></image>
+               <image src="/images/icons/4g.png" mode="aspectFit"></image>
              </view>
            </view>
            <view class="expand-item left-text" catchtap="onApiTest" style="--i:2">

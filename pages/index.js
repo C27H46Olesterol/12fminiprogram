@@ -22,6 +22,7 @@ Page({
   onShow() {
     this.initPage();
     // 更新自定义 TabBar 状态
+    console.log(this.data.userInfo)
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 0

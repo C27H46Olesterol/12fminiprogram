@@ -16,8 +16,8 @@ Page({
   },
 
   async checkLoginStatus() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    const userInfo = app.globalData.userInfo;
+    const hasUserInfo = app.globalData.userInfo;
 
     if (hasUserInfo && userInfo) {
       this.setData({
@@ -101,7 +101,7 @@ Page({
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
     if (res.data.code === 200) {
-      const userInfo = wx.getStorageSync('userInfo');
+      const userInfo = app.globalData.userInfo;
       // userInfo.userRole.push('维修工')
       console.log('接口调用成功:', userInfo)
     }
@@ -112,7 +112,6 @@ Page({
     // const roles = result.data.user.roles
     // const userRole = roles.map(i=>i.roleName)
     console.log('userInfo', this.data.userInfo)
-    console.log(roles[0])
   },
 
   async apiTest() {
@@ -121,14 +120,14 @@ Page({
   },
 
   roleChange() {
-    const userInfo = wx.getStorageSync('userInfo')
+    const userInfo = app.globalData.userInfo
     if (userInfo.userRole === '维修工') {
       userInfo.userRole = '普通用户'
     }
     else {
       userInfo.userRole = '维修工'
     }
-    wx.setStorageSync('userInfo', userInfo)
+    app.globalData.userInfo = userInfo
     wx.showLoading({ title: "加载中", mask: true })
     this.onShow();
     setTimeout(() => {
