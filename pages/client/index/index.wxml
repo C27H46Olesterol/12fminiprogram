@@ -6,8 +6,59 @@
     <view class="resume-btn">恢复</view>
   </view>
 
-  <!-- 远程遥控界面 -->
+  <!-- 故障警告 -->
+  <view wx:if="{{showFaultAlert && currentFaultInfo}}" class="fault-alert-overlay" catchtap="closeFaultAlert">
+    <view class="fault-alert-container" catchtap>
+      <!-- 头部 -->
+      <view class="fault-alert-header">
+        <view class="fault-icon-container">
+          <image class="fault-icon" src="/images/icons/warning.png" mode="aspectFit"></image>
+        </view>
+        <view class="fault-title-container">
+          <text class="fault-code">{{currentFaultInfo.code}}</text>
+          <text class="fault-title">{{currentFaultInfo.title}}</text>
+        </view>
+        <view class="fault-close-btn" bindtap="closeFaultAlert">
+          <text class="close-icon">×</text>
+        </view>
+      </view>
 
+      <!-- 故障原因 -->
+      <view class="fault-section">
+        <view class="fault-section-title">
+          <text class="section-icon">⚠️</text>
+          <text>可能原因</text>
+        </view>
+        <text class="fault-cause">{{currentFaultInfo.cause}}</text>
+      </view>
+
+      <!-- 解决方案 -->
+      <view class="fault-section">
+        <view class="fault-section-title">
+          <text class="section-icon">🔧</text>
+          <text>解决方案</text>
+        </view>
+        <view class="fault-solutions">
+          <view wx:for="{{currentFaultInfo.solutions}}" wx:key="index" class="solution-item">
+            <text class="solution-number">{{index + 1}}.</text>
+            <text class="solution-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部按钮 -->
+      <view class="fault-alert-footer">
+        <button class="fault-btn fault-btn-secondary" bindtap="closeFaultAlert">
+          暂时忽略
+        </button>
+        <button class="fault-btn fault-btn-primary" bindtap="goToManual">
+          查看维修手册
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 远程遥控界面 -->
 
 
   <view class="section remote-control-section">

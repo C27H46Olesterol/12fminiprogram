@@ -45,6 +45,235 @@
   background: rgba(255, 255, 255, 0.4);
 }
 
+/* 故障警告 */
+.fault-alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fault-alert-container {
+  background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+  border-radius: 32rpx;
+  width: 100%;
+  max-width: 640rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100rpx);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fault-alert-header {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  border-radius: 32rpx 32rpx 0 0;
+  position: relative;
+}
+
+.fault-icon-container {
+  width: 80rpx;
+  height: 80rpx;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.fault-icon {
+  width: 48rpx;
+  height: 48rpx;
+  filter: brightness(0) invert(1);
+}
+
+.fault-title-container {
+  flex: 1;
+}
+
+.fault-code {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 8rpx;
+  letter-spacing: 2rpx;
+}
+
+.fault-title {
+  display: block;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+.fault-close-btn {
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 16rpx;
+}
+
+.close-icon {
+  font-size: 48rpx;
+  color: #fff;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.fault-section {
+  padding: 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.fault-section:last-of-type {
+  border-bottom: none;
+}
+
+.fault-section-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.section-icon {
+  margin-right: 12rpx;
+  font-size: 32rpx;
+}
+
+.fault-cause {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+  background: #fff7e6;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  border-left: 6rpx solid #ffa940;
+}
+
+.fault-solutions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.solution-item {
+  display: flex;
+  align-items: flex-start;
+  background: #f6ffed;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  border-left: 6rpx solid #52c41a;
+}
+
+.solution-number {
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #52c41a;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.solution-text {
+  font-size: 26rpx;
+  color: #555;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.fault-alert-footer {
+  padding: 24rpx 32rpx 32rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.fault-btn {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fault-btn::after {
+  border: none;
+}
+
+.fault-btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.fault-btn-secondary:active {
+  background: #e0e0e0;
+}
+
+.fault-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(24, 144, 255, 0.3);
+}
+
+.fault-btn-primary:active {
+  background: linear-gradient(135deg, #096dd9 0%, #0050b3 100%);
+  box-shadow: 0 2rpx 8rpx rgba(24, 144, 255, 0.4);
+}
+
 /* 远程遥控界面 (Main Section) */
 .remote-control-section {
   padding: 10rpx 24rpx; /* 进一步压缩上下边距 */

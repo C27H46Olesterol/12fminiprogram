@@ -1,6 +1,7 @@
 const app = getApp();
 var timer = require("../../../utils/wxTimer")
 const deviceApi = require("../../../utils/deviceApi");
+const { FAULT_CODES } = require("../../../utils/faultCodes");
 // const rp = require("request-promise")
 
 Page({
@@ -71,7 +72,11 @@ Page({
 
 
     //错误信息
-    errMsg: ''
+    errMsg: '',
+
+    // 故障警告
+    showFaultAlert: false, // 是否显示故障警告
+    currentFaultInfo: null // 当前故障信息
   },
 
   onLoad() {
@@ -802,12 +807,12 @@ Page({
 
   // 停止自动刷新并弹出提示
   stopAutoRefresh() {
-    console.log('超过30秒未操作，停止自动刷新');
+    console.log('等待指令响应，停止自动刷新');
     if (this.refreshIntervalId) {
       clearInterval(this.refreshIntervalId);
       this.refreshIntervalId = null;
     }
-    this.setData({ showRefreshNotify: true });
+    // this.setData({ showRefreshNotify: true });
   },
 
   // 清除所有定时器 (用于生命周期注销)
@@ -1146,7 +1151,7 @@ Page({
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
     console.log('左右摆风：', this.data.deviceStatus.zybf);
-    const lr = (state === 2 || state === 3);
+    const lr = (state === 1 || state === 3);
     this.setData({
       'deviceStatus.zybf': lr ? 1 : 0
     })
@@ -1364,6 +1369,66 @@ Page({
       title: title,
       icon: 'none',
       duration: 1000
+    });
+  },
+
+  // 检查故障状态
+  checkFaultStatus(newStatus) {
+    const errCode = parseInt(newStatus.err) || 0;
+
+    if (errCode > 0) {
+      // 有故障，获取故障信息
+      const faultInfo = FAULT_CODES[errCode];
+
+      if (faultInfo) {
+        console.log(`[Fault] 检测到故障 E${errCode}:`, faultInfo.title);
+        this.setData({
+          showFaultAlert: true,
+          currentFaultInfo: {
+            ...faultInfo,
+            errCode: errCode
+          }
+        });
+
+        // 震动提醒
+        wx.vibrateLong();
+      } else {
+        // 未知故障代码
+        console.warn(`[Fault] 未知故障代码: E${errCode}`);
+        this.setData({
+          showFaultAlert: true,
+          currentFaultInfo: {
+            code: `E${errCode}`,
+            title: '未知故障',
+            cause: '设备报告了一个未知的故障代码',
+            solutions: ['请联系售后服务', '查看设备使用手册'],
+            errCode: errCode
+          }
+        });
+      }
+    } else {
+      // 无故障，关闭警告
+      if (this.data.showFaultAlert) {
+        console.log('[Fault] 故障已清除');
+        this.setData({
+          showFaultAlert: false,
+          currentFaultInfo: null
+        });
+      }
+    }
+  },
+
+  // 关闭故障警告
+  closeFaultAlert() {
+    this.setData({
+      showFaultAlert: false
+    });
+  },
+
+  // 跳转到维修手册
+  goToManual() {
+    wx.navigateTo({
+      url: '/pages/manual/manual'
     });
   },
 
@@ -1771,6 +1836,9 @@ Page({
       'deviceStatus.online': true,
       'deviceStatus.clock': parsedData.timerEnabled
     });
+
+    // 检查故障状态
+    this.checkFaultStatus(this.data.deviceStatus);
 
     return parsedData;
   },
