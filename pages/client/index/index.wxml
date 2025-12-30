@@ -7,6 +7,9 @@
   </view>
 
   <!-- 远程遥控界面 -->
+
+
+
   <view class="section remote-control-section">
     
     <!-- 新的综合头部栏 -->
