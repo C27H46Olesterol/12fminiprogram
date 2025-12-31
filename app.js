@@ -2,9 +2,7 @@
 App({
   globalData: {
     userInfo: '',
-    hasUserInfo: false,
-    clientid:'',
-    token:'',
+    hasUserInfo: false
   },
 
   onLaunch() {
@@ -23,15 +21,22 @@ App({
 
   //通过缓存获取用户信息
   getUser(){
+    console.log('检查缓存用户信息')
     this.globalData.hasUserInfo = wx.getStorageSync('hasUserInfo')
     this.globalData.userInfo = wx.getStorageSync('userInfo')
     this.globalData.clientid = wx.getStorageSync('clientid')
     this.globalData.token = wx.getStorageSync('token')
+
+    console.log("缓存登陆信息校验1：hasUserInfo:", this.globalData.hasUserInfo)
+    console.log("缓存登陆信息校验2：userInfo:", this.globalData.userInfo)
+    console.log("缓存登陆信息校验3：token:", this.globalData.clientid)
+    console.log("缓存登陆信息校验4：clientid:", this.globalData.token)
     if(this.globalData.hasUserInfo && this.globalData.userInfo && this.globalData.clientid && this.globalData.token){
       console.log('缓存存在用户信息，直接登陆')
-      wx.redirectTo({
-        url: '/pages/login/role/role',
+      wx.reLaunch({
+        url: '/pages/index',
       })
+    }else{
     }
   },
 
@@ -57,7 +62,7 @@ App({
 
 
   //api通过ji
-  async apiRequest(api, method = 'GET', data = {}){
+  async apiRequest(api, method = 'GET', data = {}, contentType='application/json'){
     return new Promise((resolve, reject) => {
       const baseURL="https://ha.musenyu.cn"
       // const baseURL = 'http://192.168.70.44:8080'
@@ -67,7 +72,8 @@ App({
         data:data,
         header:{
           'Authorization':wx.getStorageSync("token"),
-          'clientid':wx.getStorageSync("clientid")
+          'clientid':wx.getStorageSync("clientid"),
+          'Content-Type':contentType
         },
         success:(res)=>{
           if(res.statusCode === 200){
@@ -134,8 +140,10 @@ App({
 
     // 清除本地缓存
     wx.removeStorageSync('userInfo');
-    wx.removeStorageSync('hasUserInfo')
-
+    wx.removeStorageSync('hasUserInfo');
+    wx.removeStorageSync('token');
+    wx.removeStorageSync('clientid');
+    wx.removeStorageSync('myProductsList')
     // 显示提示
     wx.showToast({
       title: '已退出登录',

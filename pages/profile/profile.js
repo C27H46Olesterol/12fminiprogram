@@ -1,4 +1,5 @@
 const app = getApp();
+const formAPI = require("../../utils/formAPI.js");
 
 Page({
   data: {
@@ -38,9 +39,7 @@ Page({
       success: (res) => {
         if (res.confirm) {
           // 清除本地存储的登录信息
-          wx.removeStorageSync('token');
-          wx.removeStorageSync('userInfo');
-          wx.removeStorageSync('isLogin');
+          app.logout();
           // 跳转到登录页
           wx.reLaunch({
             url: '/pages/login/login'
@@ -114,11 +113,15 @@ Page({
     console.log('userInfo', this.data.userInfo)
   },
 
+  //接口测试
   async apiTest() {
-    this.getUserRole();
+    // this.getUserRole();
     // this.goApply();
+    const result = formAPI.uploadImg("C:/Users/25692/12fProject/wxminiProgram/12fminiprogram/images/logo.png");
+    console.log("上传图片",result)
   },
 
+  //本地身份更改测试
   roleChange() {
     const userInfo = app.globalData.userInfo
     if (userInfo.userRole === '维修工') {

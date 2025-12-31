@@ -1,5 +1,10 @@
 const app = getApp();
 
+//上传图片文件
+async function uploadImg(path){
+  return app.apiRequest("/resource/oss/upload","POST",path,'multipart/form-data')
+}
+
 //上传安装信息
 function uploadInstallForm(formData){
   return app.apiRequest('/pro/installRecord','POST',formData);
@@ -29,3 +34,8 @@ function userBindDevice(){
 function userGetDeviceList(){
 
 }
+
+module.exports = {
+  uploadInstallForm,
+  uploadImg
+};

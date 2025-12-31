@@ -13,7 +13,6 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    this.initPage();
   },
 
   /**
@@ -22,7 +21,7 @@ Page({
   onShow() {
     this.initPage();
     // 更新自定义 TabBar 状态
-    console.log(this.data.userInfo)
+    
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 0
@@ -34,25 +33,28 @@ Page({
    * 初始化页面逻辑
    */
   initPage() {
-    const userInfo = app.globalData.userInfo
-    const hasUserInfo = app.globalData.hasUserInfo
+    const userInfo = wx.getStorageSync('userInfo');
+    const hasUserInfo = wx.getStorageSync('hasUserInfo');
 
-    // const userInfo = wx.getStorageSync('userInfo');
-    // const hasUserInfo = wx.getStorageSync('hasUserInfo');
-    if (!hasUserInfo || !userInfo) {
+    
+    if (!userInfo && !hasUserInfo) {
       // 未登录直接重定向到客户端首页
-      wx.reLaunch({ url: '/pages/client/index/index' });
+      console.log()
+      wx.reLaunch({ url: '/pages/login/login' });
       return;
     }
-
-    const role = userInfo.userRole;
-    const isWorker = Array.isArray(role) ? role.includes('维修工') : role === '维修工';
-    const userRoleStr = isWorker ? '维修工' : '普通用户';
-
+    
     this.setData({
-      userInfo,
-      userRole: userRoleStr
+      hasUserInfo: app.globalData.hasUserInfo,
+      userInfo: app.globalData.userInfo
     });
+
+    console.log("用户身份",this.data.userRole)
+
+    
+    // const isWorker = Array.isArray(role) ? role.includes('维修工') : role === '维修工';
+    // const userRoleStr = isWorker ? '维修工' : '普通用户';
+
   },
 
   // ===================== 维修工逻辑 =====================

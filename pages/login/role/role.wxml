@@ -19,7 +19,7 @@
     </view>
 
     <!-- 维修工 -->
-    <view class="role-card worker-card" bindtap="selectWorker" wx:if="{{isWorker}}">
+    <view class="role-card worker-card" bindtap="selectWorker">
       <view class="icon-bg orange">
         <image class="role-icon" src="/images/icons/worker.png" mode="aspectFit"></image>
       </view>

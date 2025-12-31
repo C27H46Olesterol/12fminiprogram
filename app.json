@@ -6,7 +6,7 @@
     "pages/client/activate/activate",
     "pages/profile/profile",
     "pages/login/role/role",
-    "pages/profile/resign/resign",
+    "pages/login/resign/resign",
     "pages/worker/repair/repair",
     "pages/worker/activate/activate",
     "pages/client/issues/issues",

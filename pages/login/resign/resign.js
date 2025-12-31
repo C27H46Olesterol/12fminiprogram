@@ -21,7 +21,10 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-
+    await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
+    wx.navigateTo({
+      url: '/pages/index',
+    })
   },
 
   // 输入处理

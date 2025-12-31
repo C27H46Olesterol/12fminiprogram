@@ -58,17 +58,12 @@ Page({
               success: loginRes => {
                 // 登录成功，保存 token
                 console.log("res", loginRes)
-                this.setData({
-                  'userInfo.userName': '用户' + loginRes.data.data.openid.slice(0, 5)
-                })
-                wx.setStorageSync('hasUserInfo', true)
+
                 wx.setStorageSync('token', 'Bearer ' + loginRes.data.data.access_token)
-                wx.setStorageSync('userInfo', this.data.userInfo)
                 wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
 
                 console.log("token", wx.getStorageSync('token'))
                 console.log("clientid", wx.getStorageSync('clientid'))
-                console.log("userInfo", wx.getStorageSync('userInfo'))
                 // 登录成功后跳转到角色选择页
                 this.getRole();
                 wx.hideLoading();
@@ -95,6 +90,16 @@ Page({
   async getRole() {
     const res = await app.apiRequest('/system/user/getInfo', 'GET')
     const roles = res.data.user.roles
+    const userInfo = {
+      userName: '用户'+res.data.user.userName,
+      userRole: res.data.user.roles,
+      userPhone: res.data.user.userName
+    }
+    this.setData({
+      userInfo: userInfo 
+    })
+    wx.setStorageSync('userInfo',userInfo)
+    wx.setStorageSync('hasUserInfo',true)
     let userRole = roles.map(i => i.roleName)
     if (userRole.find(i => i === "维修工")) {
       userRole = "维修工"
@@ -104,13 +109,6 @@ Page({
     })
     wx.setStorageSync('userInfo', this.data.userInfo)
     console.log("userInfo", wx.getStorageSync('userInfo'))
-    //如果是普通用户直接跳转首页
-    if (userRole === '普通用户') {
-      wx.redirectTo({
-        url: '/pages/index'
-      })
-    }
-    //维修工跳转角色选择
     wx.redirectTo({
       url: '/pages/login/role/role'
     })

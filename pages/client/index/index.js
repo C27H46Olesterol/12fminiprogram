@@ -434,40 +434,8 @@ Page({
     wx.navigateTo({ url: '/pages/client/activate/activate' });
   },
 
-  // 退出登陆
-  onLogout() {
-    wx.showModal({
-      title: '退出登陆',
-      content: '确定要退出登陆吗?',
-      success: (res) => {
-        if (res.confirm) {
-          // 清除本地存储的用户信息
-          wx.removeStorageSync('userInfo');
-          // 清除全局用户信息
-          app.globalData.userInfo = null;
-          // 重置页面数据
-          this.setData({
-            userInfo: null,
-            hasUserInfo: false,
-            showDropdown: false,
-            myProducts: [],
-            recentFeedbacks: [],
-            deviceList: [],
-            selectedDeviceIndex: -1,
-            selectedDevice: null
-          });
-          wx.showToast({
-            title: '已退出登陆',
-            icon: 'success'
-          });
-        }
-      }
-    });
-    this.onLoad()
-  },
-
+  
   // 接口测试 - 改为开启蓝牙搜索
-
   onApiTest() {
     wx.vibrateShort({ type: 'medium' });
     this.setData({

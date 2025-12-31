@@ -1,5 +1,6 @@
 // pages/client/activate/activate.js
 const app = getApp();
+const formAPI = require("../../../utils/formAPI");
 
 Page({
   data: {
@@ -24,7 +25,7 @@ Page({
 
   initPage() {
     // 自动获取定位
-    this.getCurrentLocation();
+    // this.getCurrentLocation();
 
     // 自动填充手机号逻辑
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
@@ -196,24 +197,28 @@ Page({
       formData.productCode.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
       phoneRegex.test(formData.userPhone) &&
-      phoneRegex.test(formData.installerPhone)
-    // formData.processImages.length < 0 &&
-    // formData.finishImages.length < 0;
-
+      phoneRegex.test(formData.installerPhone) &&
+      formData.processImages.length > 0 &&
+      formData.finishImages.length > 0;
+    console.log("图片提交长度：",formData.processImages.length)
+    console.log("表单内容是否可以提交：",isValid)
     this.setData({ canSubmit: isValid });
   },
 
   // 上传多张图片到云存储
-  async uploadImages(imagePaths, folder) {
-    const uploadPromises = imagePaths.map(async (filePath) => {
-      const cloudPath = `activations/${folder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
-      const result = await wx.cloud.uploadFile({
-        cloudPath: cloudPath,
-        filePath: filePath
-      });
-      return result.fileID;
-    });
-    return Promise.all(uploadPromises);
+  async uploadImages(imagePaths, folder='') {
+    // const uploadPromises = imagePaths.map(async (filePath) => {
+    //   const cloudPath = `activations/${folder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+    //   const result = await wx.cloud.uploadFile({
+    //     cloudPath: cloudPath,
+    //     filePath: filePath
+    //   });
+    //   return result.fileID;
+    // });
+    // return Promise.all(uploadPromises);
+    const result = formAPI.uploadImg(imagePaths);
+    console.log("上传图片",result)
+    return result;
   },
 
   // 提交表单
@@ -221,26 +226,26 @@ Page({
     if (!this.data.canSubmit) return;
 
     // 再次检查定位，如果之前失败了
-    if (!this.data.location) {
-      wx.showToast({
-        title: '正在获取定位...',
-        icon: 'loading'
-      });
-      this.getCurrentLocation();
-      // 给定位一点时间，或者直接允许提交但标记无定位
-      // 这里选择必须有定位才能提交
-      setTimeout(() => {
-        if (!this.data.location) {
-          wx.showToast({
-            title: '无法获取定位，请检查权限',
-            icon: 'none'
-          });
-        } else {
-          this.startSubmit();
-        }
-      }, 1000);
-      return;
-    }
+    // if (!this.data.location) {
+    //   wx.showToast({
+    //     title: '正在获取定位...',
+    //     icon: 'loading'
+    //   });
+    //   this.getCurrentLocation();
+    //   // 给定位一点时间，或者直接允许提交但标记无定位
+    //   // 这里选择必须有定位才能提交
+    //   setTimeout(() => {
+    //     if (!this.data.location) {
+    //       wx.showToast({
+    //         title: '无法获取定位，请检查权限',
+    //         icon: 'none'
+    //       });
+    //     } else {
+    //       this.startSubmit();
+    //     }
+    //   }, 1000);
+    //   return;
+    // }
 
     this.startSubmit();
   },
@@ -258,32 +263,17 @@ Page({
       const userInfo = wx.getStorageSync('userInfo') || {};
       const submitTime = new Date().toISOString(); // 提交时间
 
-      // 3. 调用云函数
-      const result = await wx.cloud.callFunction({
-        name: 'activateProduct',
-        data: {
-          action: 'submitProductActivation',
-          userId: userInfo._id || userInfo.userId,
-          openId: userInfo.openid,
-          submitterPhone: userInfo.phone || userInfo.phoneNumber,
-          submitterRole: userInfo.role || 'user',
+      const formData = this.data.formData;
+      const formatFormData = {
+        productSn:formData.productCode,
+        driverPhone:formData.userPhone,
+        customerPhone:formData.installerPhone,
+        licensePlate:formData.licensePlate,
+        installProcessPhotos:processImageIds,
+        installCompletePhotos:finishImageIds
+      }
 
-          productCode: this.data.formData.productCode,
-          licensePlate: this.data.formData.licensePlate,
-          userPhone: this.data.formData.userPhone,
-          installerPhone: this.data.formData.installerPhone,
-
-          processImages: processImageIds,
-          finishImages: finishImageIds,
-
-          location: this.data.location, // 包含 latitude, longitude, timestamp
-          submitTime: submitTime // 记录提交时间
-        }
-
-      });
-      console.log('云函数返回:', result);
-
-      // wx.cloud.callFunction 返回的对象结构为 { result: { ... }, requestID: ... }
+      const result = formAPI.uploadInstallForm(formatFormData);
       // 实际的业务返回值在 result.result 中
       const res = result.result;
 
