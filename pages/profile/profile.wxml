@@ -37,17 +37,17 @@
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">
-      <image class="menu-icon" src="/images/icons/wrench.png"></image>
+      <image class="menu-icon" src="/images/icons/repair-form.png"></image>
       <text class="menu-text">维修记录</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="apiTest">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
+      <image class="menu-icon" src="/images/icons/kefu.png"></image>
       <text class="menu-text">api测试</text>
       <view class="arrow"></view>
     </view>
     <view class="menu-item" hover-class="menu-item-hover" bind:tap="roleChange">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
+      <image class="menu-icon" src="/images/icons/kefu.png"></image>
       <text class="menu-text">测试：身份更换</text>
       <view class="arrow"></view>
     </view>

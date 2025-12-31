@@ -322,7 +322,7 @@
         <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
         <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
           <view class="func-btn circle {{deviceStatus.ps === 1 ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'auto'))}}.png" mode="aspectFit"></image>
+            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 2 ? 'cold':(deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'mods')))}}.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>
@@ -331,7 +331,7 @@
           <view class="expand-menu {{showModeDropdown ? 'show' : ''}}">
              <view class="expand-item" catchtap="selectMode" data-mode="2" style="--i:1">
                <view class="expand-btn-circle {{deviceStatus.fm === 2 ? 'active' : ''}}">
-                 <image src="/images/icons/auto.png" mode="aspectFit"></image>
+                 <image src="/images/icons/cold.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">制冷</text>
              </view>
@@ -343,9 +343,9 @@
              </view>
              <view class="expand-item" catchtap="selectMode" data-mode="1" style="--i:3">
                <view class="expand-btn-circle {{deviceStatus.fm === 1 ? 'active' : ''}}">
-                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
+                 <image src="/images/icons/moon.png" mode="aspectFit"></image>
                </view>
-               <text class="expand-text">节能</text>
+               <text class="expand-text">睡眠</text>
              </view>
              <view class="expand-item" catchtap="selectMode" data-mode="0" style="--i:4">
                <view class="expand-btn-circle {{deviceStatus.fm === 0 ? 'active' : ''}}">
@@ -396,7 +396,7 @@
         <!-- 3. 功能键 (Lighting/Surround/Anion) -->
         <view class="func-btn-wrapper" catchtap="toggleFunctionDropdown" catchlongpress="">
           <view class="func-btn circle {{deviceStatus.ps === 1 && (deviceStatus.light === 1 || deviceStatus.fl === 1 || deviceStatus.fu === 1) ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/wrench.png" mode="aspectFit"></image>
+            <image class="func-icon-img" src="/images/icons/manu.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">功能</text>
@@ -417,13 +417,13 @@
              </view>
              <view class="expand-item" catchtap="selectFunction" data-func="surround" style="--i:3">
                <view class="expand-btn-circle {{deviceStatus.fl === 1 ? 'active' : ''}}">
-                 <image src="/images/icons/sun.png" mode="aspectFit"></image>
+                 <image src="/images/icons/light_on.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">氛围灯</text>
              </view>
              <view class="expand-item" catchtap="selectFunction" data-func="clean" style="--i:4">
                <view class="expand-btn-circle {{deviceStatus.fu === 1 ? 'active' : ''}}">
-                 <image src="/images/icons/eco.png" mode="aspectFit"></image>
+                 <image src="/images/icons/fu.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">负离子</text>
              </view>
