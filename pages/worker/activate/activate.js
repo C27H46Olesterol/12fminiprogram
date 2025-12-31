@@ -117,8 +117,9 @@ Page({
 
     if (maxCount <= 0) return;
 
-    wx.chooseImage({
+    wx.chooseMedia({
       count: maxCount,
+      mediaType: ['mix'],
       sizeType: ['compressed'],
       sourceType: ['camera', 'album'],
       success: (res) => {
@@ -200,29 +201,35 @@ Page({
       phoneRegex.test(formData.installerPhone) &&
       formData.processImages.length > 0 &&
       formData.finishImages.length > 0;
-    console.log("图片提交长度：",formData.processImages.length)
-    console.log("表单内容是否可以提交：",isValid)
+    console.log("图片提交长度：", formData.processImages.length)
+    console.log("表单内容是否可以提交：", isValid)
     this.setData({ canSubmit: isValid });
   },
 
-  // 上传多张图片到云存储
-  async uploadImages(imagePaths, folder='') {
-    // const uploadPromises = imagePaths.map(async (filePath) => {
-    //   const cloudPath = `activations/${folder}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
-    //   const result = await wx.cloud.uploadFile({
-    //     cloudPath: cloudPath,
-    //     filePath: filePath
-    //   });
-    //   return result.fileID;
-    // });
-    // return Promise.all(uploadPromises);
-    const result = formAPI.uploadImg(imagePaths);
-    console.log("上传图片",result)
-    return result;
+  // 上传多张图片到服务器
+  async uploadImages(imagePaths) {
+    console.log(imagePaths.map(path => path.tempFilePath))
+    let formData = new FormData();
+
+    const uploadPromises = imagePaths.map(path => {
+      formData.appendFile("file",path.tempFilePath);
+    });
+
+    let data = formData.getData();
+    formAPI.uploadImg(data);
+    try {
+      const results = await Promise.all(uploadPromises);
+      console.log("上传图片结果", results);
+      // 假设接口直接返回url或id，这里直接返回结果数组
+      return results;
+    } catch (err) {
+      console.error("图片上传失败", err);
+      throw err;
+    }
   },
 
   // 提交表单
-  async onSubmit() {
+  async onSubmit(e) {
     if (!this.data.canSubmit) return;
 
     // 再次检查定位，如果之前失败了
@@ -247,37 +254,35 @@ Page({
     //   return;
     // }
 
-    this.startSubmit();
+    const formDataFromEvent = e.detail.value; // Get data from form submit event
+    this.startSubmit(formDataFromEvent);
   },
 
-  async startSubmit() {
+  async startSubmit(eventData) {
     this.setData({ isSubmitting: true });
     wx.showLoading({ title: '提交中...' });
 
     try {
       // 1. 上传图片
-      const processImageIds = await this.uploadImages(this.data.formData.processImages, 'process');
-      const finishImageIds = await this.uploadImages(this.data.formData.finishImages, 'finish');
+      const processImageIds = await this.uploadImages(this.data.formData.processImages);
+      const finishImageIds = await this.uploadImages(this.data.formData.finishImages);
 
-      // 2. 准备提交数据
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      const submitTime = new Date().toISOString(); // 提交时间
-
-      const formData = this.data.formData;
+      // 2. 准备提交数据 - use eventData preferred, fallback to data
+      // eventData keys match 'name' attributes: productSn, licensePlate, driverPhone, customerPhone
       const formatFormData = {
-        productSn:formData.productCode,
-        driverPhone:formData.userPhone,
-        customerPhone:formData.installerPhone,
-        licensePlate:formData.licensePlate,
-        installProcessPhotos:processImageIds,
-        installCompletePhotos:finishImageIds
+        productSn: eventData.productSn || this.data.formData.productCode,
+        driverPhone: eventData.driverPhone || this.data.formData.userPhone,
+        customerPhone: eventData.customerPhone || this.data.formData.installerPhone,
+        licensePlate: eventData.licensePlate || this.data.formData.licensePlate,
+        installProcessPhotos: processImageIds,
+        installCompletePhotos: finishImageIds
       }
 
-      const result = formAPI.uploadInstallForm(formatFormData);
-      // 实际的业务返回值在 result.result 中
-      const res = result.result;
-
-      if (res && res.success) {
+      const result = await formAPI.uploadInstallForm(formatFormData);
+      // 实际的业务返回值在 result.data 中
+      const res = result.data;
+      console.log('提交返回', res)
+      if (res.code === 200) {
         wx.hideLoading();
         wx.showToast({
           title: '提交成功',

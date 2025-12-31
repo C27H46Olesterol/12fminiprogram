@@ -1,5 +1,6 @@
 const app = getApp();
 const formAPI = require("../../utils/formAPI.js");
+const FormData = require("../../utils/formdata.js");
 
 Page({
   data: {
@@ -117,8 +118,40 @@ Page({
   async apiTest() {
     // this.getUserRole();
     // this.goApply();
-    const result = formAPI.uploadImg("C:/Users/25692/12fProject/wxminiProgram/12fminiprogram/images/logo.png");
-    console.log("上传图片",result)
+    wx.chooseMedia({
+      count: 3,
+      mediaType: ['mix'],
+      sizeType: ['compressed'],
+      sourceType: ['camera', 'album'],
+      success: (res) => {
+        // const newImages = [...currentImages, ...res.tempFilePaths];
+        console.log("选择的图片",res.tempFiles)
+        const result = this.uploadImages(res.tempFiles);
+        console.log("上传图片",result)
+      }
+    });
+
+  },
+
+  async uploadImages(imagePaths) {
+    console.log(imagePaths.map(path => path.tempFilePath))
+    let formData = new FormData();
+
+    const uploadPromises = imagePaths.map(path => {
+      formData.appendFile("file",path.tempFilePath);
+    });
+
+    let data = formData.getData();
+    formAPI.uploadImg(data);
+    try {
+      const results = await Promise.all(uploadPromises);
+      console.log("上传图片结果", results);
+      // 假设接口直接返回url或id，这里直接返回结果数组
+      return results;
+    } catch (err) {
+      console.error("图片上传失败", err);
+      throw err;
+    }
   },
 
   //本地身份更改测试

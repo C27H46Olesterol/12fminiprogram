@@ -45,7 +45,7 @@ Page({
             // })
             wx.request({
               url: 'https://ha.musenyu.cn/auth/login',
-              // url:'http://192.168.70.44:8080/auth/login',
+              // url:'http://192.168.70.27:8080/auth/login',
               method: 'POST',
               data: {
                 clientId: '2aeeae6eada0ddca866d775707cc5b11',

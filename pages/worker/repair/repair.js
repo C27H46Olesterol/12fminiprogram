@@ -1,5 +1,6 @@
 // pages/worker/repair/repair.js
 const app = getApp();
+const formAPI = require("../../../utils/formAPI");
 
 Page({
   data: {
@@ -184,38 +185,67 @@ Page({
   },
 
   // 提交表单
-  async onSubmit() {
+  async onSubmit(e) {
     if (!this.data.canSubmit) return;
 
     if (!this.data.location) {
-      wx.showToast({
-        title: '正在获取定位...',
-        icon: 'loading'
-      });
+      wx.showToast({ title: '正在获取定位...', icon: 'loading' });
       this.getCurrentLocation();
       setTimeout(() => {
         if (!this.data.location) {
-          wx.showToast({
-            title: '无法获取定位，请检查权限',
-            icon: 'none'
-          });
+          wx.showToast({ title: '无法获取定位，请检查权限', icon: 'none' });
         } else {
-          this.startSubmit();
+          const formDataFromEvent = e.detail.value;
+          this.startSubmit(formDataFromEvent);
         }
       }, 1000);
       return;
     }
 
-    this.startSubmit();
+    const formDataFromEvent = e.detail.value;
+    this.startSubmit(formDataFromEvent);
   },
 
-  async startSubmit() {
+  // 上传多张图片
+  async uploadImages(imagePaths) {
+    if (!imagePaths || imagePaths.length === 0) return [];
+    try {
+      const uploadPromises = imagePaths.map(path => formAPI.uploadImg(path));
+      const results = await Promise.all(uploadPromises);
+      return results;
+    } catch (err) {
+      console.error("图片上传失败", err);
+      throw err;
+    }
+  },
+
+  async startSubmit(eventData) {
     this.setData({ isSubmitting: true });
     wx.showLoading({ title: '提交中...' });
 
     try {
-      // 模拟提交
-      setTimeout(() => {
+      // 1. 上传图片
+      const beforeImageIds = await this.uploadImages(this.data.formData.beforeImages);
+      const afterImageIds = await this.uploadImages(this.data.formData.afterImages);
+
+      // 2. 准备提交数据
+      const { location } = this.data;
+      const submitData = {
+        productSn: eventData.productSn || this.data.formData.productCode,
+        description: eventData.description || this.data.formData.description,
+        driverPhone: eventData.driverPhone || this.data.formData.userPhone,
+        licensePlate: eventData.licensePlate || this.data.formData.licensePlate,
+        beforeRepairPhotos: beforeImageIds,
+        afterRepairPhotos: afterImageIds,
+        latitude: location ? location.latitude : null,
+        longitude: location ? location.longitude : null,
+        address: location ? location.address : ''
+      };
+
+      const result = await formAPI.uploadMaintenanceForm(submitData);
+
+      const res = result.result || result; // 兼容不同可能的返回结构
+      if (res && (res.success || res.code === 200 || res.code === 0)) {
         wx.hideLoading();
         wx.showToast({
           title: '提交成功',
@@ -225,7 +255,9 @@ Page({
         setTimeout(() => {
           wx.navigateBack();
         }, 2000);
-      }, 1500);
+      } else {
+        throw new Error(res.msg || res.message || '提交失败');
+      }
 
     } catch (error) {
       console.error('提交失败:', error);

@@ -1,4 +1,5 @@
-// pages/client/problem/issues/issues.js
+const app = getApp();
+const formAPI = require("../../../utils/formAPI");
 Page({
 
   /**
@@ -88,25 +89,62 @@ Page({
   /**
    * 提交报修申请
    */
-  async onSubmitReport() {
-    const { sn, phone, description } = this.data.formData;
+  async uploadImages(imagePaths) {
+    if (!imagePaths || imagePaths.length === 0) return [];
+    try {
+      const uploadPromises = imagePaths.map(path => formAPI.uploadImg(path));
+      const results = await Promise.all(uploadPromises);
+      return results;
+    } catch (err) {
+      console.error("图片上传失败", err);
+      throw err;
+    }
+  },
+
+  async onSubmitReport(e) {
+    // Get values from form submission event
+    const { sn, phone, description } = e.detail.value;
 
     if (!sn) return wx.showToast({ title: '请输入设备码', icon: 'none' });
     if (!phone || !/^1[3-9]\d{9}$/.test(phone)) return wx.showToast({ title: '手机号格式错误', icon: 'none' });
     if (!description) return wx.showToast({ title: '请填写故障描述', icon: 'none' });
 
+    this.setData({ isSubmitting: true });
     wx.showLoading({ title: '提交中...' });
 
-    setTimeout(() => {
+    try {
+      // 1. Upload Images
+      const imageIds = await this.uploadImages(this.data.tempImages);
+
+      // 2. Submit Data
+      const submitData = {
+        productSn: sn,
+        contactPhone: phone,
+        description: description,
+        photos: imageIds
+      };
+
+      const result = await formAPI.uploadIssueForm(submitData);
+      const res = result.result || result;
+
+      if (res && (res.success || res.code === 200 || res.code === 0)) {
+        wx.hideLoading();
+        wx.showModal({
+          title: '提交成功',
+          content: '您的报修申请已收到',
+          showCancel: false,
+          success: () => {
+            wx.navigateBack();
+          }
+        });
+      } else {
+        throw new Error(res.msg || res.message || '提交失败');
+      }
+    } catch (err) {
       wx.hideLoading();
-      wx.showModal({
-        title: '提交成功',
-        content: '您的报修申请已收到',
-        showCancel: false,
-        success: () => {
-          wx.navigateBack();
-        }
-      });
-    }, 1500);
+      wx.showToast({ title: err.message || '提交失败', icon: 'none' });
+    } finally {
+      this.setData({ isSubmitting: false });
+    }
   }
 })

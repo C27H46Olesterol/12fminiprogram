@@ -5,7 +5,6 @@ Page({
    * 页面的初始数据
    */
   data: {
-    userRole: '', // '维修工' 或其他
     userInfo: null
   },
 
@@ -49,7 +48,7 @@ Page({
       userInfo: app.globalData.userInfo
     });
 
-    console.log("用户身份",this.data.userRole)
+    console.log("用户身份",this.data.userInfo.userRole)
 
     
     // const isWorker = Array.isArray(role) ? role.includes('维修工') : role === '维修工';

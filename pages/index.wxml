@@ -2,7 +2,7 @@
 <view class="container">
   
   <!-- 1. 维修工视图 -->
-  <block wx:if="{{userRole === '维修工'}}">
+  <block wx:if="{{userInfo.userRole === '维修工'}}">
     <view class="worker-header">
       <view class="header-content">
         <text class="greeting">您好，{{userInfo.userName || "售后工程师"}}</text>

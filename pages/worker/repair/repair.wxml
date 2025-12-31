@@ -9,173 +9,179 @@
     </view>
   </view>
 
-  <!-- 维修表单 -->
-  <view class="form-container">
-    
-    <!-- 设备信息卡片 -->
-    <view class="form-card">
-      <view class="card-title">设备信息</view>
+    <!-- 维修表单 -->
+  <form bindsubmit="onSubmit">
+    <view class="form-container">
       
-      <!-- 产品码 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text>产品序列号</text>
-          <text class="required-mark">*</text>
+      <!-- 设备信息卡片 -->
+      <view class="form-card">
+        <view class="card-title">设备信息</view>
+        
+        <!-- 产品码 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>产品序列号</text>
+            <text class="required-mark">*</text>
+          </view>
+          <view class="code-input-wrap">
+            <input 
+              class="form-input code-input" 
+              name="productSn"
+              type="text" 
+              placeholder="请输入S/N码或扫描二维码" 
+              placeholder-class="input-placeholder"
+              value="{{formData.productCode}}" 
+              bindinput="onProductCodeInput"
+            />
+            <button class="scan-btn" bindtap="onScanQRCode" hover-class="btn-hover">
+              <image class="scan-icon-img" src="/images/icons/scan.png" mode="aspectFit"></image>
+            </button>
+          </view>
         </view>
-        <view class="code-input-wrap">
-          <input 
-            class="form-input code-input" 
-            type="text" 
-            placeholder="请输入S/N码或扫描二维码" 
+  
+        <!-- 故障描述 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>故障描述</text>
+            <text class="required-mark">*</text>
+          </view>
+          <textarea 
+            class="form-textarea" 
+            name="description"
+            placeholder="请详细描述故障现象和维修内容" 
             placeholder-class="input-placeholder"
-            value="{{formData.productCode}}" 
-            bindinput="onProductCodeInput"
+            value="{{formData.description}}" 
+            bindinput="onDescriptionInput"
+            auto-height
           />
-          <button class="scan-btn" bindtap="onScanQRCode" hover-class="btn-hover">
-            <image class="scan-icon-img" src="/images/icons/scan.png" mode="aspectFit"></image>
-          </button>
         </view>
       </view>
-
-      <!-- 故障描述 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text>故障描述</text>
-          <text class="required-mark">*</text>
+  
+      <!-- 联系人信息卡片 -->
+      <view class="form-card">
+        <view class="card-title">联系信息</view>
+        
+        <!-- 用户手机号 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>用户手机号</text>
+            <text class="required-mark">*</text>
+          </view>
+          <input 
+            class="form-input" 
+            name="driverPhone"
+            type="number" 
+            maxlength="11"
+            placeholder="请输入用户手机号码" 
+            placeholder-class="input-placeholder"
+            value="{{formData.userPhone}}" 
+            bindinput="onUserPhoneInput"
+          />
         </view>
-        <textarea 
-          class="form-textarea" 
-          placeholder="请详细描述故障现象和维修内容" 
-          placeholder-class="input-placeholder"
-          value="{{formData.description}}" 
-          bindinput="onDescriptionInput"
-          auto-height
-        />
+  
+        <!-- 用户车牌号 -->
+        <view class="form-group no-border">
+          <view class="form-label">
+            <text>用户车牌号</text>
+            <text class="required-mark">*</text>
+          </view>
+          <input 
+            class="form-input" 
+            name="licensePlate"
+            type="text" 
+            placeholder="请输入车牌号码 (例: 京A88888)" 
+            placeholder-class="input-placeholder"
+            value="{{formData.licensePlate}}" 
+            bindinput="onLicensePlateInput"
+          />
+        </view>
       </view>
-    </view>
-
-    <!-- 联系人信息卡片 -->
-    <view class="form-card">
-      <view class="card-title">联系信息</view>
-      
-      <!-- 用户手机号 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text>用户手机号</text>
-          <text class="required-mark">*</text>
-        </view>
-        <input 
-          class="form-input" 
-          type="number" 
-          maxlength="11"
-          placeholder="请输入用户手机号码" 
-          placeholder-class="input-placeholder"
-          value="{{formData.userPhone}}" 
-          bindinput="onUserPhoneInput"
-        />
-      </view>
-
-      <!-- 用户车牌号 -->
-      <view class="form-group no-border">
-        <view class="form-label">
-          <text>用户车牌号</text>
-          <text class="required-mark">*</text>
-        </view>
-        <input 
-          class="form-input" 
-          type="text" 
-          placeholder="请输入车牌号码 (例: 京A88888)" 
-          placeholder-class="input-placeholder"
-          value="{{formData.licensePlate}}" 
-          bindinput="onLicensePlateInput"
-        />
-      </view>
-    </view>
-
-    <!-- 维修记录卡片 -->
-    <view class="form-card">
-      <view class="card-title">维修记录</view>
-      
-      <!-- 故障部位照片 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text>故障部位照片</text>
-          <text class="required-mark">*</text>
-          <text class="label-desc">维修前的照片</text>
-        </view>
-        <view class="image-upload-area">
-          <view 
-            class="uploaded-item" 
-            wx:for="{{formData.beforeImages}}" 
-            wx:key="*this"
-          >
-            <image 
-              class="uploaded-img" 
-              src="{{item}}" 
-              mode="aspectFill"
-              bindtap="onPreviewBeforeImage"
-              data-url="{{item}}"
-            />
-            <view class="delete-btn" catchtap="onDeleteBeforeImage" data-index="{{index}}">
-              <text class="delete-icon">×</text>
+  
+      <!-- 维修记录卡片 -->
+      <view class="form-card">
+        <view class="card-title">维修记录</view>
+        
+        <!-- 故障部位照片 -->
+        <view class="form-group">
+          <view class="form-label">
+            <text>故障部位照片</text>
+            <text class="required-mark">*</text>
+            <text class="label-desc">维修前的照片</text>
+          </view>
+          <view class="image-upload-area">
+            <view 
+              class="uploaded-item" 
+              wx:for="{{formData.beforeImages}}" 
+              wx:key="*this"
+            >
+              <image 
+                class="uploaded-img" 
+                src="{{item}}" 
+                mode="aspectFill"
+                bindtap="onPreviewBeforeImage"
+                data-url="{{item}}"
+              />
+              <view class="delete-btn" catchtap="onDeleteBeforeImage" data-index="{{index}}">
+                <text class="delete-icon">×</text>
+              </view>
+            </view>
+            
+            <view class="upload-btn" bindtap="onChooseBeforeImage" wx:if="{{formData.beforeImages.length < 3}}">
+              <view class="upload-icon-wrap">
+                <text class="upload-icon">+</text>
+              </view>
+              <text class="upload-text">上传照片</text>
             </view>
           </view>
-          
-          <view class="upload-btn" bindtap="onChooseBeforeImage" wx:if="{{formData.beforeImages.length < 3}}">
-            <view class="upload-icon-wrap">
-              <text class="upload-icon">+</text>
+        </view>
+  
+        <!-- 维修完成照片 -->
+        <view class="form-group no-border">
+          <view class="form-label">
+            <text>维修完成照片</text>
+            <text class="required-mark">*</text>
+            <text class="label-desc">维修后的照片</text>
+          </view>
+          <view class="image-upload-area">
+            <view 
+              class="uploaded-item" 
+              wx:for="{{formData.afterImages}}" 
+              wx:key="*this"
+            >
+              <image 
+                class="uploaded-img" 
+                src="{{item}}" 
+                mode="aspectFill"
+                bindtap="onPreviewAfterImage"
+                data-url="{{item}}"
+              />
+              <view class="delete-btn" catchtap="onDeleteAfterImage" data-index="{{index}}">
+                <text class="delete-icon">×</text>
+              </view>
             </view>
-            <text class="upload-text">上传照片</text>
+            
+            <view class="upload-btn" bindtap="onChooseAfterImage" wx:if="{{formData.afterImages.length < 3}}">
+              <view class="upload-icon-wrap">
+                <text class="upload-icon">+</text>
+              </view>
+              <text class="upload-text">上传照片</text>
+            </view>
           </view>
         </view>
       </view>
-
-      <!-- 维修完成照片 -->
-      <view class="form-group no-border">
-        <view class="form-label">
-          <text>维修完成照片</text>
-          <text class="required-mark">*</text>
-          <text class="label-desc">维修后的照片</text>
-        </view>
-        <view class="image-upload-area">
-          <view 
-            class="uploaded-item" 
-            wx:for="{{formData.afterImages}}" 
-            wx:key="*this"
-          >
-            <image 
-              class="uploaded-img" 
-              src="{{item}}" 
-              mode="aspectFill"
-              bindtap="onPreviewAfterImage"
-              data-url="{{item}}"
-            />
-            <view class="delete-btn" catchtap="onDeleteAfterImage" data-index="{{index}}">
-              <text class="delete-icon">×</text>
-            </view>
-          </view>
-          
-          <view class="upload-btn" bindtap="onChooseAfterImage" wx:if="{{formData.afterImages.length < 3}}">
-            <view class="upload-icon-wrap">
-              <text class="upload-icon">+</text>
-            </view>
-            <text class="upload-text">上传照片</text>
-          </view>
-        </view>
+  
+      <!-- 提交按钮 -->
+      <view class="submit-area">
+        <button 
+          class="btn-submit" 
+          hover-class="btn-hover"
+          form-type="submit"
+          disabled="{{isSubmitting || !canSubmit}}"
+        >
+          {{isSubmitting ? '提交中...' : '提交维修记录'}}
+        </button>
       </view>
+  
     </view>
-
-    <!-- 提交按钮 -->
-    <view class="submit-area">
-      <button 
-        class="btn-submit" 
-        hover-class="btn-hover"
-        bindtap="onSubmit"
-        disabled="{{isSubmitting || !canSubmit}}"
-      >
-        {{isSubmitting ? '提交中...' : '提交维修记录'}}
-      </button>
-    </view>
-
-  </view>
+  </form>
 </view>
