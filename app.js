@@ -40,7 +40,7 @@ App({
     }
   },
 
-  // 初始化云开发
+  // 初始化云开发（停止使用云开发
   initCloud() {
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
@@ -61,7 +61,7 @@ App({
   },
 
 
-  //api通过ji
+  //api通用方法，登陆单独使用request请求，修改测试环境注意
   async apiRequest(api, method = 'GET', data = {}, contentType='application/json'){
     return new Promise((resolve, reject) => {
       const baseURL="https://ha.musenyu.cn"

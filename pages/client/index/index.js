@@ -99,7 +99,7 @@ Page({
   },
 
   onShow() {
-    this.UserInfoStorageCheck()
+    this.UserInfoStorageCheck() //检查用户登陆状态
     if (typeof this.getTabBar === 'function' &&
       this.getTabBar()) {
       this.getTabBar().setData({
@@ -108,14 +108,12 @@ Page({
     }
 
     console.log("显示client/index")
-    console.log()
 
-    this.loadUserData(); // 加载角色专属数据
+    this.loadUserData(); // 加载用户专属数据
     console.log("client/index加载完毕")
     setTimeout(() => {
       wx.hideLoading();
     }, 1500)
-    // 页面显示时重置计时
 
     // 触发入门动画
     // this.triggerEntranceAnimation();
@@ -152,15 +150,6 @@ Page({
 
   onUnload() {
     this.clearAllTimers();
-  },
-
-  //接口测试
-  async testAPI() {
-    app.apiRequest({
-      api: '/pro/banding/bind',
-      method: 'POST',
-      data: { 'sn': "123" }
-    })
   },
 
   //缓存登陆信息检查
@@ -317,48 +306,6 @@ Page({
     });
   },
 
-  // 获取当前位置
-  async getCurrentLocation() {
-    try {
-      console.log(' 开始获取当前位置...');
-      wx.getLocation({
-        type: 'gcj02',
-        success: async (res) => {
-          console.log(' 位置获取成功:', res);
-          try {
-            const locationInfo = await wx.cloud.callFunction({
-              name: "auth",
-              data: {
-                action: "reverseGeocode",
-                latitude: res.latitude,
-                longitude: res.longitude
-              }
-            })
-            this.setData({
-              userLocation: locationInfo
-            });
-          } catch (error) {
-            wx.showToast({
-              title: '地理解析失败',
-              icon: 'error'
-            })
-          }
-        },
-        fail: (err) => {
-          console.log(' 位置获取失败:', err);
-          this.setData({
-            userLocation: { city: '定位失败', address: '无法获取位置信息' }
-          });
-        }
-      });
-    } catch (error) {
-      console.error('获取位置出错', error);
-      this.setData({
-        userLocation: { city: '定位异常', address: '位置获取异常' }
-      });
-    }
-  },
-
   //时间数据格式化
   formatTime(time) {
     if (!time) return '';
@@ -435,8 +382,8 @@ Page({
   },
 
   
-  // 接口测试 - 改为开启蓝牙搜索
-  onApiTest() {
+  //开启蓝牙搜索
+  blueToothfunc() {
     wx.vibrateShort({ type: 'medium' });
     this.setData({
       showDropdown: false,

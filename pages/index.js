@@ -50,10 +50,6 @@ Page({
 
     console.log("用户身份",this.data.userInfo.userRole)
 
-    
-    // const isWorker = Array.isArray(role) ? role.includes('维修工') : role === '维修工';
-    // const userRoleStr = isWorker ? '维修工' : '普通用户';
-
   },
 
   // ===================== 维修工逻辑 =====================

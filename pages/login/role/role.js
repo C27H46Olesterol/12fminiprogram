@@ -38,7 +38,7 @@ Page({
     userInfo.userRole = role;
     wx.setStorageSync('userInfo', userInfo);
     app.globalData.userInfo = userInfo;
-
+    app.globalData.hasUserInfo = true;
     // 跳转到首页 (TabBar 页面使用 switchTab)
     wx.switchTab({
       url: '/pages/index'
@@ -64,7 +64,7 @@ Page({
     userInfo.userRole = role;
     wx.setStorageSync('userInfo', userInfo);
     app.globalData.userInfo = userInfo;
-
+    app.globalData.hasUserInfo = true;
     // 跳转到工作台 (非 TabBar 页面使用 navigateTo 或 redirectTo)
     // 根据需求，这可能是一个主要入口，可以用 reLaunch 或 redirectTo 防止回退
     wx.reLaunch({

@@ -59,8 +59,6 @@
   </view>
 
   <!-- 远程遥控界面 -->
-
-
   <view class="section remote-control-section">
     
     <!-- 新的综合头部栏 -->
@@ -94,8 +92,8 @@
           </block>
           <block wx:elif="{{deviceList.length === 0}}">
             <view class="dropdown-grid">
-              <view class="dropdown-item" bindtap="onActivateProduct" style="justify-content: center; padding: 20rpx;">
-                <text>点击连接设备</text>
+              <view class="dropdown-item" bindtap="" style="justify-content: center; padding: 20rpx;">
+                <text>点击右侧“连接方式”连接设备</text>
               </view>
             </view>
           </block>
@@ -160,7 +158,7 @@
         </view>
       </view>
 
-      <!-- 3. 添加设备 -->
+      <!-- 3. 连接方式 -->
       <view class="header-btn-item menu-trigger" catchtap="toggleAddDeviceDropdown">
         <view class="icon-btn">
           <image class="btn-icon-img" src="/images/icons/wirelessconnect.png" mode="aspectFit"></image>
@@ -175,7 +173,7 @@
                <image src="/images/icons/4g.png" mode="aspectFit"></image>
              </view>
            </view>
-           <view class="expand-item left-text" catchtap="onApiTest" style="--i:2">
+           <view class="expand-item left-text" catchtap="blueToothfunc" style="--i:2">
              <text class="expand-text">蓝牙连接</text>
              <view class="expand-btn-circle">
                <image src="/images/icons/bluetooth.png" mode="aspectFit"></image>
