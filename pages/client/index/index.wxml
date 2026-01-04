@@ -107,12 +107,11 @@
                 data-index="{{index}}"
               >
                 <!-- 1. 连接方式指示器 -->
-                <view class="device-connection-indicator">
+                <!-- <view class="device-connection-indicator">
                   <block wx:if="{{item.connectionType === 'bluetooth'}}">
                     <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
                   </block>
                   <block wx:else>
-                    <!-- 4G信号条 -->
                     <view class="display-signal-bars-small">
                       <view class="display-signal-bar {{item.signalStrength >= 1 ? 'active' : ''}}"></view>
                       <view class="display-signal-bar {{item.signalStrength >= 7 ? 'active' : ''}}"></view>
@@ -121,7 +120,7 @@
                       <view class="display-signal-bar {{item.signalStrength >= 25 ? 'active' : ''}}"></view>
                     </view>
                   </block>
-                </view>
+                </view> -->
 
                 <!-- 2. 图片 -->
                 <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -188,7 +187,7 @@
       <!-- 第一行：基本状态 -->
       <view class="display-row">
         <view class="display-item">
-          <text class="display-label">A/C</text>
+          <text class="display-label">开机状态</text>
           <text class="display-value {{deviceStatus.ps === 1 ? 'active' : ''}}">{{deviceStatus.ps === 1 ? 'ON' : 'OFF'}}</text>
         </view>
         <view class="display-item">
@@ -199,17 +198,17 @@
             </block>
             <block wx:else>
               <view class="display-signal-bars-small">
-                <view class="display-signal-bar {{selectedDevice.signalStrength >= 1 ? 'active' : ''}}"></view>
-                <view class="display-signal-bar {{selectedDevice.signalStrength >= 7 ? 'active' : ''}}"></view>
-                <view class="display-signal-bar {{selectedDevice.signalStrength >= 13 ? 'active' : ''}}"></view>
-                <view class="display-signal-bar {{selectedDevice.signalStrength >= 19 ? 'active' : ''}}"></view>
-                <view class="display-signal-bar {{selectedDevice.signalStrength >= 25 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 1 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 7 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 13 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 19 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 25 ? 'active' : ''}}"></view>
               </view>
             </block>
           </view>
         </view>
         <view class="display-item">
-          <text class="display-label">状态</text>
+          <text class="display-label">设备状态</text>
           <text class="display-value nomal" wx:if="{{deviceStatus.online}}">在线</text>
           <text class="display-value" wx:else>离线</text>
         </view>
@@ -320,7 +319,7 @@
         <!-- 1. 模式键 (Auto/Strong/Eco/Fan) -->
         <view class="func-btn-wrapper" catchtap="toggleModeDropdown" catchlongpress="">
           <view class="func-btn circle {{deviceStatus.ps === 1 ? 'active' : ''}}">
-            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 2 ? 'cold':(deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'mods')))}}.png" mode="aspectFit"></image>
+            <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 2 ? 'cold':(deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'moon' : (deviceStatus.fm === 0 ? 'wind' : 'mods')))}}.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
           <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '睡眠' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>

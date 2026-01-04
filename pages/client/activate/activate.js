@@ -24,7 +24,7 @@ Page({
 
   initPage() {
     // 自动获取定位
-    this.getCurrentLocation();
+    // this.getCurrentLocation();
 
     // 自动填充手机号逻辑
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');

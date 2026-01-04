@@ -1435,7 +1435,7 @@
 .display-signal-bars-small .display-signal-bar:nth-child(5) { height: 28rpx; }
 
 .display-signal-bars-small .display-signal-bar.active {
-  background-color: #1890ff;
+  background-color: #10b146;
 }
 
 .fault-code {

@@ -57,46 +57,70 @@ Page({
   },
 
   goDevices() {
-    wx.navigateTo({
-      url: '/pages/client/devices/devices',
+    // wx.navigateTo({
+    //   url: '/pages/client/devices/devices',
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
   goActivateLog() {
-    wx.navigateTo({
-      url: '/pages/worker/activateLog/activateLog',
+    // wx.navigateTo({
+    //   url: '/pages/worker/activateLog/activateLog',
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
   goIssuesLog() {
-    wx.navigateTo({
-      url: '/pages/client/issuesLog/issuesLog',
+    // wx.navigateTo({
+    //   url: '/pages/client/issuesLog/issuesLog',
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
   goRepairLog() {
-    wx.navigateTo({
-      url: '/pages/worker/repairLog/repairLog',
+    // wx.navigateTo({
+    //   url: '/pages/worker/repairLog/repairLog',
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
   goWorker() {
-    wx.navigateTo({
-      url: '/pages/worker/worker',
+    // wx.navigateTo({
+    //   url: '/pages/worker/worker',
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
   goRepair() {
-    wx.navigateTo({
-      url: '/pages/worker/repair/repair'
+    // wx.navigateTo({
+    //   url: '/pages/worker/repair/repair'
+    // })
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
     })
   },
 
-  goResign() {
-    wx.navigateTo({
-      url: '/pages/profile/resign/resign',
-    })
-  },
+  // goResign() {
+  //   wx.navigateTo({
+  //     url: '/pages/profile/resign/resign',
+  //   })
+  // },
 
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');

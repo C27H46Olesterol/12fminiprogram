@@ -54,20 +54,36 @@ Page({
 
   // ===================== 维修工逻辑 =====================
   handleInstall() {
-    wx.navigateTo({ url: '/pages/worker/activate/activate' });
+    // wx.navigateTo({ url: '/pages/worker/activate/activate' });
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
+    })
   },
 
   handleRepair() {
-    wx.navigateTo({ url: '/pages/worker/repair/repair' });
+    // wx.navigateTo({ url: '/pages/worker/repair/repair' });
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
+    })
   },
 
   // ===================== 普通用户逻辑 =====================
   handleReport() {
-    wx.navigateTo({ url: '/pages/client/issues/issues' });
+    // wx.navigateTo({ url: '/pages/client/issues/issues' });
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
+    })
   },
 
   handleReportLog(){
-    wx.navigateTo({ url:'/pages/client/issuesLog/issuesLog'})
+    // wx.navigateTo({ url:'/pages/client/issuesLog/issuesLog'})
+    wx.showToast({
+      title: '功能开发中！',
+      icon:'success'
+    })
   },
 
   // ===================== 共享逻辑 =====================

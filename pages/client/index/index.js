@@ -556,26 +556,43 @@ Page({
   //定时
   async timerTest() {
     wx.vibrateShort({ type: 'medium' });
-    // 打开定时弹窗（前端）
+
+    // Check if device is powered on
     if (!this.checkPower()) {
       this.setData({
         'deviceStatus.clock': false
       })
       return
     };
+
+    // If timer is already running (clock is true and timer > 0)
+    if (this.data.deviceStatus.clock && this.data.deviceStatus.timer > 0) {
+      wx.showModal({
+        title: '取消定时',
+        content: `当前定时剩余 ${this.formatTimer(this.data.deviceStatus.timer)}，确定要取消吗？`,
+        success: (res) => {
+          if (res.confirm) {
+            this.confirmTimer(0); // Cancel timer by setting to 0
+          }
+        }
+      });
+      return;
+    }
+
+    // Open timer setting modal
     this.setData({
       showTimerModal: true,
-      timerMinutes: 30, // 默认 0.5 小时
-      formattedTimer: this.formatTimer(30)
+      timerMinutes: this.data.deviceStatus.timer > 0 ? this.data.deviceStatus.timer : 30, // Default to current or 30
+      formattedTimer: this.formatTimer(this.data.deviceStatus.timer > 0 ? this.data.deviceStatus.timer : 30)
     });
   },
 
-  // 增减定时（步长 30 分钟），限制在 60 - 480
+  // 增减定时（步长 30 分钟），限制在 30 - 480
   changeTimer(e) {
     wx.vibrateShort({ type: 'medium' });
     const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
     let m = this.data.timerMinutes + delta;
-    if (m < 0) m = 0;
+    if (m < 30) m = 30; // Minimum 30 mins for setting
     if (m > 480) m = 480;
 
     this.setData({
@@ -590,9 +607,10 @@ Page({
     this.setData({ showTimerModal: false });
   },
 
-  async confirmTimer() {
+  async confirmTimer(minutesOverride) {
 
-    const minutes = this.data.timerMinutes;
+    // Use override if provided (e.g., 0 for cancel), otherwise use selected minutes
+    const minutes = (typeof minutesOverride === 'number') ? minutesOverride : this.data.timerMinutes;
 
     // 格式化为 HH:mm:ss 供 wxTimer 使用
     const h = Math.floor(minutes / 60);
@@ -610,8 +628,12 @@ Page({
     delete wxTimerList['timerBtn'];
     this.setData({ wxTimerList });
 
-    // 初始化计时器
+    // 初始化计时器 (仅当设定时间大于0时)
     if (minutes > 0) {
+      // NOTE: Since the device handles the timer countdown, we might not need a local wxTimer for accurate countdown unless we want to simulate it locally. 
+      // Relying on device status updates (via auto-refresh) is safer to keep in sync.
+      // However, keeping existing logic for now if user wants local countdown feel.
+
       const timerInstance = new timer({
         beginTime: formattedHMS,
         name: 'timerBtn',
@@ -622,7 +644,8 @@ Page({
           delete list['timerBtn'];
           this.setData({
             wxTimerList: list,
-            'deviceStatus.clock': false
+            'deviceStatus.clock': false,
+            'deviceStatus.timer': 0
           });
           this.timerInstance = null;
         }
@@ -642,13 +665,15 @@ Page({
 
     this.bufferCommand('setTimer', minutes);
 
-    const toastTitle = minutes > 0 ? `已设置定时 ${this.data.formattedTimer}` : '定时已取消';
+    const toastTitle = minutes > 0 ? `已设置定时 ${this.formatTimer(minutes)}` : '定时已取消';
     wx.showToast({ title: toastTitle, icon: 'none' });
   },
 
   formatTimer(mins) {
+    if (mins <= 0) return '0 分钟';
     const h = Math.floor(mins / 60);
     const m = mins % 60;
+    if (h === 0) return `${m} 分钟`;
     if (m === 0) return `${h} 小时`;
     return `${h} 小时 ${m} 分钟`;
   },
@@ -679,21 +704,21 @@ Page({
         const online = res.data.devicestatus;
         console.log("查询到的设备状态:", online)
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
-        if(!online.status){
+        if (!online.status) {
           // console.log('设备',props)
           wx.showToast({
-            title:'设备不在线',
-            icon:'error'
+            title: '设备不在线',
+            icon: 'error'
           })
           this.setData({
             deviceStatus: this.data.offlineDeviceStatus,
-            deiveiceOnline:false,
+            deiveiceOnline: false,
           })
           this.stopAutoRefresh();
           return
         }
         if (force || !this.lastCommandTime || Date.now() - this.lastCommandTime > 2000) {
-          if(!props){
+          if (!props) {
             return
           }
           this.setData({
@@ -704,7 +729,7 @@ Page({
               signalStrength: signal || 0,
               clock: props.timer > 0
             },
-            deiveiceOnline:true
+            deiveiceOnline: true
           });
         }
         console.log("本地保存设备状态:", this.data.deviceStatus)
@@ -741,7 +766,7 @@ Page({
       // 启动新的不活跃计时器
       this.inactivityTimeoutId = setTimeout(() => {
         this.autoStopRefresh();
-      }, 10 * 1000);
+      }, 300 * 1000);
 
       // 如果刷新定时器没启动，则启动它
       if (!this.refreshIntervalId) {
@@ -1049,9 +1074,18 @@ Page({
 
   //切换模式
   selectMode(e) {
-    const mode = e.currentTarget.dataset.mode;
+    let mode = e.currentTarget.dataset.mode;
+
+    // Ensure mode is a number
+    mode = parseInt(mode, 10);
+
+    if (isNaN(mode)) {
+      console.warn("Invalid mode selected:", e.currentTarget.dataset.mode);
+      return;
+    }
+
     this.switchMode(mode);
-    console.log("当前mode",mode)
+    console.log("当前mode", mode)
     this.setData({ showModeDropdown: false });
   },
 
@@ -1069,7 +1103,7 @@ Page({
       'deviceStatus.fm': mode,
       // 'deviceStatus.fs': windSpeed
     });
-    console.log('当前模式：',this.data.deviceStatus.fm)
+    console.log('当前模式：', this.data.deviceStatus.fm)
 
     let modeName = { 0: '通风', 1: '睡眠', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
     this.showControlToast(`${modeName}模式`);
@@ -1231,6 +1265,7 @@ Page({
 
     // 停止后台持续刷新
     this.stopAutoRefresh();
+    this.lastCommandTime = Date.now();
 
     // 清除该动作类型的现有定时器
     if (this.commandTimers[action]) {
@@ -1261,7 +1296,7 @@ Page({
     const deiveiceOnline = this.data.deviceStatus.online
     if (!device || !deiveiceOnline) return;
     this.setData({
-      showRefreshNotify:false
+      showRefreshNotify: false
     })
     // const deviceName = device.imei;
     const deviceName = device.sn;
@@ -1307,13 +1342,14 @@ Page({
       if (this.data.isBluetoothConnected && this.data.connectedDevice) {
         console.log('[Bluetooth] 尝试通过蓝牙发送指令:', property);
         this.sendBluetoothCommand({ action, value, property });
-      } 
+      }
       else if (device.connectionType === '4g') {
         const res = await deviceApi.setDeviceDesiredProperty(deviceName, property);
         if (res && res.code === 200) {
           console.log('指令发送成功');
-          // 设置成功后，立即再查询设备信息，根据返回数据更新页面状态
-          await this.loadDeviceStatus(true);
+          // 设置成功后，不强制立即刷新，保留本地乐观更新的状态，等待自动刷新周期或下一次有效更新
+          // 避免接口数据延迟导致的回跳
+          await this.loadDeviceStatus(false);
         } else {
           wx.showToast({ title: res.msg || '设置失败', icon: 'none' });
         }
