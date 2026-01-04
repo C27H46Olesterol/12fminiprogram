@@ -680,7 +680,7 @@ Page({
         console.log("查询到的设备状态:", online)
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
         if(!online.status){
-          console.log('设备',props)
+          // console.log('设备',props)
           wx.showToast({
             title:'设备不在线',
             icon:'error'
@@ -940,88 +940,88 @@ Page({
     this.bufferCommand('setLighting', newStatus);
   },
 
-  // 强劲模式
-  setStrongMode() {
+  // // 强劲模式
+  // setStrongMode() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    if (this.data.deviceStatus.fm === 3) {
-      this.switchMode(2);
-    } else {
-      this.switchMode(3);
-      this.showControlToast('强劲模式');
-    }
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   if (this.data.deviceStatus.fm === 3) {
+  //     this.switchMode(2);
+  //   } else {
+  //     this.switchMode(3);
+  //     this.showControlToast('强劲模式');
+  //   }
+  // },
 
-  // 制冷模式
-  setAutoMode() {
-    this.switchMode(2);
-    this.showControlToast('制冷模式');
-  },
+  // // 制冷模式
+  // setAutoMode() {
+  //   this.switchMode(2);
+  //   this.showControlToast('制冷模式');
+  // },
 
-  // 节能模式
-  setEcoMode() {
+  // // 节能模式
+  // setEcoMode() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    if (this.data.deviceStatus.fm === 1) {
-      this.switchMode(2);
-    } else {
-      this.switchMode(1);
-      this.showControlToast('节能模式');
-    }
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   if (this.data.deviceStatus.fm === 1) {
+  //     this.switchMode(2);
+  //   } else {
+  //     this.switchMode(1);
+  //     this.showControlToast('节能模式');
+  //   }
+  // },
 
-  // 制热模式
-  toggleHeating() {
+  // // 制热模式
+  // toggleHeating() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    if (this.data.deviceStatus.fm === 5) {
-      this.switchMode(2);
-    } else {
-      this.switchMode(5);
-      this.showControlToast('制热模式');
-    }
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   if (this.data.deviceStatus.fm === 5) {
+  //     this.switchMode(2);
+  //   } else {
+  //     this.switchMode(5);
+  //     this.showControlToast('制热模式');
+  //   }
+  // },
 
-  toggleFan() {
+  // toggleFan() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    if (this.data.deviceStatus.fm === 0) {
-      this.switchMode(2);
-    } else {
-      this.switchMode(0);
-      this.showControlToast('通风模式');
-    }
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   if (this.data.deviceStatus.fm === 0) {
+  //     this.switchMode(2);
+  //   } else {
+  //     this.switchMode(0);
+  //     this.showControlToast('通风模式');
+  //   }
+  // },
 
-  // 上下摆风开关 ty
-  toggleSwingUpDown() {
+  // // 上下摆风开关 ty
+  // toggleSwingUpDown() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    const newStatus = this.data.deviceStatus.sxbf === 1 ? 0 : 1;
-    this.setData({
-      'deviceStatus.sxbf': newStatus
-    });
-    this.showControlToast(newStatus ? '上下摆风已开启' : '上下摆风已关闭');
-    this.bufferCommand('setSwingUpDown', newStatus === 1);
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   const newStatus = this.data.deviceStatus.sxbf === 1 ? 0 : 1;
+  //   this.setData({
+  //     'deviceStatus.sxbf': newStatus
+  //   });
+  //   this.showControlToast(newStatus ? '上下摆风已开启' : '上下摆风已关闭');
+  //   this.bufferCommand('setSwingUpDown', newStatus === 1);
+  // },
 
-  // 左右摆风开关 ty
-  toggleSwingLeftRight() {
+  // // 左右摆风开关 ty
+  // toggleSwingLeftRight() {
 
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    const newStatus = this.data.deviceStatus.zybf === 1 ? 0 : 1;
-    this.setData({
-      'deviceStatus.zybf': newStatus
-    });
-    this.showControlToast(newStatus ? '左右摆风已开启' : '左右摆风已关闭');
-    this.bufferCommand('setSwingLeftRight', newStatus === 1);
-  },
+  //   wx.vibrateShort({ type: 'medium' });
+  //   if (!this.checkPower()) return;
+  //   const newStatus = this.data.deviceStatus.zybf === 1 ? 0 : 1;
+  //   this.setData({
+  //     'deviceStatus.zybf': newStatus
+  //   });
+  //   this.showControlToast(newStatus ? '左右摆风已开启' : '左右摆风已关闭');
+  //   this.bufferCommand('setSwingLeftRight', newStatus === 1);
+  // },
 
   // --- 新增功能键整合逻辑 ---
 
@@ -1036,21 +1036,22 @@ Page({
     });
   },
 
-  cycleMode() {
-    if (!this.checkPower()) return;
-    const modes = [5, 4, 2, 1]; // Auto, Strong, Sleep/Eco, Vent
-    const current = this.data.deviceStatus.fm;
-    let nextIndex = modes.indexOf(current) + 1;
-    if (nextIndex >= modes.length) nextIndex = 0;
-    if (modes.indexOf(current) === -1) nextIndex = 0;
+  // cycleMode() {
+  //   if (!this.checkPower()) return;
+  //   const modes = [5, 4, 2, 1]; // Auto, Strong, Sleep/Eco, Vent
+  //   const current = this.data.deviceStatus.fm;
+  //   let nextIndex = modes.indexOf(current) + 1;
+  //   if (nextIndex >= modes.length) nextIndex = 0;
+  //   if (modes.indexOf(current) === -1) nextIndex = 0;
 
-    this.switchMode(modes[nextIndex]);
-  },
+  //   this.switchMode(modes[nextIndex]);
+  // },
 
   //切换模式
   selectMode(e) {
     const mode = e.currentTarget.dataset.mode;
     this.switchMode(mode);
+    console.log("当前mode",mode)
     this.setData({ showModeDropdown: false });
   },
 
@@ -1059,15 +1060,16 @@ Page({
     wx.vibrateShort({ type: 'medium' });
     if (!this.checkPower()) return;
 
-    let windSpeed = this.data.deviceStatus.fs;
-    if (mode === 4) windSpeed = 5;
-    if (mode === 2) windSpeed = 1;
-    if (mode === 5 || mode === 3) windSpeed = 3;
+    // let windSpeed = this.data.deviceStatus.fs;
+    // if (mode === 4) windSpeed = 5;
+    // if (mode === 2) windSpeed = 1;
+    // if (mode === 5 || mode === 3) windSpeed = 3;
 
     this.setData({
       'deviceStatus.fm': mode,
-      'deviceStatus.fs': windSpeed
+      // 'deviceStatus.fs': windSpeed
     });
+    console.log('当前模式：',this.data.deviceStatus.fm)
 
     let modeName = { 0: '通风', 1: '睡眠', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
     this.showControlToast(`${modeName}模式`);
@@ -1085,20 +1087,20 @@ Page({
     });
   },
 
-  cycleSwing() {
-    if (!this.checkPower()) return;
-    // Cycle: Off (0) -> UD (1) -> LR (2) -> Both (3) -> Off (0)
-    const ud = this.data.deviceStatus.sxbf === 1;
-    const lr = this.data.deviceStatus.zybf === 1;
+  // cycleSwing() {
+  //   if (!this.checkPower()) return;
+  //   // Cycle: Off (0) -> UD (1) -> LR (2) -> Both (3) -> Off (0)
+  //   const ud = this.data.deviceStatus.sxbf === 1;
+  //   const lr = this.data.deviceStatus.zybf === 1;
 
-    let nextState = 0; // default to off
-    if (!ud && !lr) nextState = 1; // Off -> UD
-    else if (ud && !lr) nextState = 2; // UD -> LR
-    else if (!ud && lr) nextState = 3; // LR -> Both
-    else if (ud && lr) nextState = 0; // Both -> Off
+  //   let nextState = 0; // default to off
+  //   if (!ud && !lr) nextState = 1; // Off -> UD
+  //   else if (ud && !lr) nextState = 2; // UD -> LR
+  //   else if (!ud && lr) nextState = 3; // LR -> Both
+  //   else if (ud && lr) nextState = 0; // Both -> Off
 
-    this.setSwingState(nextState);
-  },
+  //   this.setSwingState(nextState);
+  // },
 
   selectSwing(e) {
     const type = e.currentTarget.dataset.type; // 'off', 'ud', 'lr', 'both'
@@ -1176,9 +1178,9 @@ Page({
     });
   },
 
-  cycleFunction() {
-    this.toggleFunctionDropdown();
-  },
+  // cycleFunction() {
+  //   this.toggleFunctionDropdown();
+  // },
 
   selectFunction(e) {
 
@@ -1238,13 +1240,13 @@ Page({
 
     // // “所有功能按钮只有设定值为true时才会向设备发送命令”
     // // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
-    const restrictedActions = ['setAutoMode', 'setEcoMode', 'setStrongMode'];
+    // const restrictedActions = ['setAutoMode', 'setEcoMode', 'setStrongMode'];
 
-    if (restrictedActions.includes(action) && value !== true) {
-      // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
-      console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
-      return;
-    }
+    // if (restrictedActions.includes(action) && value !== true) {
+    //   // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
+    //   console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
+    //   return;
+    // }
 
     // 设置新定时器
     this.commandTimers[action] = setTimeout(() => {
@@ -1305,7 +1307,8 @@ Page({
       if (this.data.isBluetoothConnected && this.data.connectedDevice) {
         console.log('[Bluetooth] 尝试通过蓝牙发送指令:', property);
         this.sendBluetoothCommand({ action, value, property });
-      } else if (device.connectionType === '4g') {
+      } 
+      else if (device.connectionType === '4g') {
         const res = await deviceApi.setDeviceDesiredProperty(deviceName, property);
         if (res && res.code === 200) {
           console.log('指令发送成功');
