@@ -119,11 +119,10 @@ Page({
 
     wx.chooseMedia({
       count: maxCount,
-      mediaType: ['mix'],
-      sizeType: ['compressed'],
+      mediaType: ['image','video'],
       sourceType: ['camera', 'album'],
       success: (res) => {
-        const newImages = [...currentImages, ...res.tempFilePaths];
+        const newImages = [...currentImages, ...res.tempFiles.tempFilePath];
         if (type === 'process') {
           this.setData({ 'formData.processImages': newImages });
         } else {
@@ -201,8 +200,8 @@ Page({
       phoneRegex.test(formData.installerPhone) &&
       formData.processImages.length > 0 &&
       formData.finishImages.length > 0;
-    console.log("图片提交长度：", formData.processImages.length)
-    console.log("表单内容是否可以提交：", isValid)
+    // console.log("图片提交长度：", formData.processImages.length)
+    // console.log("表单内容是否可以提交：", isValid)
     this.setData({ canSubmit: isValid });
   },
 
@@ -211,12 +210,12 @@ Page({
     console.log(imagePaths.map(path => path.tempFilePath))
     let formData = new FormData();
 
-    const uploadPromises = imagePaths.map(path => {
+    imagePaths.map(path => {
       formData.appendFile("file",path.tempFilePath);
     });
 
     let data = formData.getData();
-    formAPI.uploadImg(data);
+    const uploadPromises = formAPI.uploadImg(data);
     try {
       const results = await Promise.all(uploadPromises);
       console.log("上传图片结果", results);
@@ -266,7 +265,8 @@ Page({
       // 1. 上传图片
       const processImageIds = await this.uploadImages(this.data.formData.processImages);
       const finishImageIds = await this.uploadImages(this.data.formData.finishImages);
-
+      let processImgsUrl = processImageIds.map(url => url.url);
+      let finishImgsUrl = finishImageIds.map(url => url.url);
       // 2. 准备提交数据 - use eventData preferred, fallback to data
       // eventData keys match 'name' attributes: productSn, licensePlate, driverPhone, customerPhone
       const formatFormData = {
@@ -274,8 +274,8 @@ Page({
         driverPhone: eventData.driverPhone || this.data.formData.userPhone,
         customerPhone: eventData.customerPhone || this.data.formData.installerPhone,
         licensePlate: eventData.licensePlate || this.data.formData.licensePlate,
-        installProcessPhotos: processImageIds,
-        installCompletePhotos: finishImageIds
+        installProcessPhotos: processImgsUrl.toString(),
+        installCompletePhotos: finishImgsUrl.toString()
       }
 
       const result = await formAPI.uploadInstallForm(formatFormData);

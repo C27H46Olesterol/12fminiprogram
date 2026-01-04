@@ -227,7 +227,7 @@
           <text class="temp-unit">°C</text>
         </view>
         <view class="display-item mode-display">
-          <text class="mode-text">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 4 ? '制热' : deviceStatus.fm === 0 ? '通风':'--')))}}</text>
+          <text class="mode-text">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '睡眠' : (deviceStatus.fm === 4 ? '制热' : deviceStatus.fm === 0 ? '通风':'--')))}}</text>
         </view>
       </view>
 
@@ -323,7 +323,7 @@
             <image class="func-icon-img" src="/images/icons/{{deviceStatus.fm === 2 ? 'cold':(deviceStatus.fm === 3 ? 'strong' : (deviceStatus.fm === 1 ? 'eco' : (deviceStatus.fm === 0 ? 'wind' : 'mods')))}}.png" mode="aspectFit"></image>
             <!-- <view class="ellipsis-marker">...</view> -->
           </view>
-          <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '节能' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>
+          <text class="func-label">{{deviceStatus.fm === 2 ? '制冷' : (deviceStatus.fm === 3 ? '强劲' : (deviceStatus.fm === 1 ? '睡眠' : (deviceStatus.fm === 0 ? '通风' : '模式')))}}</text>
           
           <!-- Mode Expandable -->
           <view class="expand-menu {{showModeDropdown ? 'show' : ''}}">

@@ -49,6 +49,7 @@ Page({
       signalStrength: 0,
       clock: false   // 内部标记是否有定时
     },
+    wxTimerList:[],
     // 定时弹窗相关
     showTimerModal: false,
     timerMinutes: 60, // 初始为 60 分钟
@@ -110,6 +111,7 @@ Page({
     console.log("显示client/index")
 
     this.loadUserData(); // 加载用户专属数据
+    this.resetInactivityTimer();
     console.log("client/index加载完毕")
     setTimeout(() => {
       wx.hideLoading();
@@ -228,6 +230,11 @@ Page({
         if (savedImei) {
           selectedIndex = myProductsList.findIndex(d => d.imei === savedImei);
         }
+        this.setData({
+          deviceList: myProductsList,
+          selectedDeviceIndex: selectedIndex,
+          selectedDevice: myProductsList[selectedIndex]
+        });
 
         // 如果没找到之前的设备，默认选第一个
         if (selectedIndex === -1) {
@@ -235,13 +242,13 @@ Page({
           if (myProductsList[0].imei) {
             wx.setStorageSync('selectedDeviceImei', myProductsList[0].imei);
           }
+          this.setData({
+            selectedDevice:myProductsList[0]
+          })
         }
 
-        this.setData({
-          deviceList: myProductsList,
-          selectedDeviceIndex: selectedIndex,
-          selectedDevice: myProductsList[selectedIndex]
-        });
+        
+        console.log('当前选中设备：',this.data.selectedDevice)
 
         // 加载设备状态
         this.loadDeviceStatus();
@@ -532,6 +539,7 @@ Page({
     }
   },
 
+  //定时
   async timerTest() {
     wx.vibrateShort({ type: 'medium' });
     // 打开定时弹窗（前端）
@@ -643,6 +651,7 @@ Page({
   async loadDeviceStatus(force = false) {
     try {
       const device = this.data.selectedDevice;
+      console.log('加载当前选中设备：',device)
       if (!device || device.connectionType !== '4g') return;
 
       const deviceName = device.imei;
@@ -675,7 +684,7 @@ Page({
   // --- 自动刷新与不活跃计时逻辑 ---
 
   // 启动/重置不活跃计时器 (10秒 - 测试用)
-  resetInactivityTimer() {
+  async resetInactivityTimer() {
     const userInfo = this.data.userInfo
     const hasUserInfo = this.data.hasUserInfo
     const deiveiceOnline = this.data.deviceStatus.online;
@@ -698,13 +707,13 @@ Page({
 
       // 启动新的不活跃计时器
       this.inactivityTimeoutId = setTimeout(() => {
-        this.stopAutoRefresh();
-      }, 30 * 1000); // 10秒 (测试用)
+        this.autoStopRefresh();
+      }, 10 * 1000); 
 
       // 如果刷新定时器没启动，则启动它
       if (!this.refreshIntervalId) {
         console.log('每5s刷新启动')
-        // this.startAutoRefresh();
+        this.startAutoRefresh();
       }
     }
 
@@ -727,7 +736,16 @@ Page({
       clearInterval(this.refreshIntervalId);
       this.refreshIntervalId = null;
     }
-    // this.setData({ showRefreshNotify: true });
+  },
+
+  //固定时间停止刷新
+  autoStopRefresh(){
+    console.log('停止自动刷新，等待手动');
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+      this.refreshIntervalId = null;
+    }
+    this.setData({ showRefreshNotify: true });
   },
 
   // 清除所有定时器 (用于生命周期注销)
@@ -1016,7 +1034,7 @@ Page({
       'deviceStatus.fs': windSpeed
     });
 
-    let modeName = { 0: '通风', 1: '节能', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
+    let modeName = { 0: '通风', 1: '睡眠', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
     this.showControlToast(`${modeName}模式`);
     this.bufferCommand('setMode', mode);
   },

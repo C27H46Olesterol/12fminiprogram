@@ -120,7 +120,6 @@ Page({
     // this.goApply();
     wx.chooseMedia({
       count: 3,
-      mediaType: ['mix'],
       sizeType: ['compressed'],
       sourceType: ['camera', 'album'],
       success: (res) => {
@@ -137,12 +136,12 @@ Page({
     console.log(imagePaths.map(path => path.tempFilePath))
     let formData = new FormData();
 
-    const uploadPromises = imagePaths.map(path => {
+    imagePaths.map(path => {
       formData.appendFile("file",path.tempFilePath);
     });
 
     let data = formData.getData();
-    formAPI.uploadImg(data);
+    const uploadPromises = formAPI.uploadImg(data);
     try {
       const results = await Promise.all(uploadPromises);
       console.log("上传图片结果", results);

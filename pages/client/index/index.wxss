@@ -787,28 +787,6 @@
   position: relative; /* 为指示标记定位 */
 }
 
-/* 省略号指示标记 - 提示可长按展开，带圆形背景 */
-.ellipsis-marker {
-  position: absolute;
-  right: 6rpx;
-  bottom: 6rpx;
-  width: 34rpx;
-  height: 34rpx;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18rpx;
-  line-height: 1;
-  color: #999;
-  font-weight: bold;
-  letter-spacing: 1rpx;
-  pointer-events: none;
-  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
-  border: 1rpx solid #e0e0e0;
-}
-
 .func-btn.circle.active .ellipsis-marker {
   background-color: #ffffff; /* 变为不透明纯白 */
   color: #1890ff; /* 对应主题蓝 */
@@ -975,8 +953,9 @@
   display: flex;
   justify-content: space-around;
   margin-bottom: 30rpx;
-  padding: 0 30rpx;
+  padding: 10px 30rpx;
   align-items: center;
+  /* background-color: #0050b3 */
 }
 
 .control-pill {
