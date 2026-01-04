@@ -6,8 +6,8 @@ const { FAULT_CODES } = require("../../../utils/faultCodes");
 
 Page({
   data: {
-    userInfo: null,
-    hasUserInfo: false,
+    userInfo: app.globalData.userInfo,
+    hasUserInfo: app.globalData.hasUserInfo,
     token: null,
     clientid: null,
     userLocation: null, // 用户位置信息
@@ -49,7 +49,27 @@ Page({
       signalStrength: 0,
       clock: false   // 内部标记是否有定时
     },
-    wxTimerList:[],
+    offlineDeviceStatus: {
+      ps: 0,         // 开关状态 0:关, 1:开
+      temp: 0,     // 设定温度 50-400 (对应5-40度)
+      fm: 8,         // 风扇模式 0:通风, 1:睡眠, 2:制冷, 3:强劲, (4:自动, 5:制热, 6:除湿)
+      fs: 0,         // 风扇转速 1-5档
+      fl: 0,         // 氛围灯 0:关, 1:开
+      light: 0,      // 照明灯 0:关, 1:开
+      lock: 0,       // 锁定 0:关, 1:开
+      sxbf: 0,       // 上下摆风 0:关, 1:开
+      zybf: 0,       // 左右摆风 0:关, 1:开
+      fu: 0,         // 负离子 0:关, 1:开
+      timer: 0,      // 定时 0-480 (对应0-8小时)
+      bv: 0,         // 电瓶电压
+      it: 0,         // 进风温度
+      ot: 0,         // 出风温度
+      err: 0,        // 故障代码
+      online: false,
+      signalStrength: 0,
+      clock: false   // 内部标记是否有定时
+    },
+    wxTimerList: [],
     // 定时弹窗相关
     showTimerModal: false,
     timerMinutes: 60, // 初始为 60 分钟
@@ -90,13 +110,12 @@ Page({
     //停止下拉刷新
     wx.stopPullDownRefresh()
     // 启动定时任务
-
     console.log('加载页面onLoad完毕')
   },
 
   //下拉刷新事件
   onPullDownRefresh: function () {
-    this.onLoad();
+    this.onShow();
   },
 
   onShow() {
@@ -109,9 +128,11 @@ Page({
     }
 
     console.log("显示client/index")
+    this.loadUserData().then(() => {
+      // this.startAutoRefresh();
+      this.resetInactivityTimer();
+    }); // 加载用户专属数据
 
-    this.loadUserData(); // 加载用户专属数据
-    this.resetInactivityTimer();
     console.log("client/index加载完毕")
     setTimeout(() => {
       wx.hideLoading();
@@ -165,21 +186,14 @@ Page({
 
     const cHasUserInfo = app.globalData.hasUserInfo
     const cUserInfo = app.globalData.userInfo
-    const cToken = app.globalData.token
-    const cClientid = app.globalData.clientid
-
-    if (cUserInfo && cToken && cClientid && cHasUserInfo) {
-      console.log("缓存登陆信息校验1：hasUserInfo：", cHasUserInfo)
-      console.log("缓存登陆信息校验2：usserInfo", cUserInfo)
-      console.log("缓存登陆信息校验3：token：", cToken)
-      console.log("缓存登陆信息校验4：clientid", cClientid)
+    console.log("缓存登陆信息校验1：hasUserInfo：", cHasUserInfo)
+    console.log("缓存登陆信息校验2：usserInfo", cUserInfo)
+    if (cUserInfo && cHasUserInfo) {
       console.log("缓存存在登陆信息，直接登陆")
       wx.showLoading();
       this.setData({
         hasUserInfo: cHasUserInfo || true,
         userInfo: cUserInfo,
-        token: cToken,
-        clientid: cClientid
       })
     }
     else {
@@ -243,15 +257,15 @@ Page({
             wx.setStorageSync('selectedDeviceImei', myProductsList[0].imei);
           }
           this.setData({
-            selectedDevice:myProductsList[0]
+            selectedDevice: myProductsList[0]
           })
         }
 
-        
-        console.log('当前选中设备：',this.data.selectedDevice)
+
+        // console.log('当前选中设备：', this.data.selectedDevice)
 
         // 加载设备状态
-        this.loadDeviceStatus();
+        await this.loadDeviceStatus();
       } else {
         this.setData({
           deviceList: [],
@@ -388,7 +402,7 @@ Page({
     wx.navigateTo({ url: '/pages/client/activate/activate' });
   },
 
-  
+
   //开启蓝牙搜索
   blueToothfunc() {
     wx.vibrateShort({ type: 'medium' });
@@ -651,7 +665,7 @@ Page({
   async loadDeviceStatus(force = false) {
     try {
       const device = this.data.selectedDevice;
-      console.log('加载当前选中设备：',device)
+      console.log('加载当前选中设备：', device)
       if (!device || device.connectionType !== '4g') return;
 
       const deviceName = device.imei;
@@ -659,19 +673,38 @@ Page({
       // const res = await deviceApi.getDevicePropertyDetail(deviceName);
       const res = await deviceApi.getDevicePropertyDetail(sn);
 
-      if (res && res.code === 200 && res.data && res.data.data) {
-        const props = res.data.data;
-        console.log("查询到的设备状态:", props)
+      if (res && res.code === 200 && res.data) {
+        const props = res.data.properties;
+        const signal = res.data.csq;
+        const online = res.data.devicestatus;
+        console.log("查询到的设备状态:", online)
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
+        if(!online.status){
+          console.log('设备',props)
+          wx.showToast({
+            title:'设备不在线',
+            icon:'error'
+          })
+          this.setData({
+            deviceStatus: this.data.offlineDeviceStatus,
+            deiveiceOnline:false,
+          })
+          this.stopAutoRefresh();
+          return
+        }
         if (force || !this.lastCommandTime || Date.now() - this.lastCommandTime > 2000) {
+          if(!props){
+            return
+          }
           this.setData({
             deviceStatus: {
               ...this.data.deviceStatus,
               ...props,
               online: true,
-              signalStrength: props.signal || 0,
+              signalStrength: signal || 0,
               clock: props.timer > 0
-            }
+            },
+            deiveiceOnline:true
           });
         }
         console.log("本地保存设备状态:", this.data.deviceStatus)
@@ -708,11 +741,11 @@ Page({
       // 启动新的不活跃计时器
       this.inactivityTimeoutId = setTimeout(() => {
         this.autoStopRefresh();
-      }, 10 * 1000); 
+      }, 10 * 1000);
 
       // 如果刷新定时器没启动，则启动它
       if (!this.refreshIntervalId) {
-        console.log('每5s刷新启动')
+        console.log('每s刷新启动')
         this.startAutoRefresh();
       }
     }
@@ -739,7 +772,7 @@ Page({
   },
 
   //固定时间停止刷新
-  autoStopRefresh(){
+  autoStopRefresh() {
     console.log('停止自动刷新，等待手动');
     if (this.refreshIntervalId) {
       clearInterval(this.refreshIntervalId);
@@ -763,7 +796,8 @@ Page({
   // 点击通知恢复刷新
   resumeRefresh() {
     wx.vibrateShort({ type: 'light' });
-
+    this.resetInactivityTimer();
+    this.setData({ showRefreshNotify: false });
   },
 
   // 开关机
@@ -1013,6 +1047,7 @@ Page({
     this.switchMode(modes[nextIndex]);
   },
 
+  //切换模式
   selectMode(e) {
     const mode = e.currentTarget.dataset.mode;
     this.switchMode(mode);
@@ -1223,7 +1258,9 @@ Page({
     const device = this.data.selectedDevice;
     const deiveiceOnline = this.data.deviceStatus.online
     if (!device || !deiveiceOnline) return;
-
+    this.setData({
+      showRefreshNotify:false
+    })
     // const deviceName = device.imei;
     const deviceName = device.sn;
     this.lastCommandTime = Date.now();
@@ -1283,7 +1320,7 @@ Page({
       wx.showToast({ title: '网络错误', icon: 'none' });
     } finally {
       // 确认返回后（无论成功失败），继续定时刷新
-      this.startAutoRefresh();
+      this.resetInactivityTimer();
     }
   },
 
