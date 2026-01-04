@@ -140,6 +140,7 @@ Page({
 
     // 触发入门动画
     // this.triggerEntranceAnimation();
+    wx.stopPullDownRefresh()
   },
 
   /**
@@ -169,6 +170,7 @@ Page({
 
   onHide() {
     this.clearAllTimers();
+    console.log('onHide()事件触发')
   },
 
   onUnload() {
@@ -445,8 +447,8 @@ Page({
       icon: 'none'
     });
     // 切换设备后加载状态
-    this.loadDeviceStatus();
-
+    // this.loadDeviceStatus();
+    this.resetInactivityTimer();
   },
 
   // 取消配对/删除设备
@@ -686,37 +688,20 @@ Page({
     return `${h} 小时`;
   },
 
-  // 加载设备状态
+  // 加载设备状态返回处理
   async loadDeviceStatus(force = false) {
     try {
       const device = this.data.selectedDevice;
       console.log('加载当前选中设备：', device)
       if (!device || device.connectionType !== '4g') return;
-
       const deviceName = device.imei;
       const sn = device.sn;
       // const res = await deviceApi.getDevicePropertyDetail(deviceName);
       const res = await deviceApi.getDevicePropertyDetail(sn);
-
-      if (res && res.code === 200 && res.data) {
+      if (res.code === 200) {
         const props = res.data.properties;
         const signal = res.data.csq;
-        const online = res.data.devicestatus;
-        console.log("查询到的设备状态:", online)
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
-        if (!online.status) {
-          // console.log('设备',props)
-          wx.showToast({
-            title: '设备不在线',
-            icon: 'error'
-          })
-          this.setData({
-            deviceStatus: this.data.offlineDeviceStatus,
-            deiveiceOnline: false,
-          })
-          this.stopAutoRefresh();
-          return
-        }
         if (force || !this.lastCommandTime || Date.now() - this.lastCommandTime > 2000) {
           if (!props) {
             return
@@ -733,6 +718,19 @@ Page({
           });
         }
         console.log("本地保存设备状态:", this.data.deviceStatus)
+      }
+      else if(res.code === 500){
+        wx.showToast({
+          title:'设备不在线',
+          icon:'error'
+        })
+        this.setData({
+          deviceStatus: this.data.offlineDeviceStatus
+        })
+        this.stopAutoRefresh();
+        this.setData({
+          showRefreshNotify:true
+        })
       }
     } catch (error) {
       console.error('加载设备状态失败:', error);
