@@ -1,62 +1,5 @@
 <!--pages/client/index/index.wxml-->
 <view class="container client-home" bindtap="closeAllDropdowns">
-  <!-- 刷新停止提示 -->
-  <view class="refresh-notify {{showRefreshNotify ? 'show' : ''}}" catchtap="resumeRefresh">
-    <text>系统已停止自动刷新以节省电量，点击恢复</text>
-    <view class="resume-btn">恢复</view>
-  </view>
-
-  <!-- 故障警告 -->
-  <view wx:if="{{showFaultAlert && currentFaultInfo}}" class="fault-alert-overlay" catchtap="closeFaultAlert">
-    <view class="fault-alert-container" catchtap>
-      <!-- 头部 -->
-      <view class="fault-alert-header">
-        <view class="fault-icon-container">
-          <image class="fault-icon" src="/images/icons/warning.png" mode="aspectFit"></image>
-        </view>
-        <view class="fault-title-container">
-          <text class="fault-code">{{currentFaultInfo.code}}</text>
-          <text class="fault-title">{{currentFaultInfo.title}}</text>
-        </view>
-        <view class="fault-close-btn" bindtap="closeFaultAlert">
-          <text class="close-icon">×</text>
-        </view>
-      </view>
-
-      <!-- 故障原因 -->
-      <view class="fault-section">
-        <view class="fault-section-title">
-          <text class="section-icon">⚠️</text>
-          <text>可能原因</text>
-        </view>
-        <text class="fault-cause">{{currentFaultInfo.cause}}</text>
-      </view>
-
-      <!-- 解决方案 -->
-      <view class="fault-section">
-        <view class="fault-section-title">
-          <text class="section-icon">🔧</text>
-          <text>解决方案</text>
-        </view>
-        <view class="fault-solutions">
-          <view wx:for="{{currentFaultInfo.solutions}}" wx:key="index" class="solution-item">
-            <text class="solution-number">{{index + 1}}.</text>
-            <text class="solution-text">{{item}}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 底部按钮 -->
-      <view class="fault-alert-footer">
-        <button class="fault-btn fault-btn-secondary" bindtap="closeFaultAlert">
-          暂时忽略
-        </button>
-        <button class="fault-btn fault-btn-primary" bindtap="goToManual">
-          查看维修手册
-        </button>
-      </view>
-    </view>
-  </view>
 
   <!-- 远程遥控界面 -->
   <view class="section remote-control-section">
@@ -100,14 +43,14 @@
           <block wx:else>
             <view class="device-list-container">
               <view 
-                class="device-list-item {{selectedDeviceIndex === index ? 'selecte d' : ''}}" 
+                class="device-list-item {{selectedDeviceIndex === index ? 'selected' : ''}}" 
                 wx:for="{{deviceList}}" 
                 wx:key="sn" 
                 bindtap="onSelectDevice" 
                 data-index="{{index}}"
               >
                 <!-- 1. 连接方式指示器 -->
-                <!-- <view class="device-connection-indicator">
+                <view class="device-connection-indicator">
                   <block wx:if="{{item.connectionType === 'bluetooth'}}">
                     <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
                   </block>
@@ -120,7 +63,7 @@
                       <view class="display-signal-bar {{item.signalStrength >= 25 ? 'active' : ''}}"></view>
                     </view>
                   </block>
-                </view> -->
+                </view>
 
                 <!-- 2. 图片 -->
                 <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -129,7 +72,7 @@
                 <view class="device-list-info">
                   <view class="info-row">
                     <text class="info-label">设备名称：</text>
-                    <text class="info-value">{{item.name || '未命名'}}</text>
+                    <text class="info-value">{{item.name}}</text>
                   </view>
                   <view class="info-row">
                     <text class="info-label">设备型号：</text>
@@ -140,8 +83,8 @@
                     <text class="info-value">{{item.activationDate}}</text>
                   </view>
                   <view class="info-row">
-                    <text class="info-label">过保日期：</text>
-                    <text class="info-value">{{item.warrantyDate}}</text>
+                    <text class="info-label">连接方式：</text>
+                    <text class="info-value">{{item.connectionType}}</text>
                   </view>
                 </view>
                 <!-- 4. 取消配对按钮 -->

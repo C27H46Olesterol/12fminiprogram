@@ -3,7 +3,7 @@ var timer = require("../../../utils/wxTimer")
 const deviceApi = require("../../../utils/deviceApi");
 const { FAULT_CODES } = require("../../../utils/faultCodes");
 // const rp = require("request-promise")
-
+let overTimeCount = 0;
 Page({
   data: {
     userInfo: app.globalData.userInfo,
@@ -97,9 +97,10 @@ Page({
 
     // 故障警告
     showFaultAlert: false, // 是否显示故障警告
-    currentFaultInfo: null // 当前故障信息
-  },
+    currentFaultInfo: null, // 当前故障信息
 
+
+  },
   onLoad() {
     //关闭加载弹窗
     console.log('加载页面onLoad')
@@ -138,8 +139,6 @@ Page({
       wx.hideLoading();
     }, 1500)
 
-    // 触发入门动画
-    // this.triggerEntranceAnimation();
     wx.stopPullDownRefresh()
   },
 
@@ -171,6 +170,7 @@ Page({
   onHide() {
     this.clearAllTimers();
     console.log('onHide()事件触发')
+    this.stopAutoRefresh();
   },
 
   onUnload() {
@@ -241,10 +241,11 @@ Page({
 
       // 更新设备列表 (用于下拉菜单和遥控)
       if (myProductsList && myProductsList.length > 0) {
-        const savedImei = wx.getStorageSync('selectedDeviceImei');
+        const savedsn = wx.getStorageSync('selectedDeviceImei');
+        console.log('保存的设备选中信息', savedsn)
         let selectedIndex = -1;
-        if (savedImei) {
-          selectedIndex = myProductsList.findIndex(d => d.imei === savedImei);
+        if (savedsn) {
+          selectedIndex = myProductsList.findIndex(d => d.sn === savedsn);
         }
         this.setData({
           deviceList: myProductsList,
@@ -256,16 +257,13 @@ Page({
         if (selectedIndex === -1) {
           selectedIndex = 0;
           if (myProductsList[0].imei) {
-            wx.setStorageSync('selectedDeviceImei', myProductsList[0].imei);
+            wx.setStorageSync('selectedDeviceImei', myProductsList[0].sn);
           }
           this.setData({
-            selectedDevice: myProductsList[0]
+            selectedDevice: wx.getStorageSync('selectedDeviceImei')
           })
         }
-
-
         // console.log('当前选中设备：', this.data.selectedDevice)
-
         // 加载设备状态
         await this.loadDeviceStatus();
       } else {
@@ -299,7 +297,7 @@ Page({
           const res = result.data;
           return res.map((item, index) => ({
             id: index + 1,
-            name: item.sn,
+            name: '驻车空调' + item.sn.slice(18),
             sn: item.sn, // 兼容现有逻辑
             imei: item.imei, // 兼容现有逻辑
             activationDate: this.formatTime(item.createTime) || '--',
@@ -434,6 +432,7 @@ Page({
 
   // 选择设备
   onSelectDevice(e) {
+    this.stopAutoRefresh();
     const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
     this.setData({
@@ -447,7 +446,7 @@ Page({
       icon: 'none'
     });
     // 切换设备后加载状态
-    // this.loadDeviceStatus();
+    this.loadDeviceStatus();
     this.resetInactivityTimer();
   },
 
@@ -690,15 +689,17 @@ Page({
 
   // 加载设备状态返回处理
   async loadDeviceStatus(force = false) {
+    
     try {
       const device = this.data.selectedDevice;
       console.log('加载当前选中设备：', device)
       if (!device || device.connectionType !== '4g') return;
-      const deviceName = device.imei;
+      // const deviceName = device.imei;
       const sn = device.sn;
       // const res = await deviceApi.getDevicePropertyDetail(deviceName);
       const res = await deviceApi.getDevicePropertyDetail(sn);
       if (res.code === 200) {
+        overTimeCount = 0;
         const props = res.data.properties;
         const signal = res.data.csq;
         //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
@@ -719,22 +720,43 @@ Page({
         }
         console.log("本地保存设备状态:", this.data.deviceStatus)
       }
-      else if(res.code === 500){
-        wx.showToast({
-          title:'设备不在线',
-          icon:'error'
-        })
-        this.setData({
-          deviceStatus: this.data.offlineDeviceStatus
-        })
-        this.stopAutoRefresh();
-        this.setData({
-          showRefreshNotify:true
-        })
+      else if (res.code === 500) {
+        if (res.msg === '获取属性失败:设备不在线') {
+          wx.showToast({
+            title: '设备不在线',
+            icon: 'error'
+          })
+          this.setData({
+            deviceStatus: this.data.offlineDeviceStatus
+          })
+          this.stopAutoRefresh();
+          this.setData({
+            showRefreshNotify: true
+          })
+        }
+        else if (res.msg && res.msg.includes('设备响应超时')) {
+          overTimeCount++;
+          console.log('响应超时计数:', overTimeCount);
+
+          if (overTimeCount > 5) {
+            wx.showToast({
+              title: '设备连接超时', // Modified title to be more specific or keep '设备不在线'
+              icon: 'error'
+            });
+            this.setData({
+              deviceStatus: this.data.offlineDeviceStatus,
+              showRefreshNotify: true
+            });
+            this.stopAutoRefresh();
+            overTimeCount = 0; // Reset after triggering
+          }
+        }
+
       }
     } catch (error) {
       console.error('加载设备状态失败:', error);
     }
+    this.checkFaultStatus(this.data.deviceStatus);
   },
 
   // --- 自动刷新与不活跃计时逻辑 ---
@@ -827,15 +849,10 @@ Page({
   async togglePower() {
 
     wx.vibrateShort({ type: 'medium' });
-
     wx.showLoading({ title: '正在连接设备...', mask: true });
     // 1. 获取最新设备状态
     await this.loadDeviceStatus(true);
     wx.hideLoading();
-    wx.showToast({
-      title: '设备连接成功',
-      icon: 'success'
-    })
 
     const deviceStatus = this.data.deviceStatus;
 
@@ -854,6 +871,7 @@ Page({
       this.setData({
         'deviceStatus.ps': 0
       });
+      wx.showToast({ title: '正在关机...', icon: 'loading' });
       this.bufferCommand('setPower', 0);
     } else {
       // 如果已关机：按关机时的状态开机

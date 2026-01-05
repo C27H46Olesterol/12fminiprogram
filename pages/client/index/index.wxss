@@ -281,7 +281,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* 均匀分布 */
-  padding-bottom: 170rpx; /* 留出TabBar空间 (140rpx) 并预留缓冲区域 */
+  padding-bottom: 190rpx; /* 留出TabBar空间 (140rpx) 并预留缓冲区域 */
   box-sizing: border-box;
 }
 
@@ -506,6 +506,10 @@
   min-width: 320rpx;
 }
 
+.device-dropdown {
+  top: 130rpx; /* Shift down by ~10px (20rpx) */
+}
+
 .dropdown-menu.show {
   opacity: 1;
   visibility: visible;
@@ -574,7 +578,7 @@
   border: none;
   border-radius: 32rpx;
   padding: 16rpx 24rpx; /* 进一步压缩内边距 */
-  margin-bottom: 16rpx; /* 压缩至 16rpx */
+  margin-bottom: 10rpx; /* 压缩至 16rpx */
   box-shadow: 0 12rpx 40rpx rgba(24, 144, 255, 0.08);
   flex-shrink: 0;
   overflow: hidden;
@@ -835,7 +839,7 @@
 /* 展开式二级菜单 - 基础样式 */
 .expand-menu {
   position: absolute;
-  bottom: 160rpx; /* 默认向上弹出 */
+  bottom: 180rpx; /* 默认向上弹出 */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1198,11 +1202,12 @@
   display: flex;
   align-items: center;
   padding: 24rpx;
-  border-bottom: 2rpx solid #f5f5f5;
+  border: 2rpx solid #f0f0f0; /* Default border for all */
   background-color: #fff;
   transition: all 0.2s;
-  border-radius: 8rpx;
-  margin-bottom: 8rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-sizing: border-box; /* Prevent size change on border color switch */
 }
 
 .device-list-item:active {
@@ -1211,6 +1216,7 @@
 
 .device-list-item.selected {
   background-color: #e6f7ff;
+  border: 2rpx solid #1890ff;
 }
 
 .device-list-indicator {
