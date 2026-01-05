@@ -45,6 +45,26 @@
         </view>
 
         <view class="card-body" wx:if="{{item.expanded}}">
+          <!-- 视频展示区 -->
+          <view class="video-section">
+            <view class="label">
+              <view class="dot purple"></view>视频演示：
+            </view>
+            <view class="video-container">
+              <video 
+                wx:if="{{item.videoUrl}}" 
+                src="{{item.videoUrl}}" 
+                class="fault-video" 
+                controls 
+                poster="/images/video-poster.png"
+              ></video>
+              <view wx:else class="video-placeholder">
+                <image class="placeholder-icon" src="/images/icons/manual.png" mode="aspectFit"></image>
+                <text class="placeholder-text">暂无演示视频</text>
+              </view>
+            </view>
+          </view>
+
           <view class="info-section" wx:if="{{item.checks.length}}">
             <view class="label">
               <view class="dot blue"></view>检查部位：

@@ -14,6 +14,7 @@ Page({
           '开机后查看电池电压是否正确',
           '检查电池线规格是否足够（线径不足会导致压降过大）'
         ],
+        videoUrl: 'https://cdn.example.com/videos/E1_E12_low_voltage.mp4',
         expanded: false
       },
       {
@@ -27,6 +28,7 @@ Page({
           '检查压缩机线路插头螺帽是否松动烧焦，正常需更换控制器或轴机',
           '主机断电30秒后重新启动。刚启动报E2说明控制器原件过流保护，过几分钟报E2说明电子元器件过热保护'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -41,6 +43,7 @@ Page({
           '系统内部杂质导致堵转，需更换干燥瓶补冷媒，并清洗系统',
           '检查管路是否堵塞。正常压力：高压1.0-1.5MPa，高于2.0MPa容易堵转。低压0MPa左右检查过滤器网'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -54,6 +57,7 @@ Page({
           '若电压下降过快，说明电瓶电量低或老旧',
           '若电压正常却报E4，检查线路接头是否有松动，或线路是否过细。若排除线路问题则更换控制器'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -65,6 +69,7 @@ Page({
           '直接更换控制器',
           'D800的E5参考AC故障'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -78,6 +83,7 @@ Page({
           '断开风机插头开机测试，若不报故障则是风机异常；若仍报故障则是控制器损坏',
           '主机断电30秒后重启。若立即报故障说明电子件故障，需更换控制器'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -91,6 +97,7 @@ Page({
           '测量压缩机三相接柱间的电阻是否一致。若电阻不一致说明压机线圈故障，需更换压缩机',
           '若线路和压机都正常，则更换控制器'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -103,6 +110,7 @@ Page({
           '检查冷凝器是否过脏影响散热',
           '检查干燥瓶是否堵塞'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -114,6 +122,7 @@ Page({
           '检查传感器插头是否脱落',
           '更换对应的温度传感器'
         ],
+        videoUrl: '',
         expanded: false
       },
       {
@@ -126,6 +135,7 @@ Page({
           '检查设定温度是否低于室内环境温度',
           '查看控制器指示灯：绿灯闪烁正常，红灯闪烁则有对应故障码'
         ],
+        videoUrl: '',
         expanded: false
       }
     ],
@@ -166,8 +176,11 @@ Page({
   },
 
   goReport() {
-    wx.navigateTo({
-      url: '/pages/client/problem/issues/issues'
+    wx.makePhoneCall({
+      phoneNumber: '400-888-6988',
+      fail: (err) => {
+        console.error('拨打电话失败：', err);
+      }
     });
   }
 });
