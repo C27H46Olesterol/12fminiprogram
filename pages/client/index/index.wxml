@@ -178,12 +178,12 @@
                <image src="/images/icons/4g.png" mode="aspectFit"></image>
              </view>
            </view>
-           <view class="expand-item left-text" catchtap="blueToothfunc" style="--i:2">
+           <!-- <view class="expand-item left-text" catchtap="blueToothfunc" style="--i:2">
              <text class="expand-text">蓝牙连接</text>
              <view class="expand-btn-circle">
                <image src="/images/icons/bluetooth.png" mode="aspectFit"></image>
              </view>
-           </view>
+           </view> -->
         </view>
       </view>
     </view>
