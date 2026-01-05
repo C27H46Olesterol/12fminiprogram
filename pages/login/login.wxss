@@ -141,57 +141,152 @@
   opacity: 0.8;
 }
 
-/* ===== 分割线 ===== */
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 48rpx 0;
-}
-
-.divider-line {
-  flex: 1;
-  height: 1rpx;
-  background: #E0E0E0;
-}
-
-.divider-text {
-  margin: 0 24rpx;
-  font-size: 24rpx;
-  color: var(--text-secondary);
-}
-
 /* ===== 微信授权登录按钮 ===== */
-.wechat-login-btn {
+.get-phone-btn {
   width: 100% !important;
-  padding: 0;
   background: #07C160;
-  border-radius: 12rpx;
+  border-radius: 48rpx;
   height: 96rpx;
-}
-
-.btn-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 100%;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 20rpx rgba(7, 193, 96, 0.2);
+}
+
+.get-phone-btn:active {
+  background: #06AD56;
+  transform: scale(0.98);
 }
 
 .wechat-icon {
-  width: 44rpx;
-  height: 44rpx;
+  width: 64rpx;
+  height: 64rpx;
   margin-right: 16rpx;
-  filter: brightness(0) invert(1); /* 变为白色 */
 }
 
 .btn-text {
   font-size: 32rpx;
-  font-weight: 500;
+  font-weight: 600;
   color: #FFFFFF;
 }
 
-.wechat-login-btn:active {
-  background: #06AD56;
+/* ===== 用户协议勾选 ===== */
+.agreement-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 0;
+  gap: 12rpx;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #07C160;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.checkbox.checked {
+  background: #07C160;
+}
+
+.agreement-text {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.agreement-text .link {
+  color: #07C160;
+  font-weight: 500;
+  display: inline;
+}
+
+/* ===== 协议弹窗 ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s;
+}
+
+.modal-overlay.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.agreement-modal {
+  width: 80%;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx;
+  transform: translateY(100rpx);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.modal-overlay.show .agreement-modal {
+  transform: translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.modal-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 40rpx;
+  color: #999;
+  line-height: 1;
+  padding: 10rpx;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 40rpx;
+}
+
+.agreement-content {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.modal-footer {
+  padding-top: 20rpx;
+}
+
+.agree-btn {
+  background: #07C160;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: 600;
 }
 
 /* ===== 提示信息 ===== */

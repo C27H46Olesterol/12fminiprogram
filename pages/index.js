@@ -32,16 +32,16 @@ Page({
    * 初始化页面逻辑
    */
   initPage() {
-    const userInfo = wx.getStorageSync('userInfo');
-    const hasUserInfo = wx.getStorageSync('hasUserInfo');
+    // const userInfo = wx.getStorageSync('userInfo');
+    // const hasUserInfo = wx.getStorageSync('hasUserInfo');
 
     
-    if (!userInfo && !hasUserInfo) {
-      // 未登录直接重定向到客户端首页
-      console.log()
-      wx.reLaunch({ url: '/pages/login/login' });
-      return;
-    }
+    // if (!userInfo && !hasUserInfo) {
+    //   // 未登录直接重定向到客户端首页
+    //   console.log()
+    //   wx.reLaunch({ url: '/pages/login/login' });
+    //   return;
+    // }
     
     this.setData({
       hasUserInfo: app.globalData.hasUserInfo,

@@ -12,7 +12,7 @@
     </view>
 
     <view class="workbench-grid">
-      <view class="work-card" bindtap="handleInstall">
+      <!-- <view class="work-card" bindtap="handleInstall">
         <view class="icon-circle blue">
           <image class="work-icon" src="/images/icons/add.png"></image>
         </view>
@@ -26,7 +26,7 @@
         </view>
         <text class="work-title">维修设备</text>
         <text class="work-desc">故障诊断与处理</text>
-      </view>
+      </view> -->
 
       <view class="work-card" bindtap="handleManual">
         <view class="icon-circle green">
@@ -50,13 +50,13 @@
 
     <view class="workbench-grid">
       <!-- 报修申请 -->
-      <view class="work-card" bindtap="handleReport">
+      <!-- <view class="work-card" bindtap="handleReport">
         <view class="icon-circle teal">
           <image class="work-icon" src="/images/icons/repair-form.png"></image>
         </view>
         <text class="work-title">报修申请</text>
         <text class="work-desc">设备故障在线报修</text>
-      </view>
+      </view> -->
 
       <!-- 自助手册 -->
       <view class="work-card" bindtap="handleManual">
@@ -67,13 +67,13 @@
         <text class="work-desc">常见问题与操作指引</text>
       </view>
 
-      <view class="work-card" bindtap="handleReportLog">
+      <!-- <view class="work-card" bindtap="handleReportLog">
         <view class="icon-circle teal">
           <image class="work-icon" src="/images/icons/repair-form.png"></image>
         </view>
         <text class="work-title">报修记录</text>
         <text class="work-desc">查看报修进度</text>
-      </view>
+      </view> -->
     </view>
   </block>
 

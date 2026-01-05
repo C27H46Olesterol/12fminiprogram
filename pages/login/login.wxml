@@ -19,29 +19,46 @@
     <!-- 登录表单 -->
     <view class="card login-form">
       <!-- 微信授权获取手机号登录按钮 -->
-      <!-- <button class="btn btn-block" 
-        bind:tap="testLogin"
-        disabled="{{loading}}"
-        style="background-color: #07C160; color: rgba(255, 255, 255, 0);">
-        <text class="btn-text">登陆测试</text>
-      </button> -->
       <button 
-        class="btn btn-block" 
+        class="get-phone-btn" 
         open-type="getPhoneNumber"
         bindgetphonenumber="wxLogin"
         disabled="{{loading}}"
-        style="background-color: #07C160; color: rgba(255, 255, 255, 0);"
       >
         <view class="btn-content flex flex-center">
-          <image class="wechat-icon" src="/images/wx.png" mode="aspectFit" style="width: 40rpx; height: 40rpx; margin-right: 16rpx; filter: brightness(0) invert(1);"></image>
-          <text class="btn-text">{{loading ? '登录中...' : '微信授权获取手机号登录'}}</text>
+          <image class="wechat-icon" src="/images/icons/phone.png" mode="aspectFit"></image>
+          <text class="btn-text">{{loading ? '登录中...' : '手机号授权快速登录'}}</text>
         </view>
       </button>
-    </view>
 
-    <!-- 提示信息 -->
-    <view class="tips">
-      <text class="tip-text text-secondary">登录即表示同意用户协议和隐私政策</text>
+      <!-- 用户协议勾选 -->
+      <view class="agreement-row" bindtap="toggleAgreement">
+        <view class="checkbox {{agreed ? 'checked' : ''}}">
+          <icon wx:if="{{agreed}}" type="success_no_circle" size="12" color="#fff" />
+        </view>
+        <view class="agreement-text">
+          <text>我已阅读并同意</text>
+          <text class="link" catchtap="showUserAgreement">《用户协议》</text>
+          <text>和</text>
+          <text class="link" catchtap="showPrivacyPolicy">《隐私政策》</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 协议弹窗 -->
+  <view class="modal-overlay {{showAgreementModal ? 'show' : ''}}" bindtap="closeModal">
+    <view class="agreement-modal" catchtap="noOp">
+      <view class="modal-header">
+        <text class="modal-title">{{modalTitle}}</text>
+        <view class="close-btn" bindtap="closeModal">×</view>
+      </view>
+      <scroll-view scroll-y class="modal-body">
+        <text class="agreement-content">{{modalContent}}</text>
+      </scroll-view>
+      <view class="modal-footer">
+        <button class="agree-btn" bindtap="agreeAndClose">同意并继续</button>
+      </view>
     </view>
   </view>
 </view>
