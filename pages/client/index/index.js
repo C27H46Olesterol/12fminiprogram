@@ -739,6 +739,7 @@ Page({
           console.log('响应超时计数:', overTimeCount);
 
           if (overTimeCount > 5) {
+            console.log('响应超时过多认为设备已不在线');
             wx.showToast({
               title: '设备连接超时', // Modified title to be more specific or keep '设备不在线'
               icon: 'error'

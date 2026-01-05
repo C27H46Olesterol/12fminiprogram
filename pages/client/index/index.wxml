@@ -116,7 +116,7 @@
                 data-index="{{index}}"
               >
                 <!-- 1. 连接方式指示器 -->
-                <view class="device-connection-indicator">
+                <!-- <view class="device-connection-indicator">
                   <block wx:if="{{item.connectionType === 'bluetooth'}}">
                     <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
                   </block>
@@ -129,7 +129,7 @@
                       <view class="display-signal-bar {{item.signalStrength >= 25 ? 'active' : ''}}"></view>
                     </view>
                   </block>
-                </view>
+                </view> -->
 
                 <!-- 2. 图片 -->
                 <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
