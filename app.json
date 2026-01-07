@@ -1,8 +1,8 @@
 {
   "pages": [
+    "pages/client/index/index",
     "pages/index",
     "pages/login/login",
-    "pages/client/index/index",
     "pages/client/activate/activate",
     "pages/profile/profile",
     "pages/login/role/role",
@@ -50,8 +50,7 @@
     ]
   },
   "requiredPrivateInfos": [
-    "getLocation",
-    "chooseLocation"
+    "getLocation"
   ],
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"

@@ -11,9 +11,6 @@ Page({
     isNormal: true
   },
 
-  onLoad() {
-    this.checkUserInfo();
-  },
   onShow() {
     this.checkUserInfo();
   },

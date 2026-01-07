@@ -8,19 +8,14 @@ App({
   onLaunch() {
     console.log('App启动');
 
-    // 初始化云开发
-    // this.initCloud();
-
     // 获取系统信息
     this.getSystemInfo();
-    // 不在app.js中检查登录状态，让各页面自己处理
-    // 这样可以避免在登录页面被重定向
 
     this.getUser()
   },
 
   //通过缓存获取用户信息
-  getUser(){
+  getUser() {
     console.log('检查缓存用户信息')
     this.globalData.hasUserInfo = wx.getStorageSync('hasUserInfo')
     this.globalData.userInfo = wx.getStorageSync('userInfo')
@@ -29,14 +24,12 @@ App({
 
     console.log("缓存登陆信息校验1：hasUserInfo:", this.globalData.hasUserInfo)
     console.log("缓存登陆信息校验2：userInfo:", this.globalData.userInfo)
-    console.log("缓存登陆信息校验3：token:", this.globalData.clientid)
-    console.log("缓存登陆信息校验4：clientid:", this.globalData.token)
-    if(this.globalData.hasUserInfo && this.globalData.userInfo && this.globalData.clientid && this.globalData.token){
+
+    if (this.globalData.hasUserInfo && this.globalData.userInfo && this.globalData.clientid && this.globalData.token) {
       console.log('缓存存在用户信息，直接登陆')
-      wx.reLaunch({
-        url: '/pages/index',
-      })
-    }else{
+      wx.reLaunch({ url: '/pages/index/index', })
+    } else {
+      console.log('缓存无用户信息')
     }
   },
 
@@ -60,41 +53,40 @@ App({
     }
   },
 
-
   //api通用方法，登陆单独使用request请求，修改测试环境注意
-  async apiRequest(api, method = 'GET', data = {}, contentType='application/json'){
+  async apiRequest(api, method = 'GET', data = {}, contentType = 'application/json') {
     return new Promise((resolve, reject) => {
-      const baseURL="https://ha.musenyu.cn"
+      const baseURL = "https://ha.musenyu.cn"
       // const baseURL = 'http://192.168.70.27:8080'
       wx.request({
-        url:baseURL+api,
-        method:method,
-        data:data,
-        header:{
-          'Authorization':wx.getStorageSync("token"),
-          'clientid':wx.getStorageSync("clientid"),
-          'Content-Type':contentType
+        url: baseURL + api,
+        method: method,
+        data: data,
+        header: {
+          'Authorization': wx.getStorageSync("token"),
+          'clientid': wx.getStorageSync("clientid"),
+          'Content-Type': contentType
         },
-        success:(res)=>{
-          if(res.statusCode === 200){
-            console.log("调用api成功",baseURL+api)
-            console.log("调用结果",res.data)
+        success: (res) => {
+          if (res.statusCode === 200) {
+            console.log("调用api成功", baseURL + api)
+            console.log("调用结果", res.data)
             resolve(res.data);
           }
-          else{
+          else {
             resolve({
-              errMsg:'接口调用失败',
-              statusCode:res.statusCode
+              errMsg: '接口调用失败',
+              statusCode: res.statusCode
             })
           }
         },
-        fail:(err)=>{
+        fail: (err) => {
           reject({
-            errMsg:err.msg,
-            statusCode:err.statusCode
+            errMsg: err.msg,
+            statusCode: err.statusCode
           });
         },
-        complete:(res)=>{
+        complete: (res) => {
           // console.log("url",baseURL+api)
           // console.log("data",data)
         }
@@ -143,7 +135,8 @@ App({
     wx.removeStorageSync('hasUserInfo');
     wx.removeStorageSync('token');
     wx.removeStorageSync('clientid');
-    wx.removeStorageSync('myProductsList')
+    wx.removeStorageSync('myProductsList');
+    wx.removeStorageSync('selectedDeviceImei')
     // 显示提示
     wx.showToast({
       title: '已退出登录',
@@ -153,8 +146,8 @@ App({
     console.log("用户已退出")
 
     setTimeout(() => {
-        wx.navigateBack();
+      wx.navigateBack();
     }, 1500);
-   
+
   }
 });

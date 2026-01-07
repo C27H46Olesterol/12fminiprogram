@@ -21,7 +21,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    // await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
+    
     wx.navigateTo({
       url: '/pages/index',
     })
@@ -146,7 +146,7 @@ Page({
 
       // 2. 模拟提交数据
       // const result = await app.apiRequest('/worker/apply', 'POST', { ... });
-
+      const result = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
       setTimeout(() => {
         wx.hideLoading();
         wx.showToast({

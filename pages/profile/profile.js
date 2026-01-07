@@ -5,7 +5,7 @@ const FormData = require("../../utils/formdata.js");
 Page({
   data: {
     hasUserInfo: false,
-    userInfo: {}
+    userInfo: ''
   },
   onShow() {
     this.checkLoginStatus();
@@ -17,15 +17,16 @@ Page({
     }
   },
 
-  async checkLoginStatus() {
-    const userInfo = app.globalData.userInfo;
-    const hasUserInfo = app.globalData.userInfo;
-
-    if (hasUserInfo && userInfo) {
+  checkLoginStatus() {
+    if(app.globalData.hasUserInfo && app.globalData.userInfo){
       this.setData({
-        hasUserInfo: true,
-        userInfo: userInfo
+        hasUserInfo: app.globalData.hasUserInfo,
+        userInfo: app.globalData.userInfo
       });
+      console.log("缓存登陆信息校验1：hasUserInfo：", this.data.hasUserInfo)
+      console.log("缓存登陆信息校验2：usserInfo", this.data.userInfo)
+    }else{
+      console.log('用户未登录')
     }
   },
 
@@ -57,63 +58,63 @@ Page({
   },
 
   goDevices() {
-    // wx.navigateTo({
-    //   url: '/pages/client/devices/devices',
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/client/devices/devices',
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   goActivateLog() {
-    // wx.navigateTo({
-    //   url: '/pages/worker/activateLog/activateLog',
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/worker/activateLog/activateLog',
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   goIssuesLog() {
-    // wx.navigateTo({
-    //   url: '/pages/client/issuesLog/issuesLog',
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/client/issuesLog/issuesLog',
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   goRepairLog() {
-    // wx.navigateTo({
-    //   url: '/pages/worker/repairLog/repairLog',
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/worker/repairLog/repairLog',
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   goWorker() {
-    // wx.navigateTo({
-    //   url: '/pages/worker/worker',
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/worker/worker',
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   goRepair() {
-    // wx.navigateTo({
-    //   url: '/pages/worker/repair/repair'
-    // })
-    wx.showToast({
-      title: '功能开发中！',
-      icon:'success'
+    wx.navigateTo({
+      url: '/pages/worker/repair/repair'
     })
+    // wx.showToast({
+    //   title: '功能开发中！',
+    //   icon:'success'
+    // })
   },
 
   // goResign() {

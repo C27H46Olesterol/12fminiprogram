@@ -92,14 +92,7 @@
 
         <!-- 设备选择下拉菜单 -->
         <view class="dropdown-menu device-dropdown {{showDeviceModal ? 'show' : ''}}">
-          <block wx:if="{{!hasUserInfo}}">
-            <view class="dropdown-grid">
-              <view class="dropdown-item" bindtap="onGoLogin" style="justify-content: center; padding: 20rpx;">
-                <text>点击<text style='color:rgb(3, 105, 201);' >登录</text>后选择您的设备</text>
-              </view>
-            </view>
-          </block>
-          <block wx:elif="{{deviceList.length === 0}}">
+          <block wx:if="{{deviceList.length === 0}}">
             <view class="dropdown-grid">
               <view class="dropdown-item" bindtap="" style="justify-content: center; padding: 20rpx;">
                 <text>点击右侧“连接方式”连接设备</text>
@@ -116,7 +109,7 @@
                 data-index="{{index}}"
               >
                 <!-- 1. 连接方式指示器 -->
-                <!-- <view class="device-connection-indicator">
+                <view class="device-connection-indicator">
                   <block wx:if="{{item.connectionType === 'bluetooth'}}">
                     <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
                   </block>
@@ -129,7 +122,7 @@
                       <view class="display-signal-bar {{item.signalStrength >= 25 ? 'active' : ''}}"></view>
                     </view>
                   </block>
-                </view> -->
+                </view>
 
                 <!-- 2. 图片 -->
                 <image class="device-list-img" src="{{item.image || '/images/logo.png'}}" mode="aspectFill"></image>
@@ -178,12 +171,12 @@
                <image src="/images/icons/4g.png" mode="aspectFit"></image>
              </view>
            </view>
-           <!-- <view class="expand-item left-text" catchtap="blueToothfunc" style="--i:2">
+           <view class="expand-item left-text" catchtap="blueToothfunc" style="--i:2">
              <text class="expand-text">蓝牙连接</text>
              <view class="expand-btn-circle">
                <image src="/images/icons/bluetooth.png" mode="aspectFit"></image>
              </view>
-           </view> -->
+           </view>
         </view>
       </view>
     </view>
@@ -244,11 +237,11 @@
         </view>
         <view class="display-item">
           <text class="display-label">出风温度</text>
-          <text class="display-value">{{deviceStatus.ot ? deviceStatus.ot / 10 : '--'}}°C</text>
+          <text class="display-value">{{deviceStatus.ot ? deviceStatus.ot  -50 : '--'}}°C</text>
         </view>
         <view class="display-item">
           <text class="display-label">进风温度</text>
-          <text class="display-value">{{deviceStatus.it ? deviceStatus.it / 10 : '--'}}°C</text>
+          <text class="display-value">{{deviceStatus.it ? deviceStatus.it -50 : '--'}}°C</text>
         </view>
       </view>
 

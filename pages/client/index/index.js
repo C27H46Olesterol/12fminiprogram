@@ -6,8 +6,8 @@ const { FAULT_CODES } = require("../../../utils/faultCodes");
 let overTimeCount = 0;
 Page({
   data: {
-    userInfo: app.globalData.userInfo,
-    hasUserInfo: app.globalData.hasUserInfo,
+    userInfo: '',
+    hasUserInfo: '',
     token: null,
     clientid: null,
     userLocation: null, // 用户位置信息
@@ -180,42 +180,15 @@ Page({
   //缓存登陆信息检查
   UserInfoStorageCheck() {
     console.log('加载页面')
-    //是否存有登陆信息
-    // const cHasUserInfo = wx.getStorageSync('hasUserInfo')
-    // const cUserInfo = wx.getStorageSync('userInfo')
-    // const cToken = wx.getStorageSync('token')
-    // const cClientid = wx.getStorageSync('clientid')
-
-    const cHasUserInfo = app.globalData.hasUserInfo
-    const cUserInfo = app.globalData.userInfo
-    console.log("缓存登陆信息校验1：hasUserInfo：", cHasUserInfo)
-    console.log("缓存登陆信息校验2：usserInfo", cUserInfo)
-    if (cUserInfo && cHasUserInfo) {
-      console.log("缓存存在登陆信息，直接登陆")
-      wx.showLoading();
+    if (app.globalData.hasUserInfo && app.globalData.userInfo) {
       this.setData({
-        hasUserInfo: cHasUserInfo || true,
-        userInfo: cUserInfo,
-      })
-    }
-    else {
-      console.log('没有信息 开始跳转')
-      wx.showModal({
-        title: '登陆',
-        content: '检测到您未登录，4G遥控功能需要先登陆再使用',
-        complete: (res) => {
-          if (res.cancel) {
-            wx.showToast({
-              title: '检测您未登陆\n可以使用基础的蓝牙功能',
-              icon: 'none'
-            }, 2500)
-          }
-          if (res.confirm) {
-            // this.onGoLogin();
-          }
-        }
-      })
-
+        hasUserInfo: app.globalData.hasUserInfo,
+        userInfo: app.globalData.userInfo
+      });
+      console.log("缓存登陆信息校验1：hasUserInfo：", this.data.hasUserInfo)
+      console.log("缓存登陆信息校验2：usserInfo", this.data.userInfo)
+    } else {
+      console.log('用户未登录')
     }
   },
 
@@ -250,7 +223,7 @@ Page({
         this.setData({
           deviceList: myProductsList,
           selectedDeviceIndex: selectedIndex,
-          selectedDevice: myProductsList[selectedIndex]
+          selectedDevice: myProductsList[selectedIndex],
         });
 
         // 如果没找到之前的设备，默认选第一个
@@ -260,7 +233,7 @@ Page({
             wx.setStorageSync('selectedDeviceImei', myProductsList[0].sn);
           }
           this.setData({
-            selectedDevice: wx.getStorageSync('selectedDeviceImei')
+            selectedDevice: myProductsList[selectedIndex]
           })
         }
         // console.log('当前选中设备：', this.data.selectedDevice)
@@ -270,8 +243,10 @@ Page({
         this.setData({
           deviceList: [],
           selectedDeviceIndex: -1,
-          selectedDevice: null
+          selectedDevice: null,
+          deviceStatus: this.data.offlineDeviceStatus
         });
+        wx.removeStorageSync('selectedDeviceImei');
       }
 
     }
@@ -388,20 +363,21 @@ Page({
 
     if (!wx.getStorageSync('hasUserInfo')) {
       // 未登录，存储目标页面后跳转登录
-      // wx.setStorageSync('redirectAfterLogin', '/pages/client/activate/activate');
-      wx.showToast({
-        title: '请先登陆',
-        icon: 'error'
+      wx.showModal({
+        title: '未登录',
+        content: '4G远程遥控需要先登陆后使用 \r\n点击确定跳转登陆界面 \r\n点击取消可以尝试使用蓝牙连接',
+        success(res) {
+          if (res.confirm) {
+            wx.navigateTo({ url: '/pages/login/login' });
+          } else if (res.cancel) {
+          }
+        }
       })
-      setTimeout(() => {
-        wx.navigateTo({ url: '/pages/login/login' });
-      }, 500)
       return;
     }
     console.log("设备激活")
     wx.navigateTo({ url: '/pages/client/activate/activate' });
   },
-
 
   //开启蓝牙搜索
   blueToothfunc() {
@@ -446,7 +422,7 @@ Page({
       icon: 'none'
     });
     // 切换设备后加载状态
-    this.loadDeviceStatus();
+    // this.loadDeviceStatus();
     this.resetInactivityTimer();
   },
 
@@ -549,8 +525,8 @@ Page({
         }
       });
     } else if (selectedDeviceIndex !== -1) {
-      // 重新加载新选中设备的状态
-      this.loadDeviceStatus();
+      // 重新加载设备列表
+      this.loadUserData();
     }
   },
 
@@ -689,11 +665,15 @@ Page({
 
   // 加载设备状态返回处理
   async loadDeviceStatus(force = false) {
-    
+
     try {
       const device = this.data.selectedDevice;
+      if (!device || device.connectionType !== '4g') {
+        console.log('设备列表无设备')
+
+        return;
+      }
       console.log('加载当前选中设备：', device)
-      if (!device || device.connectionType !== '4g') return;
       // const deviceName = device.imei;
       const sn = device.sn;
       // const res = await deviceApi.getDevicePropertyDetail(deviceName);
@@ -737,19 +717,20 @@ Page({
         else if (res.msg && res.msg.includes('设备响应超时')) {
           overTimeCount++;
           console.log('响应超时计数:', overTimeCount);
-
-          if (overTimeCount > 5) {
+          if (overTimeCount / 5 != 0) {
             console.log('响应超时过多认为设备已不在线');
-            wx.showToast({
-              title: '设备连接超时', // Modified title to be more specific or keep '设备不在线'
-              icon: 'error'
+            wx.showLoading({
+              title: '操作过于频繁',
+              mask: 'true'
             });
-            this.setData({
-              deviceStatus: this.data.offlineDeviceStatus,
-              showRefreshNotify: true
-            });
+            setTimeout(() => {
+              wx.hideLoading();
+            }, 5 * 1000)
             this.stopAutoRefresh();
-            overTimeCount = 0; // Reset after triggering
+            // Reset after triggering
+          }
+          if (overTimeCount > 20) {
+
           }
         }
 
@@ -840,11 +821,11 @@ Page({
   },
 
   // 点击通知恢复刷新
-  resumeRefresh() {
-    wx.vibrateShort({ type: 'light' });
-    this.resetInactivityTimer();
-    this.setData({ showRefreshNotify: false });
-  },
+  // resumeRefresh() {
+  //   wx.vibrateShort({ type: 'light' });
+  //   this.resetInactivityTimer();
+  //   this.setData({ showRefreshNotify: false });
+  // },
 
   // 开关机
   async togglePower() {
@@ -853,6 +834,7 @@ Page({
     wx.showLoading({ title: '正在连接设备...', mask: true });
     // 1. 获取最新设备状态
     await this.loadDeviceStatus(true);
+    console.log('开机指令发送后-设备在线状态查询结果')
     wx.hideLoading();
 
     const deviceStatus = this.data.deviceStatus;
@@ -902,6 +884,10 @@ Page({
       })
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
+      this.setData({
+        'deviceStatus.fs': 5
+      });
+      this.bufferCommand('setWindSpeed', 5);
       wx.showToast({ title: '已是最大风速', icon: 'none' });
     }
   },
@@ -923,6 +909,10 @@ Page({
       })
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
+      this.setData({
+        'deviceStatus.fs': 1
+      });
+      this.bufferCommand('setWindSpeed', 1);
       wx.showToast({ title: '已是最小风速', icon: 'none' });
     }
   },
@@ -944,6 +934,10 @@ Page({
       })
       this.bufferCommand('setTemperature', newTemp);
     } else {
+      this.setData({
+        'deviceStatus.temp': 40
+      });
+      this.bufferCommand('setTemperature', 40);
       wx.showToast({ title: '已是最高温度', icon: 'none' });
     }
   },
@@ -965,24 +959,14 @@ Page({
       })
       this.bufferCommand('setTemperature', newTemp);
     } else {
+      this.setData({
+        'deviceStatus.temp': 5
+      });
+      this.bufferCommand('setTemperature', 5);
       wx.showToast({ title: '已是最低温度', icon: 'none' });
     }
   },
 
-  // 照明开关
-  toggleLighting() {
-
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    const newStatus = this.data.deviceStatus.light === 1 ? 0 : 1;
-    this.setData({
-      'deviceStatus.light': newStatus
-    });
-    this.showControlToast(newStatus ? '照明已开启' : '照明已关闭');
-    this.bufferCommand('setLighting', newStatus);
-  },
-
-  // // 强劲模式
   // setStrongMode() {
 
   //   wx.vibrateShort({ type: 'medium' });
@@ -1078,17 +1062,6 @@ Page({
     });
   },
 
-  // cycleMode() {
-  //   if (!this.checkPower()) return;
-  //   const modes = [5, 4, 2, 1]; // Auto, Strong, Sleep/Eco, Vent
-  //   const current = this.data.deviceStatus.fm;
-  //   let nextIndex = modes.indexOf(current) + 1;
-  //   if (nextIndex >= modes.length) nextIndex = 0;
-  //   if (modes.indexOf(current) === -1) nextIndex = 0;
-
-  //   this.switchMode(modes[nextIndex]);
-  // },
-
   //切换模式
   selectMode(e) {
     let mode = e.currentTarget.dataset.mode;
@@ -1138,21 +1111,6 @@ Page({
     });
   },
 
-  // cycleSwing() {
-  //   if (!this.checkPower()) return;
-  //   // Cycle: Off (0) -> UD (1) -> LR (2) -> Both (3) -> Off (0)
-  //   const ud = this.data.deviceStatus.sxbf === 1;
-  //   const lr = this.data.deviceStatus.zybf === 1;
-
-  //   let nextState = 0; // default to off
-  //   if (!ud && !lr) nextState = 1; // Off -> UD
-  //   else if (ud && !lr) nextState = 2; // UD -> LR
-  //   else if (!ud && lr) nextState = 3; // LR -> Both
-  //   else if (ud && lr) nextState = 0; // Both -> Off
-
-  //   this.setSwingState(nextState);
-  // },
-
   selectSwing(e) {
     const type = e.currentTarget.dataset.type; // 'off', 'ud', 'lr', 'both'
 
@@ -1194,30 +1152,6 @@ Page({
     this.bufferCommand('setSwingUpDown', ud);
   },
 
-  setSwingState(state) {
-
-    wx.vibrateShort({ type: 'medium' });
-    if (!this.checkPower()) return;
-    console.log('当前摆风状态：')
-    console.log('上下摆风：', this.data.deviceStatus.sxbf);
-    console.log('左右摆风：', this.data.deviceStatus.zybf);
-
-    const ud = (state === 1 || state === 3);
-    const lr = (state === 2 || state === 3);
-
-    this.setData({
-      'deviceStatus.sxbf': ud ? 1 : 0,
-      'deviceStatus.zybf': lr ? 1 : 0
-    });
-
-    let name = ['摆风关闭', '上下摆风', '左右摆风', '全向摆风'][state];
-    this.showControlToast(name);
-
-    // Send commands
-    this.bufferCommand('setSwingUpDown', ud);
-    this.bufferCommand('setSwingLeftRight', lr);
-  },
-
   // 3. 功能键逻辑 (照明/氛围/负离子)
   toggleFunctionDropdown() {
     this.setData({
@@ -1228,10 +1162,6 @@ Page({
       showDeviceModal: false
     });
   },
-
-  // cycleFunction() {
-  //   this.toggleFunctionDropdown();
-  // },
 
   selectFunction(e) {
 
@@ -1290,32 +1220,20 @@ Page({
       delete this.commandTimers[action];
     }
 
-    // // “所有功能按钮只有设定值为true时才会向设备发送命令”
-    // // 定义受限的功能按钮动作列表 (注：开关机 setPower 和 模式 setMode 不受此限制，除非特定要求)
-    // const restrictedActions = ['setAutoMode', 'setEcoMode', 'setStrongMode'];
-
-    // if (restrictedActions.includes(action) && value !== true) {
-    //   // 如果属于受限动作且值为false，清除之前的定时器后不再发送新指令
-    //   console.log(`[Debounce] 忽略指令 -> ${action}: ${value} (Only true allowed)`);
-    //   return;
-    // }
-
     // 设置新定时器
     this.commandTimers[action] = setTimeout(() => {
       this.sendControlCommand(action, value);
       delete this.commandTimers[action];
-    }, 500); // 1秒内的连续操作只发送最后一次
+    }, 500); // 0.5秒内的连续操作只发送最后一次
   },
 
   // 发送控制指令
   async sendControlCommand(action, value) {
     const device = this.data.selectedDevice;
     const deiveiceOnline = this.data.deviceStatus.online
+    //设备在线状态查询
     if (!device || !deiveiceOnline) return;
-    this.setData({
-      showRefreshNotify: false
-    })
-    // const deviceName = device.imei;
+    this.setData({ showRefreshNotify: false })
     const deviceName = device.sn;
     this.lastCommandTime = Date.now();
 
@@ -1374,9 +1292,6 @@ Page({
     } catch (err) {
       console.error('指令发送失败:', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
-    } finally {
-      // 确认返回后（无论成功失败），继续定时刷新
-      this.resetInactivityTimer();
     }
   },
 

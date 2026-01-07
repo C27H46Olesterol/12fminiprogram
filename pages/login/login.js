@@ -1,22 +1,66 @@
+const { getResolvedIssues } = require("../../utils/api");
+
 // pages/login/login.js
 const app = getApp();
 Page({
   data: {
-    userInfo: {
-      userName: '用户',
-      userRole: '用户角色'
-    },
+    userInfo: '',
     agreed: false,
     showAgreementModal: false,
     modalTitle: '',
-    modalContent: ''
+    modalContent: '',
+
+    //位置返回信息
+    locationRes: '',
+    loading: false
   },
 
   onLoad() {
     console.log('登录页面加载');
-    // 延迟检查登录状态，确保页面先渲染
-    setTimeout(() => {
-    }, 500);
+  },
+
+  async onShow() {
+    try {
+      const res = await this.getLocationPromise();
+      console.log('提前获取位置成功', res);
+      this.setData({
+        locationRes: res
+      });
+    } catch (err) {
+      console.warn('提前获取位置被拒绝或失败', err);
+    }
+    // wx.getLocation({
+    //   type:'gcj02',
+    //   success(res){
+    //     console.log('获取地址成功')
+    //   },
+    //   fail(err){
+    //     console.log('获取地址失败')
+    //     wx.showToast({
+    //       title:'请打开地址授权',
+    //       icon:'error'
+    //     })
+    //   }
+    // })
+  },
+
+  getLocationPromise() {
+    return new Promise((resolve, reject) => {
+      wx.getLocation({
+        type: 'gcj02',
+        success: resolve,
+        fail: reject
+      })
+    });
+  },
+
+  loginPromise() {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success: resolve,
+        fail: reject
+      })
+    })
   },
 
   //后端连接登陆逻辑
@@ -28,101 +72,132 @@ Page({
       });
       return;
     }
-    //生产
-    const code = e.detail.code;
-    if (!code) {
+
+    const phoneCode = e.detail.code;
+    if (!phoneCode) {
       wx.showToast({
         title: "请确认授权登陆",
-        icon: "error"
+        icon: "none"
       })
       return
     }
-    console.log("登陆开始");
-    wx.showLoading({
-      title: '登陆中',
-    }),
-      wx.login({
-        success: res => {
-          console.log("成功获取code", res.code);
-          if (res.code) {
-            // 获取用户信息
-            // app.apiRequest('/auth/login','POST',data={
-            //   clientId: '2aeeae6eada0ddca866d775707cc5b11',
-            //   grantType: 'xcx',
-            //   xcxCode: res.code,
-            //   phoneCode:code,
-            //   appid: 'wxa81a2077330256cf',
-            //   tenantId: "000000"
-            // })
-            wx.request({
-              url: 'https://ha.musenyu.cn/auth/login',
-              // url:'http://192.168.70.27:8080/auth/login',
-              method: 'POST',
-              data: {
-                clientId: '2aeeae6eada0ddca866d775707cc5b11',
-                grantType: 'xcx',
-                xcxCode: res.code,
-                phoneCode: code,
-                appid: 'wxa81a2077330256cf',
-                tenantId: "000000"
-              },
-              success: loginRes => {
-                // 登录成功，保存 token
-                console.log("res", loginRes)
 
-                wx.setStorageSync('token', 'Bearer ' + loginRes.data.data.access_token)
-                wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11')
+    this.setData({ loading: true });
+    wx.showLoading({ title: '登录中' });
 
-                console.log("token", wx.getStorageSync('token'))
-                console.log("clientid", wx.getStorageSync('clientid'))
-                // 登录成功后跳转到角色选择页
-                this.getRole();
-                wx.hideLoading();
-                wx.showToast({
-                  tittle: '登陆成功',
-                  icon: "success"
-                })
-              },
-              fail: err => {
-                wx.showToast({
-                  title: "服务器连接失败",
-                  icon: "error"
-                })
-                wx.hideLoading();
-              }
-            })
-          }
+    try {
+      // 1. 确保有地理位置
+      let locationRes = this.data.locationRes;
+      if (!locationRes) {
+        try {
+          // 如果 onShow 没采集到，这里再次触发授权弹窗
+          locationRes = await this.getLocationPromise();
+          this.setData({ locationRes });
+        } catch (err) {
+          console.error('获取位置失败', err);
+          wx.showToast({ title: '请授权地理位置以完成登录', icon: 'none' });
+          this.setData({ loading: false });
+          wx.hideLoading();
+          return;
         }
-      })
+      }
 
+      // 2. 获取 wx.login code
+      const loginRes = await this.loginPromise();
+      console.log('登陆code获取成功', loginRes.code);
 
+      // 3. 发送登录请求
+      wx.request({
+        url: 'https://ha.musenyu.cn/auth/login',
+        method: 'POST',
+        data: {
+          clientId: '2aeeae6eada0ddca866d775707cc5b11',
+          grantType: 'xcx',
+          xcxCode: loginRes.code,
+          phoneCode: phoneCode,
+          appid: 'wxa81a2077330256cf',
+          tenantId: "000000",
+          latitude: locationRes.latitude,
+          longitude: locationRes.longitude,
+          speed: locationRes.speed,
+          accuracy: locationRes.accuracy,
+          altitude: locationRes.altitude
+        },
+        success: (res) => {
+          if (res.data.code === 200) {
+            console.log("登录成功res", res);
+            wx.setStorageSync('token', 'Bearer ' + res.data.data.access_token);
+            wx.setStorageSync('clientid', '2aeeae6eada0ddca866d775707cc5b11');
+
+            // 4. 获取用户信息并跳转
+            this.getUser();
+          } else {
+            wx.showToast({
+              title: res.data.msg || '登录失败',
+              icon: 'none'
+            });
+            this.setData({ loading: false });
+          }
+        },
+        fail: err => {
+          console.error('登录请求失败', err);
+          wx.showToast({
+            title: "服务器连接失败",
+            icon: "none"
+          });
+          this.setData({ loading: false });
+        },
+        complete: () => {
+          wx.hideLoading();
+        }
+      });
+    } catch (error) {
+      console.error('登录流程异常', error);
+      this.setData({ loading: false });
+      wx.hideLoading();
+    }
   },
 
-  async getRole() {
-    const res = await app.apiRequest('/system/user/getInfo', 'GET')
-    const roles = res.data.user.roles
-    const userInfo = {
-      userName: '用户' + res.data.user.userName,
-      userRole: res.data.user.roles,
-      userPhone: res.data.user.userName
+  async getUser() {
+    try {
+      const res = await app.apiRequest('/system/user/getInfo', 'GET');
+      if (res.code === 200) {
+        const user = res.data.user;
+        const roles = user.roles;
+        const userInfo = {
+          userName: '用户' + user.userName,
+          userRole: roles,
+          userPhone: user.userName
+        };
+
+        let userRoleNames = roles.map(i => i.roleName);
+        let displayRole = userRoleNames.includes("维修工") ? "维修工" : "用户";
+
+        const finalUserInfo = {
+          ...userInfo,
+          userRole: displayRole
+        };
+
+        this.setData({ userInfo: finalUserInfo });
+        wx.setStorageSync('userInfo', finalUserInfo);
+        wx.setStorageSync('hasUserInfo', true);
+
+        wx.showToast({ title: '登录成功', icon: 'success' });
+
+        setTimeout(() => {
+          wx.redirectTo({
+            url: '/pages/login/role/role'
+          });
+        }, 1000);
+      } else {
+        throw new Error(res.msg || '获取用户信息失败');
+      }
+    } catch (error) {
+      console.error('获取用户信息失败', error);
+      wx.showToast({ title: '获取身份失败', icon: 'none' });
+      this.setData({ loading: false });
+
     }
-    this.setData({
-      userInfo: userInfo
-    })
-    wx.setStorageSync('userInfo', userInfo)
-    wx.setStorageSync('hasUserInfo', true)
-    let userRole = roles.map(i => i.roleName)
-    if (userRole.find(i => i === "维修工")) {
-      userRole = "维修工"
-    }
-    this.setData({
-      'userInfo.userRole': userRole
-    })
-    wx.setStorageSync('userInfo', this.data.userInfo)
-    console.log("userInfo", wx.getStorageSync('userInfo'))
-    wx.redirectTo({
-      url: '/pages/login/role/role'
-    })
   },
 
   async testLogin() {
@@ -144,6 +219,10 @@ Page({
     this.setData({
       agreed: !this.data.agreed
     });
+  },
+
+  toggleLocationAgreement() {
+    // 已删除手动授权逻辑
   },
 
   showUserAgreement() {

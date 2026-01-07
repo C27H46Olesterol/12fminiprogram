@@ -1,0 +1,16 @@
+<!--pages/com/com.wxml-->
+<view class="ad-container">
+  <image class="ad-image" src="/images/ad.png" mode="aspectFill"></image>
+  
+  <view class="skip-area" bindtap="goToNext">
+    <view class="skip-btn">
+      跳过 <text class="countdown">{{countdown}}s</text>
+    </view>
+  </view>
+
+  <!-- 底部品牌标识 -->
+  <view class="footer">
+    <image class="footer-logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="footer-text">颐尔福车载设备服务平台</text>
+  </view>
+</view>

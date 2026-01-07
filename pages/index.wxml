@@ -12,7 +12,7 @@
     </view>
 
     <view class="workbench-grid">
-      <!-- <view class="work-card" bindtap="handleInstall">
+      <view class="work-card" bindtap="handleInstall">
         <view class="icon-circle blue">
           <image class="work-icon" src="/images/icons/add.png"></image>
         </view>
@@ -26,7 +26,7 @@
         </view>
         <text class="work-title">维修设备</text>
         <text class="work-desc">故障诊断与处理</text>
-      </view> -->
+      </view>
 
       <view class="work-card" bindtap="handleManual">
         <view class="icon-circle green">
@@ -39,7 +39,7 @@
   </block>
 
   <!-- 2. 普通用户视图 (功能入口) -->
-  <block wx:else>
+  <block wx:if="{{userInfo.userRole === '普通用户'}}">
     <view class="worker-header user-mode">
       <view class="header-content">
         <text class="greeting">您好，{{userInfo.userName || "尊敬的用户"}}</text>
@@ -50,13 +50,13 @@
 
     <view class="workbench-grid">
       <!-- 报修申请 -->
-      <!-- <view class="work-card" bindtap="handleReport">
+      <view class="work-card" bindtap="handleReport">
         <view class="icon-circle teal">
           <image class="work-icon" src="/images/icons/repair-form.png"></image>
         </view>
         <text class="work-title">报修申请</text>
         <text class="work-desc">设备故障在线报修</text>
-      </view> -->
+      </view>
 
       <!-- 自助手册 -->
       <view class="work-card" bindtap="handleManual">
@@ -67,13 +67,54 @@
         <text class="work-desc">常见问题与操作指引</text>
       </view>
 
-      <!-- <view class="work-card" bindtap="handleReportLog">
+      <view class="work-card" bindtap="handleReportLog">
         <view class="icon-circle teal">
           <image class="work-icon" src="/images/icons/repair-form.png"></image>
         </view>
         <text class="work-title">报修记录</text>
         <text class="work-desc">查看报修进度</text>
-      </view> -->
+      </view>
+    </view>
+  </block>
+  
+  <!-- 3. 未登录用户视图 -->
+  <block wx:if="{{!hasUserInfo}}">
+    <view class="login-prompt-card">
+      <view class="prompt-header">
+        <image class="prompt-icon" src="/images/logo.png" mode="aspectFit"></image>
+        <text class="prompt-title">欢迎使用颐尔福服务平台</text>
+        <text class="prompt-subtitle">登录后可享受设备控制、报修申请等完整功能</text>
+      </view>
+      
+      <button class="login-action-btn" bindtap="handleLogin">
+        立即登录
+      </button>
+
+      <view class="feature-previews">
+        <view class="preview-item">
+          <icon type="success" size="14" color="#1677ff" />
+          <text>手机远程操控</text>
+        </view>
+        <view class="preview-item">
+          <icon type="success" size="14" color="#1677ff" />
+          <text>实时状态监控</text>
+        </view>
+        <view class="preview-item">
+          <icon type="success" size="14" color="#1677ff" />
+          <text>在线报修一键直达</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 即使未登录也允许查看手册 -->
+    <view class="workbench-grid" style="margin-top: 40rpx;">
+      <view class="work-card" bindtap="handleManual">
+        <view class="icon-circle green">
+          <image class="work-icon" src="/images/icons/manual.png"></image>
+        </view>
+        <text class="work-title">帮助与手册</text>
+        <text class="work-desc">查阅设备操作指引</text>
+      </view>
     </view>
   </block>
 
