@@ -3,9 +3,6 @@ const FormData = require('./formdata.js');
 
 //上传图片文件
 async function uploadImg(data) {
-  // let formData = new FormData();
-  // formData.appendFile(path);
-  // let data = formData.getData();
   const res = await app.apiRequest("/resource/oss/upload", "POST", data.buffer, data.contentType);
   return res.data;
 }

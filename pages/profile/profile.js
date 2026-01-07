@@ -18,14 +18,14 @@ Page({
   },
 
   checkLoginStatus() {
-    if(app.globalData.hasUserInfo && app.globalData.userInfo){
+    if (app.globalData.hasUserInfo && app.globalData.userInfo) {
       this.setData({
         hasUserInfo: app.globalData.hasUserInfo,
         userInfo: app.globalData.userInfo
       });
       console.log("缓存登陆信息校验1：hasUserInfo：", this.data.hasUserInfo)
       console.log("缓存登陆信息校验2：usserInfo", this.data.userInfo)
-    }else{
+    } else {
       console.log('用户未登录')
     }
   },
@@ -117,11 +117,11 @@ Page({
     // })
   },
 
-  // goResign() {
-  //   wx.navigateTo({
-  //     url: '/pages/profile/resign/resign',
-  //   })
-  // },
+  goResign() {
+    wx.navigateTo({
+      url: '/pages/login/resign/resign',
+    })
+  },
 
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
@@ -141,39 +141,49 @@ Page({
 
   //接口测试
   async apiTest() {
-    // this.getUserRole();
-    // this.goApply();
     wx.chooseMedia({
-      count: 3,
-      sizeType: ['compressed'],
+      count: 2,
+      mediaType: ['image'],
       sourceType: ['camera', 'album'],
-      success: (res) => {
-        // const newImages = [...currentImages, ...res.tempFilePaths];
-        console.log("选择的图片",res.tempFiles)
-        const result = this.uploadImages(res.tempFiles);
-        console.log("上传图片",result)
+      success: async (res) => {
+        console.log("选择的图片", res.tempFiles);
+        try {
+          wx.showLoading({ title: '上传中...' });
+          const results = await this.uploadImages(res.tempFiles);
+          console.log("上传成功结果:", results);
+          wx.hideLoading();
+          wx.showToast({ title: '上传完成' });
+        } catch (error) {
+          wx.hideLoading();
+          wx.showToast({ title: '上传出错', icon: 'error' });
+        }
       }
     });
-
   },
 
   async uploadImages(imagePaths) {
-    console.log(imagePaths.map(path => path.tempFilePath))
-    let formData = new FormData();
+    console.log("开始上传图片:", imagePaths.map(path => path.tempFilePath));
 
-    imagePaths.map(path => {
-      formData.appendFile("file",path.tempFilePath);
+    // 为每个图片路径创建一个上传 Promise
+    const uploadPromises = imagePaths.map(async (path) => {
+      let formData = new FormData();
+      formData.appendFile("file", path.tempFilePath);
+      let data = formData.getData();
+      try {
+        const res = await formAPI.uploadImg(data);
+        return res;
+      } catch (err) {
+        console.error(`图片 ${path.tempFilePath} 上传失败`, err);
+        throw err;
+      }
     });
 
-    let data = formData.getData();
-    const uploadPromises = formAPI.uploadImg(data);
     try {
       const results = await Promise.all(uploadPromises);
-      console.log("上传图片结果", results);
-      // 假设接口直接返回url或id，这里直接返回结果数组
+      console.log("所有图片上传成功:", results);
       return results;
     } catch (err) {
-      console.error("图片上传失败", err);
+      console.error("部分图片上传失败", err);
       throw err;
     }
   },

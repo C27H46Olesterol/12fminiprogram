@@ -146,7 +146,8 @@ Page({
 
       // 2. 模拟提交数据
       // const result = await app.apiRequest('/worker/apply', 'POST', { ... });
-      const result = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
+      // const result = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
+      const result = await app.apiRequest('')
       setTimeout(() => {
         wx.hideLoading();
         wx.showToast({
