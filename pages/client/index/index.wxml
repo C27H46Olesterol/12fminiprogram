@@ -147,7 +147,7 @@
                   </view>
                 </view>
                 <!-- 4. 取消配对按钮 -->
-                <view class="device-action-btn-red" catchtap="onUnpairDevice" data-index="{{index}}" data-item="{{item}}">
+                <view class="device-action-btn-red" catchtap="onUnpairDevice" data-index="{{index}}" data-item="{{item}}" wx:if="{{item.connectionType === 'bluetooth'}}">
                     <text class="delete-icon">×</text>
                   </view>
               </view>
@@ -237,11 +237,11 @@
         </view>
         <view class="display-item">
           <text class="display-label">出风温度</text>
-          <text class="display-value">{{deviceStatus.ot ? deviceStatus.ot  -50 : '--'}}°C</text>
+          <text class="display-value">{{deviceStatus.ot ? deviceStatus.ot-50 : '--'}}°C</text>
         </view>
         <view class="display-item">
           <text class="display-label">进风温度</text>
-          <text class="display-value">{{deviceStatus.it ? deviceStatus.it -50 : '--'}}°C</text>
+          <text class="display-value">{{deviceStatus.it ? deviceStatus.it-50 : '--'}}°C</text>
         </view>
       </view>
 
