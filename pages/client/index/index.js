@@ -169,6 +169,7 @@ Page({
     this.isPageActive = false; // 标记页面为非活跃状态
     this.clearAllTimers();
     console.log('onHide()事件触发，已清除所有定时器')
+    
   },
 
   onUnload() {
@@ -203,40 +204,42 @@ Page({
     const hasUserInfo = this.data.hasUserInfo
     if (userInfo && hasUserInfo) {
       console.log('加载已激活产品')
-      // 加载已激活产品
+      // 1. 加载云端已激活的4G/API产品
       const myProductsList = await this.formatActivateProduct()
 
+      // 2. 加载本地保存的蓝牙设备
+      const savedBTDevices = wx.getStorageSync('savedBTDevices') || [];
+
+      // 3. 合并列表 (4G设备在前，蓝牙设备在后)
+      const combinedList = [...myProductsList, ...savedBTDevices];
+
       this.setData({
-        myProducts: myProductsList
+        myProducts: myProductsList,
+        deviceList: combinedList
       })
 
       wx.setStorageSync('myProductsList', myProductsList)
 
       // 更新设备列表 (用于下拉菜单和遥控)
-      if (myProductsList && myProductsList.length > 0) {
+      if (combinedList.length > 0) {
         const savedsn = wx.getStorageSync('selectedDeviceImei');
         console.log('保存的设备选中信息', savedsn)
         let selectedIndex = -1;
         if (savedsn) {
-          selectedIndex = myProductsList.findIndex(d => d.sn === savedsn);
+          selectedIndex = combinedList.findIndex(d => d.sn === savedsn || d.imei === savedsn);
         }
-        this.setData({
-          deviceList: myProductsList,
-          selectedDeviceIndex: selectedIndex,
-          selectedDevice: myProductsList[selectedIndex],
-        });
 
         // 如果没找到之前的设备，默认选第一个
         if (selectedIndex === -1) {
           selectedIndex = 0;
-          if (myProductsList[0].imei) {
-            wx.setStorageSync('selectedDeviceImei', myProductsList[0].sn);
-          }
-          this.setData({
-            selectedDevice: myProductsList[selectedIndex]
-          })
+          wx.setStorageSync('selectedDeviceImei', combinedList[0].sn || combinedList[0].imei);
         }
-        // console.log('当前选中设备：', this.data.selectedDevice)
+
+        this.setData({
+          selectedDeviceIndex: selectedIndex,
+          selectedDevice: combinedList[selectedIndex],
+        });
+
         // 加载设备状态
         await this.loadDeviceStatus();
       } else {
@@ -248,7 +251,6 @@ Page({
         });
         wx.removeStorageSync('selectedDeviceImei');
       }
-
     }
   },
 
@@ -418,12 +420,19 @@ Page({
     this.stopAutoRefresh();
     const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
+
+    // 如果选择的是蓝牙设备，直接触发连接逻辑
+    if (device.connectionType === 'bluetooth') {
+      this._executeBTConnect(device);
+      return;
+    }
+
     this.setData({
       selectedDeviceIndex: index,
       selectedDevice: device,
       showDeviceModal: false
     });
-    wx.setStorageSync('selectedDeviceImei', device.sn);
+    wx.setStorageSync('selectedDeviceImei', device.sn || device.imei);
     wx.showToast({
       title: `已切换至 ${device.sn || '新设备'}`,
       icon: 'none'
@@ -439,36 +448,33 @@ Page({
 
     wx.showModal({
       title: '提示',
-      content: `确定要${device.connectionType === 'bluetooth' ? '断开' : '移除'}设备 ${device.name || device.sn} 吗？`,
+      content: `确定要${device.connectionType === 'bluetooth' ? '断开并移除' : '移除'}设备 ${device.name || device.sn} 吗？`,
       success: async (res) => {
         if (res.confirm) {
           if (device.connectionType === 'bluetooth') {
-            // 蓝牙设备断开连接
+            // 1. 尝试关闭蓝牙连接
             wx.closeBLEConnection({
               deviceId: device.deviceId,
-              success: (res) => {
-                console.log("断开蓝牙连接成功", res);
-              },
-              fail: (err) => {
-                console.error("断开蓝牙连接失败", err);
-              }
+              success: () => console.log("断开蓝牙连接成功"),
+              fail: (err) => console.error("断开蓝牙连接失败", err)
             });
+
+            // 2. 从本地存储中移除该蓝牙设备
+            let savedBTDevices = wx.getStorageSync('savedBTDevices') || [];
+            savedBTDevices = savedBTDevices.filter(d => d.deviceId !== device.deviceId);
+            wx.setStorageSync('savedBTDevices', savedBTDevices);
+
+            // 3. 从列表中移除
             this.removeDeviceFromList(index);
-            wx.closeBluetoothAdapter()
-            wx.showToast({ title: '已断开连接', icon: 'none' });
+            wx.showToast({ title: '已移除蓝牙设备', icon: 'none' });
           } else {
             // 4G设备，尝试调用解绑接口
             try {
-              // 如果是远程设备，通常需要调用解绑接口
-              // 假设存在 /pro/banding/unbind，如果不存在则仅本地移除
-              // const res = await app.apiRequest('/pro/banding/unbind', 'POST', { sn: device.sn });
               const res = await deviceApi.unbindDevice(device.sn)
-
               if (res && res.code == 200) {
                 this.removeDeviceFromList(index);
                 wx.showToast({ title: '解绑成功', icon: 'success' });
               } else {
-                // 如果API调用失败（或者接口不存在返回404等），询问用户是否强制移除本地记录
                 wx.showModal({
                   title: '解绑失败',
                   content: res.msg || '无法从服务器解绑，是否仅在本地移除？',
@@ -481,7 +487,6 @@ Page({
               }
             } catch (error) {
               console.error('解绑失败', error);
-              // 异常情况下提示本地移除
               this.removeDeviceFromList(index);
             }
           }
@@ -684,7 +689,7 @@ Page({
         if (!device.online) {
           console.log('设备不在线')
         } else {
-          this.getDeviceStatusByBluetooth();
+          // await this.getDeviceStatusByBluetooth();
         }
         return
       } else {
@@ -846,6 +851,8 @@ Page({
 
     wx.vibrateShort({ type: 'medium' });
     wx.showLoading({ title: '正在连接设备...', mask: true });
+    const device = this.data.selectedDevice;
+
     // 1. 获取最新设备状态
     await this.loadDeviceStatus(true)
     console.log('开机指令发送后-设备在线状态查询结果')
@@ -1404,37 +1411,81 @@ Page({
     this.setData({ showBluetoothModal: false });
   },
 
-  //连接蓝牙
+  //连接蓝牙 (触发自搜索列表)
   connectToBluetooth(e) {
     const deviceId = e.currentTarget.dataset.id;
     const device = this.data.bluetoothDevices.find(d => d.deviceId === deviceId);
+    if (device) {
+      this._executeBTConnect(device);
+    }
+  },
 
-    wx.showLoading({ title: '正在连接...' });
-    this.stopSearch();
+  // 核心蓝牙连接执行逻辑
+  _executeBTConnect(device) {
+    const deviceId = device.deviceId;
 
+    // 如果已经在连接中且是同一个设备，不再重复操作
+    if (this.data.isBluetoothConnected && this.data.connectedDevice && this.data.connectedDevice.deviceId === deviceId) {
+      this.setData({
+        selectedDevice: this.data.deviceList.find(d => d.displayName === device.displayName || d.deviceId === deviceId),
+        showBluetoothModal: false,
+        showDeviceModal: false
+      });
+      wx.showToast({ title: '已连接', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '正在初始化蓝牙...', mask: true });
+
+    // 必须首先初始化蓝牙适配器，否则会报 "not init" 错误
+    wx.openBluetoothAdapter({
+      success: (res) => {
+        console.log('蓝牙适配器初始化成功');
+        this.stopSearch(); // 停止可能的搜索
+        this._startBLEConnection(deviceId, device);
+      },
+      fail: (err) => {
+        console.error('蓝牙初始化失败', err);
+        wx.hideLoading();
+        if (err.errCode === 10001) {
+          wx.showModal({
+            title: '提示',
+            content: '请检查手机蓝牙是否开启',
+            showCancel: false
+          });
+        } else {
+          wx.showToast({ title: '蓝牙初始化失败', icon: 'none' });
+        }
+      }
+    });
+  },
+
+  // 内部方法：执行实际的蓝牙连接
+  _startBLEConnection(deviceId, device) {
+    wx.showLoading({ title: '正在连接设备...', mask: true });
     wx.createBLEConnection({
       deviceId,
       success: (res) => {
         console.log('蓝牙连接成功', res);
 
-        // 将蓝牙设备添加到设备列表
+        // 构建蓝牙设备元数据对象
         const bluetoothDevice = {
           id: 'bt_' + deviceId,
           name: device.name || device.localName || '蓝牙设备',
-          sn: device.name || device.localName || '蓝牙设备',
+          sn: device.sn || device.name || device.localName || '蓝牙设备',
           imei: deviceId,
           deviceId: deviceId,
-          activationDate: '--',
-          warrantyDate: '--',
-          image: '',
+          activationDate: device.activationDate || '--',
+          warrantyDate: device.warrantyDate || '--',
+          image: device.image || '',
           status: 'active',
           online: true,
-          connectionType: 'bluetooth', // 标记为蓝牙连接
-          signalStrength: 5 // 蓝牙默认满信号
+          connectionType: 'bluetooth',
+          signalStrength: 5
         };
 
+        // 更新本地列表状态
         let deviceList = this.data.deviceList || [];
-        // 检查是否已存在该蓝牙设备
         const existingIndex = deviceList.findIndex(d => d.deviceId === deviceId);
         if (existingIndex === -1) {
           deviceList.push(bluetoothDevice);
@@ -1442,24 +1493,33 @@ Page({
           deviceList[existingIndex] = bluetoothDevice;
         }
 
+        const newSelectedIndex = deviceList.findIndex(d => d.deviceId === deviceId);
+
         this.setData({
           connectedDevice: device,
           isBluetoothConnected: true,
           showBluetoothModal: false,
+          showDeviceModal: false,
           deviceList: deviceList,
-          selectedDeviceIndex: deviceList.length - 1,
-          selectedDevice: bluetoothDevice
+          selectedDeviceIndex: newSelectedIndex,
+          selectedDevice: bluetoothDevice,
+          'deviceStatus.online': true
         });
-        this.setData({
-          deviceStatus: {
-            ... this.data.deviceStatus,
-            online: true
-          }
-        })
-        console.log('蓝牙设备选中：', this.data.selectedDevice)
+
+        // 持久化保存
+        let savedBTDevices = wx.getStorageSync('savedBTDevices') || [];
+        const btIndex = savedBTDevices.findIndex(d => d.deviceId === deviceId);
+        if (btIndex === -1) {
+          savedBTDevices.push(bluetoothDevice);
+        } else {
+          savedBTDevices[btIndex] = bluetoothDevice;
+        }
+        wx.setStorageSync('savedBTDevices', savedBTDevices);
+        wx.setStorageSync('selectedDeviceImei', bluetoothDevice.sn);
+
         wx.showToast({ title: '连接成功', icon: 'success' });
 
-        // 获取服务列表
+        // 获取服务并开始监听
         this.getBLEServices(deviceId);
       },
       fail: (err) => {
@@ -1657,11 +1717,9 @@ Page({
       value: buffer,
       success: (res) => {
         console.log('[蓝牙发送] 查询指令发送成功');
-        console.log('指令发送返回信息', res)
         // 保存最后一次发送的指令（完整buffer转数组保存）
-        // 转换 ArrayBuffer 为数组
         const sentBytes = [];
-        for (let i = 0; i < 12; i++) sentBytes.push(res.ArrayBuffer.getUint8(i));
+        for (let i = 0; i < 12; i++) sentBytes.push(dataView.getUint8(i));
         // wx.setStorageSync('lastCommand', sentBytes);
       },
       fail: (err) => {
