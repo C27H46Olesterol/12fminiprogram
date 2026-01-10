@@ -169,13 +169,24 @@ Page({
     this.isPageActive = false; // 标记页面为非活跃状态
     this.clearAllTimers();
     console.log('onHide()事件触发，已清除所有定时器')
-    
+
+    // 触发蓝牙监听，并开启后台主动查询定时器
+    if (this.data.isBluetoothConnected) {
+      console.log('onHide触发：启动后台蓝牙状态监听与轮询');
+      // this.startBluetoothDataListener();
+
+      // 每3秒向蓝牙设备发送状态查询指令
+      this.backgroundBTInterval = setInterval(() => {
+        console.log('[Background] 执行蓝牙状态主动查询');
+        // this.getDeviceStatusByBluetooth();
+      }, 3000);
+    }
   },
 
   onUnload() {
     this.isPageActive = false; // 标记页面为非活跃状态
     this.clearAllTimers();
-    console.log('onUnload()事件触发，已清除所有定时器')
+    console.log('onUnload()事件触发，已清除所有定时器和连接')
   },
 
   //缓存登陆信息检查
@@ -686,10 +697,10 @@ Page({
       }
       if (device.connectionType === 'bluetooth') {
         console.log('连接蓝牙设备：', device)
-        if (!device.online) {
-          console.log('设备不在线')
+        if (this.data.isBluetoothConnected) {
+          // this.getDeviceStatusByBluetooth();
         } else {
-          // await this.getDeviceStatusByBluetooth();
+          console.log('蓝牙未连接，跳过状态查询')
         }
         return
       } else {
@@ -774,26 +785,27 @@ Page({
     console.log("计时器启动状态查询deiveiceOnline:", deiveiceOnline);
     console.log("计时器启动状态查询selectedDevice:", selectedDevice);
 
-    //登陆后，选中设备后开始刷新
-    if (userInfo && hasUserInfo && deiveiceOnline && selectedDevice) {
-
+    // 登录后，选中设备且设备在线（或蓝牙已连接）时开始刷新
+    if (userInfo && hasUserInfo && selectedDevice && (deiveiceOnline || this.data.isBluetoothConnected)) {
       this.setData({ showRefreshNotify: false });
 
-      // 清除旧的计时器
+      // 清除旧的不活跃计时器
       if (this.inactivityTimeoutId) {
         clearTimeout(this.inactivityTimeoutId);
       }
 
-      // 启动新的不活跃计时器
+      // 启动新的不活跃计时器 (5分钟无操作则停止自动刷新)
       this.inactivityTimeoutId = setTimeout(() => {
         this.autoStopRefresh();
       }, 300 * 1000);
 
       // 如果刷新定时器没启动，则启动它
       if (!this.refreshIntervalId) {
-        console.log('每s刷新启动')
+        console.log('[Timer] 启动3秒自动轮询');
         this.startAutoRefresh();
       }
+    } else {
+      console.log('[Timer] 未满足启动条件:', { userInfo: !!userInfo, online: deiveiceOnline, connected: this.data.isBluetoothConnected, device: !!selectedDevice });
     }
 
   },
@@ -836,6 +848,16 @@ Page({
     if (this.refreshIntervalId) {
       clearInterval(this.refreshIntervalId);
       this.refreshIntervalId = null;
+    }
+    // 清除后台蓝牙查询定时器
+    if (this.backgroundBTInterval) {
+      clearInterval(this.backgroundBTInterval);
+      this.backgroundBTInterval = null;
+    }
+    // 清除恢复刷新的延时器
+    if (this.resumeTimer) {
+      clearTimeout(this.resumeTimer);
+      this.resumeTimer = null;
     }
   },
 
@@ -1231,6 +1253,16 @@ Page({
     } catch (err) {
       console.error('指令发送失败:', err);
       wx.showToast({ title: '网络错误', icon: 'none' });
+    } finally {
+      // 指令发送结束后，延迟 2 秒恢复自动刷新
+      // 这里的延迟是为了等待设备状态在服务器/硬件端同步完成
+      if (this.resumeTimer) clearTimeout(this.resumeTimer);
+      this.resumeTimer = setTimeout(() => {
+        if (this.isPageActive) {
+          console.log('[Remote] 恢复自动刷新');
+          this.resetInactivityTimer();
+        }
+      }, 2000);
     }
   },
 
@@ -1633,21 +1665,6 @@ Page({
       dataView.setUint8(3 + i, data[i]);
     }
 
-    //定时指令
-    if (deviceStatus.timer) {
-      // 修改为 0x03 指令格式
-      dataView.setUint8(2, 0x03);
-
-      let timerData = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
-      // timer[0]和timer[1]代表定时的时间，取值范围从1-480
-      timerData[0] = (deviceStatus.timer >> 8) & 0xFF;
-      timerData[1] = deviceStatus.timer & 0xFF;
-
-      for (let i = 0; i < 9; i++) {
-        dataView.setUint8(3 + i, timerData[i]);
-      }
-    }
-
     // 计算校验位 (逻辑和取低8位，再取反)
     let sum = 0;
     for (let i = 0; i < 11; i++) {
@@ -1686,6 +1703,55 @@ Page({
         }
       }
     });
+  },
+
+  //发送定时指令
+  sendBluetoothCommandTimer(){
+
+    const buffer = new ArrayBuffer(12);
+    const dataView = new DataView(buffer);
+    // 修改为 0x03 指令格式
+    dataView.setUint8(2, 0x03);
+
+    let timerData = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    // timer[0]和timer[1]代表定时的时间，取值范围从1-480
+    timerData[1] = (deviceStatus.timer >> 8) & 0xFF;
+    timerData[0] = deviceStatus.timer & 0xFF;
+
+    for (let i = 0; i < 9; i++) {
+      dataView.setUint8(3 + i, timerData[i]);
+    }
+
+    let hexStr = "";
+    for (let i = 0; i < dataView.byteLength; i++) {
+      let b = dataView.getUint8(i).toString(16).toUpperCase();
+      hexStr += (b.length === 1 ? "0" + b : b) + " ";
+    }
+    console.log('[蓝牙指令] 发送16进制:', hexStr);
+
+    wx.writeBLECharacteristicValue({
+      deviceId: this.data.connectedDevice.deviceId,
+      serviceId: this.data.serviceId,
+      characteristicId: this.data.characteristicId,
+      value: buffer,
+      success: (res) => {
+        console.log('[蓝牙发送] 指令发送成功');
+        console.log('指令发送返回信息', res)
+        // 保存最后一次发送的指令（完整buffer转数组保存）
+        // 转换 ArrayBuffer 为数组
+        const sentBytes = [];
+        for (let i = 0; i < 12; i++) sentBytes.push(dataView.getUint8(i));
+        // wx.setStorageSync('lastCommand', sentBytes);
+      },
+      fail: (err) => {
+        console.error('[蓝牙发送] 指令发送失败', err);
+        if (err.errCode === 10006) {
+          this.setData({ isBluetoothConnected: false });
+          wx.showToast({ title: '蓝牙连接已断开', icon: 'none' });
+        }
+      }
+    });
+
   },
 
   //蓝牙查询设备状态
@@ -1739,6 +1805,13 @@ Page({
   parseBluetoothData(buffer) {
     const dataView = new DataView(buffer);
 
+    let hexStr = "";
+    for (let i = 0; i < dataView.byteLength; i++) {
+      let b = dataView.getUint8(i).toString(16).toUpperCase();
+      hexStr += (b.length === 1 ? "0" + b : b) + " ";
+    }
+    console.log('[蓝牙指令] 接收16进制:', hexStr);
+
     // 验证帧头
     if (dataView.getUint8(0) !== 0x55 || dataView.getUint8(1) !== 0x3D) {
       console.warn('[蓝牙接收] 无效的帧头');
@@ -1761,10 +1834,10 @@ Page({
     const modeValue = (byte3 >> 4) & 0x07;
     // const modeNames = ['通风', '睡眠', '制冷', '强劲', '自动', '制热', '除湿'];
     const modeKeys = ['1', '2', '3', '4', '5', '6', '7'];
-    parsedData.mode = modeValue;
+    parsedData.mode = modeValue - 1;
 
     // bit3-0: 风速
-    parsedData.windSpeed = (byte3 & 0x0F) + 1;
+    parsedData.windSpeed = (byte3 & 0x0F);
 
     //byte 4:功能标志位
     const byte4 = dataView.getUint8(4);
