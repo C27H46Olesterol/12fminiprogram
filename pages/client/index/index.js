@@ -170,17 +170,17 @@ Page({
     this.clearAllTimers();
     console.log('onHide()事件触发，已清除所有定时器')
 
-    // 触发蓝牙监听，并开启后台主动查询定时器
-    if (this.data.isBluetoothConnected) {
-      console.log('onHide触发：启动后台蓝牙状态监听与轮询');
-      // this.startBluetoothDataListener();
+    // // 触发蓝牙监听，并开启后台主动查询定时器
+    // if (this.data.isBluetoothConnected) {
+    //   console.log('onHide触发：启动后台蓝牙状态监听与轮询');
+    //   // this.startBluetoothDataListener();
 
-      // 每3秒向蓝牙设备发送状态查询指令
-      this.backgroundBTInterval = setInterval(() => {
-        console.log('[Background] 执行蓝牙状态主动查询');
-        // this.getDeviceStatusByBluetooth();
-      }, 3000);
-    }
+    //   // 每3秒向蓝牙设备发送状态查询指令
+    //   this.backgroundBTInterval = setInterval(() => {
+    //     console.log('[Background] 执行蓝牙状态主动查询');
+    //     // this.getDeviceStatusByBluetooth();
+    //   }, 3000);
+    // }
   },
 
   onUnload() {
@@ -661,7 +661,6 @@ Page({
       'deviceStatus.clock': minutes > 0,
       'deviceStatus.timer': minutes
     });
-
     this.bufferCommand('setTimer', minutes);
 
     const toastTitle = minutes > 0 ? `已设置定时 ${this.formatTimer(minutes)}` : '定时已取消';
@@ -1236,8 +1235,13 @@ Page({
 
       // 如果蓝牙已连接，尝试通过蓝牙发送
       if (this.data.isBluetoothConnected && this.data.connectedDevice) {
-        console.log('[Bluetooth] 尝试通过蓝牙发送指令:', this.data.deviceStatus);
-        this.sendBluetoothCommand(this.data.deviceStatus);
+        if (action === 'setTimer') {
+          console.log('[Bluetooth] 触发定时指令发送:', this.data.deviceStatus.timer);
+          this.sendBluetoothCommandTimer();
+        } else {
+          console.log('[Bluetooth] 尝试通过蓝牙发送普通指令');
+          this.sendBluetoothCommand(this.data.deviceStatus);
+        }
       }
       else if (device.connectionType === '4g') {
         const res = await deviceApi.setDeviceDesiredProperty(deviceName, property);
@@ -1256,13 +1260,13 @@ Page({
     } finally {
       // 指令发送结束后，延迟 2 秒恢复自动刷新
       // 这里的延迟是为了等待设备状态在服务器/硬件端同步完成
-      if (this.resumeTimer) clearTimeout(this.resumeTimer);
-      this.resumeTimer = setTimeout(() => {
-        if (this.isPageActive) {
-          console.log('[Remote] 恢复自动刷新');
-          this.resetInactivityTimer();
-        }
-      }, 2000);
+      // if (this.resumeTimer) clearTimeout(this.resumeTimer);
+      // this.resumeTimer = setTimeout(() => {
+      //   if (this.isPageActive) {
+      //     console.log('[Remote] 恢复自动刷新');
+      //     this.resetInactivityTimer();
+      //   }
+      // }, 2000);
     }
   },
 
@@ -1634,9 +1638,9 @@ Page({
 
     //byte 4 照明 扫风 负离子 0.5度标志
     if (deviceStatus.light === 1) { data[1] |= 0x01 };
-    if (deviceStatus.fu === 1) data[1] |= 0x08;
-    if (deviceStatus.sxbf === 1) data[1] |= 0x10;
-    if (deviceStatus.zybf === 1) data[1] |= 0x20;
+    if (deviceStatus.fu === 1) { data[1] |= 0x08 };
+    if (deviceStatus.sxbf === 1) { data[1] |= 0x10 };
+    if (deviceStatus.zybf === 1) { data[1] |= 0x20 };
 
     // Byte 5: Temp Mapping
     let realTemp = Math.floor(deviceStatus.temp / 10);
@@ -1706,28 +1710,41 @@ Page({
   },
 
   //发送定时指令
-  sendBluetoothCommandTimer(){
-
+  sendBluetoothCommandTimer() {
+    const deviceStatus = this.data.deviceStatus;
     const buffer = new ArrayBuffer(12);
     const dataView = new DataView(buffer);
+
+    // 帧头
+    dataView.setUint8(0, 0xAA);
+    dataView.setUint8(1, 0xF1);
     // 修改为 0x03 指令格式
     dataView.setUint8(2, 0x03);
 
-    let timerData = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
+    let timerData = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
     // timer[0]和timer[1]代表定时的时间，取值范围从1-480
+    // 根据用户最新修改：timerData[1]放高位，timerData[0]放低位
     timerData[1] = (deviceStatus.timer >> 8) & 0xFF;
     timerData[0] = deviceStatus.timer & 0xFF;
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 8; i++) {
       dataView.setUint8(3 + i, timerData[i]);
     }
+
+    // 计算校验位 (逻辑和取低8位，再取反)
+    let sum = 0;
+    for (let i = 0; i < 11; i++) {
+      sum += dataView.getUint8(i);
+    }
+    let checksum = (~(sum & 0xFF)) & 0xFF;
+    dataView.setUint8(11, checksum);
 
     let hexStr = "";
     for (let i = 0; i < dataView.byteLength; i++) {
       let b = dataView.getUint8(i).toString(16).toUpperCase();
       hexStr += (b.length === 1 ? "0" + b : b) + " ";
     }
-    console.log('[蓝牙指令] 发送16进制:', hexStr);
+    console.log('[蓝牙指令] 发送定时16进制:', hexStr);
 
     wx.writeBLECharacteristicValue({
       deviceId: this.data.connectedDevice.deviceId,
@@ -1735,23 +1752,17 @@ Page({
       characteristicId: this.data.characteristicId,
       value: buffer,
       success: (res) => {
-        console.log('[蓝牙发送] 指令发送成功');
+        console.log('[蓝牙发送] 定时指令发送成功');
         console.log('指令发送返回信息', res)
-        // 保存最后一次发送的指令（完整buffer转数组保存）
-        // 转换 ArrayBuffer 为数组
-        const sentBytes = [];
-        for (let i = 0; i < 12; i++) sentBytes.push(dataView.getUint8(i));
-        // wx.setStorageSync('lastCommand', sentBytes);
       },
       fail: (err) => {
-        console.error('[蓝牙发送] 指令发送失败', err);
+        console.error('[蓝牙发送] 定时指令发送失败', err);
         if (err.errCode === 10006) {
           this.setData({ isBluetoothConnected: false });
           wx.showToast({ title: '蓝牙连接已断开', icon: 'none' });
         }
       }
     });
-
   },
 
   //蓝牙查询设备状态
@@ -1833,7 +1844,7 @@ Page({
     // bit6-4: 模式
     const modeValue = (byte3 >> 4) & 0x07;
     // const modeNames = ['通风', '睡眠', '制冷', '强劲', '自动', '制热', '除湿'];
-    const modeKeys = ['1', '2', '3', '4', '5', '6', '7'];
+    // const modeKeys = ['1', '2', '3', '4', '5', '6', '7'];
     parsedData.mode = modeValue - 1;
 
     // bit3-0: 风速
@@ -1856,7 +1867,8 @@ Page({
 
     //byte 5:进风温度
     const byte5 = dataView.getUint8(5);
-    parsedData.it = byte5;
+    let formatByte5 = byte5;
+    parsedData.it = formatByte5;
 
     //byte 6:出风温度
     const byte6 = dataView.getUint8(6);
@@ -1865,7 +1877,7 @@ Page({
     //byte 7 - 8:电瓶电压
     const byte7 = dataView.getUint8(7);
     const byte8 = dataView.getUint8(8);
-    parsedData.voltage = (byte8 * 256 + byte7) % 10;
+    parsedData.voltage = (byte8 * 256 + byte7);
 
     //byte 9 - 10:定时剩余时间 单位分钟
     const byte9 = dataView.getUint8(9);
@@ -1910,7 +1922,7 @@ Page({
 
     //byte 14:设定温度
     const byte14 = dataView.getUint8(14);
-    if (byte14 < 18) {
+    if (byte14 < 17) {
       parsedData.setTemp = byte14 + 15;
     }
     else if (byte > 29) {
