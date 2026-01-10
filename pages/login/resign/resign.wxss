@@ -262,3 +262,52 @@ page {
   color: #FFFFFF;
   opacity: 1;
 }
+
+/* 动态列表样式 */
+.dynamic-list {
+  margin-bottom: 20rpx;
+}
+
+.dynamic-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+  background: #F9F9F9;
+  border-radius: 12rpx;
+  padding-right: 20rpx;
+  border: 1rpx solid #EEEEEE;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.remove-item-btn {
+  padding: 10rpx 20rpx;
+  color: #F44336;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.add-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx;
+  color: #1976D2;
+  font-size: 28rpx;
+  border: 2rpx dashed #1976D2;
+  border-radius: 12rpx;
+  margin-top: 10rpx;
+  background: rgba(25, 118, 210, 0.02);
+}
+
+.add-item-btn:active {
+  background: rgba(25, 118, 210, 0.05);
+}
+
+.add-btn-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+  font-weight: bold;
+}

@@ -13,6 +13,37 @@
   <view class="form-container">
     <view class="form-card">
       <view class="card-title">店铺信息</view>
+      <!-- 姓名 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>姓名</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="text" 
+          placeholder="请输入您的姓名" 
+          placeholder-class="input-placeholder"
+          value="{{formData.userName}}" 
+          bindinput="onUserNameInput"
+        />
+      </view>
+
+      <!-- 联系方式 -->
+      <view class="form-group">
+        <view class="form-label">
+          <text>联系方式</text>
+          <text class="required-mark">*</text>
+        </view>
+        <input 
+          class="form-input" 
+          type="number" 
+          placeholder="请输入您的联系电话" 
+          placeholder-class="input-placeholder"
+          value="{{formData.contactPhone}}" 
+          bindinput="onContactPhoneInput"
+        />
+      </view>
 
       <!-- 店面名称 -->
       <view class="form-group">
@@ -116,6 +147,31 @@
             <text class="upload-text">上传执照</text>
           </view>
         </view>
+      </view>
+    </view>
+
+        <!-- 经销商信息 (选填) -->
+    <view class="form-card">
+      <view class="card-title">经销商信息(选填)</view>
+      <view class="dynamic-list">
+        <view class="dynamic-item" wx:for="{{formData.distributors}}" wx:key="index">
+          <input 
+            class="form-input flex-1" 
+            type="text" 
+            placeholder="经销商编号或手机号" 
+            placeholder-class="input-placeholder"
+            value="{{item}}" 
+            data-index="{{index}}"
+            bindinput="onDistributorInput"
+          />
+          <view class="remove-item-btn" bindtap="onRemoveDistributor" data-index="{{index}}" wx:if="{{formData.distributors.length > 1}}">
+            <text class="remove-icon">移除</text>
+          </view>
+        </view>
+      </view>
+      <view class="add-item-btn" bindtap="onAddDistributor">
+        <text class="add-btn-icon">+</text>
+        <text>添加经销商信息</text>
       </view>
     </view>
 

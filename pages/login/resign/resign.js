@@ -10,6 +10,9 @@ Page({
     formData: {
       storeName: '',
       storeAddress: '',
+      userName: '',
+      contactPhone: '',
+      distributors: [''],
       storeImages: [],
       licenseImages: []
     },
@@ -21,7 +24,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-    
+
     wx.navigateTo({
       url: '/pages/index',
     })
@@ -40,6 +43,47 @@ Page({
       'formData.storeAddress': e.detail.value
     });
     this.checkCanSubmit();
+  },
+
+  onUserNameInput(e) {
+    this.setData({
+      'formData.userName': e.detail.value
+    });
+    this.checkCanSubmit();
+  },
+
+  onContactPhoneInput(e) {
+    this.setData({
+      'formData.contactPhone': e.detail.value
+    });
+    this.checkCanSubmit();
+  },
+
+  // 经销商信息处理
+  onDistributorInput(e) {
+    const index = e.currentTarget.dataset.index;
+    const value = e.detail.value;
+    const distributors = [...this.data.formData.distributors];
+    distributors[index] = value;
+    this.setData({
+      'formData.distributors': distributors
+    });
+  },
+
+  onAddDistributor() {
+    const distributors = [...this.data.formData.distributors, ''];
+    this.setData({
+      'formData.distributors': distributors
+    });
+  },
+
+  onRemoveDistributor(e) {
+    const index = e.currentTarget.dataset.index;
+    const distributors = [...this.data.formData.distributors];
+    distributors.splice(index, 1);
+    this.setData({
+      'formData.distributors': distributors
+    });
   },
 
   // 通用图片选择逻辑
@@ -119,11 +163,44 @@ Page({
     });
   },
 
+  // 图片上传逻辑
+  uploadFile(filePath) {
+    return new Promise((resolve, reject) => {
+      const baseURL = "https://ha.musenyu.cn"
+      wx.uploadFile({
+        url: baseURL + '/resource/oss/upload',
+        filePath: filePath,
+        name: 'file',
+        header: {
+          'Authorization': wx.getStorageSync("token"),
+          'clientid': wx.getStorageSync("clientid")
+        },
+        success: (res) => {
+          try {
+            const data = JSON.parse(res.data);
+            if (data.code === 200 || data.code === 0) {
+              resolve(data.data.url || data.data); // 根据后端返回结构调整
+            } else {
+              reject(new Error(data.msg || '上传失败'));
+            }
+          } catch (e) {
+            reject(new Error('解析上传结果失败'));
+          }
+        },
+        fail: (err) => {
+          reject(err);
+        }
+      });
+    });
+  },
+
   // 检查是否可提交
   checkCanSubmit() {
-    const { storeName, storeAddress, storeImages, licenseImages } = this.data.formData;
+    const { storeName, storeAddress, userName, contactPhone, storeImages, licenseImages } = this.data.formData;
     const isValid = storeName.trim() &&
       storeAddress.trim() &&
+      userName.trim() &&
+      contactPhone.trim() &&
       storeImages.length > 0 &&
       licenseImages.length > 0;
 
@@ -140,15 +217,36 @@ Page({
     wx.showLoading({ title: '正在提交...' });
 
     try {
-      // 1. 模拟上传图片
-      // const storeImgUrls = await this.uploadImages(this.data.formData.storeImages);
-      // const licenseImgUrls = await this.uploadImages(this.data.formData.licenseImages);
+      const { formData } = this.data;
 
-      // 2. 模拟提交数据
-      // const result = await app.apiRequest('/worker/apply', 'POST', { ... });
-      // const result = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
-      const result = await app.apiRequest('')
-      setTimeout(() => {
+      // 1. 上传图片 (这里由于接口只接收单个字符串，通常取第一张)
+      let storePhoto = '';
+      if (formData.storeImages.length > 0) {
+        storePhoto = await this.uploadFile(formData.storeImages[0]);
+      }
+
+      let businessLicense = '';
+      if (formData.licenseImages.length > 0) {
+        businessLicense = await this.uploadFile(formData.licenseImages[0]);
+      }
+
+      // 2. 构造提交参数
+      const payload = {
+        storeName: formData.storeName,
+        repairName: formData.userName,
+        storeAddress: formData.storeAddress,
+        storePhoto: storePhoto,
+        businessLicense: businessLicense,
+        contactName: formData.userName,
+        contactPhone: formData.contactPhone,
+        // 如果后端支持，也可以把经销商信息带上
+        distributors: formData.distributors.filter(item => item.trim() !== '')
+      };
+
+      // 3. 提交数据
+      const result = await app.apiRequest('/pro/repairInfo/submit', 'POST', payload);
+
+      if (result && (result.code === 200 || result.code === 0)) {
         wx.hideLoading();
         wx.showToast({
           title: '提交成功，请等待审核',
@@ -159,12 +257,15 @@ Page({
         setTimeout(() => {
           wx.navigateBack();
         }, 2000);
-      }, 1500);
+      } else {
+        throw new Error(result.msg || '提交失败');
+      }
 
     } catch (error) {
+      console.error('申请提交失败:', error);
       wx.hideLoading();
       wx.showToast({
-        title: '提交失败，请重试',
+        title: error.message || '提交失败，请重试',
         icon: 'none'
       });
       this.setData({ isSubmitting: false });
