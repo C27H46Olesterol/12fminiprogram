@@ -1,0 +1,80 @@
+/* pages/login/dealer/dealer.wxss */
+.container {
+  padding: 30rpx;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.dealer-list {
+  margin-bottom: 120rpx;
+}
+
+.dealer-card {
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.dealer-card:active {
+  transform: scale(0.98);
+}
+
+.info-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.nickname {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 26rpx;
+}
+
+.info-icon {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 12rpx;
+  opacity: 0.7;
+}
+
+.info-text {
+  flex: 1;
+}
+
+.add-btn-container {
+  position: fixed;
+  bottom: 40rpx;
+  left: 30rpx;
+  right: 30rpx;
+  z-index: 100;
+}
+
+.btn-primary {
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 45rpx;
+  background: linear-gradient(135deg, #1677ff, #0050b3);
+  box-shadow: 0 8rpx 20rpx rgba(22, 119, 255, 0.2);
+  font-size: 32rpx;
+  font-weight: 500;
+}

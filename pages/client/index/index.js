@@ -1432,6 +1432,7 @@ Page({
       this.searchCountdown = null;
     }
     wx.stopBluetoothDevicesDiscovery();
+    // wx.offBluetoothDeviceFound();
     this.setData({ isSearchingBluetooth: false });
   },
 

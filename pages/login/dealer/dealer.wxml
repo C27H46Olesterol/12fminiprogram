@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="dealer-list">
+    <block wx:for="{{dealers}}" wx:key="id">
+      <view class="card dealer-card">
+        <view class="dealer-info">
+          <view class="info-top">
+            <text class="nickname">{{item.nickname}}</text>
+            <view class="status-tag {{item.status === 1 ? 'status-resolved' : (item.status === 0 ? 'status-processing' : 'status-cancelled')}}">
+              {{item.statusText}}
+            </view>
+          </view>
+          <view class="info-bottom">
+            <view class="info-item">
+              <image class="info-icon" src="/images/icons/phone.png" mode="aspectFit"></image>
+              <text class="info-text">联系方式：{{item.phone}}</text>
+            </view>
+            <view class="info-item">
+              <image class="info-icon" src="/images/icons/wrench.png" mode="aspectFit"></image>
+              <text class="info-text">经营品牌：{{item.brands}}</text>
+            </view>
+            <view class="info-item">
+              <image class="info-icon" src="/images/icons/position.png" mode="aspectFit"></image>
+              <text class="info-text">所属地区：{{item.region}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+  
+  <view class="add-btn-container">
+    <button class="btn btn-primary btn-block" bindtap="onAddDealer">添加经销商</button>
+  </view>
+</view>

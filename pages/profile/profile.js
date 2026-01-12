@@ -123,6 +123,12 @@ Page({
     })
   },
 
+  goDealer(){
+    wx.navigateTo({
+      url: '/pages/login/dealer/dealer',
+    })
+  },
+
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
     if (res.data.code === 200) {

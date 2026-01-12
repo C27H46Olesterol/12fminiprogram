@@ -14,7 +14,9 @@
     "pages/worker/repairLog/repairLog",
     "pages/worker/activateLog/activateLog",
     "pages/client/issuesLog/issuesLog",
-    "pages/client/devices/devices"
+    "pages/client/devices/devices",
+    "pages/login/dealer/dealer",
+    "pages/profile/update/update"
   ],
   "window": {
     "backgroundTextStyle": "light",
