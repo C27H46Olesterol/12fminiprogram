@@ -1,2 +1,61 @@
-<!--pages/update/update.wxml-->
-<text>pages/update/update.wxml</text>
+<view class="container">
+  <!-- 设备选择 -->
+  <view class="card select-card">
+    <view class="label">当前设备</view>
+    <picker bindchange="onDeviceChange" value="{{deviceIndex}}" range="{{devices}}" range-key="name">
+      <view class="picker-value">
+        <text>{{currentDevice.name}}</text>
+        <image class="arrow-icon" src="/images/icons/mods.png" mode="aspectFit"></image>
+      </view>
+    </picker>
+    <view class="connection-status {{isBluetoothMode ? 'is-bt' : ''}}">
+      {{isBluetoothMode ? '蓝牙状态: ' + btStatus : '连接方式: 4G远程'}}
+    </view>
+  </view>
+
+  <!-- 版本信息卡片 -->
+  <view class="card version-card">
+    <view class="card-title">版本信息</view>
+    <view class="version-items">
+      <view class="version-item">
+        <text class="item-label">设备序列号</text>
+        <text class="item-value">{{currentDevice.sn}}</text>
+      </view>
+      <view class="version-item">
+        <text class="item-label">硬件版本</text>
+        <text class="item-value">{{currentDevice.hwVersion}}</text>
+      </view>
+      <view class="version-item">
+        <text class="item-label">当前软件版本</text>
+        <text class="item-value sw-version">{{currentDevice.swVersion}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="button-group">
+    <button class="btn btn-outline mb-20" bindtap="onManualUpdate">
+      <image class="btn-icon" src="/images/icons/add.png" mode="aspectFit"></image>
+      手动升级 (本地文件)
+    </button>
+    <button class="btn btn-primary" bindtap="onAutoUpdate" loading="{{isChecking}}">
+      <image class="btn-icon" src="/images/icons/wirelessconnect.png" mode="aspectFit"></image>
+      自动检查并升级
+    </button>
+  </view>
+
+  <!-- 升级进度弹窗 -->
+  <view class="progress-mask" wx:if="{{showProgress}}">
+    <view class="progress-dialog">
+      <view class="dialog-title">正在升级固件...</view>
+      <view class="progress-container">
+        <view class="progress-bar" style="width: {{updateProgress}}%"></view>
+      </view>
+      <view class="progress-text">{{updateProgress}}%</view>
+      <view class="warning-text">升级过程中请勿关闭电源或退出程序</view>
+      <view class="cancel-upgrade-box">
+        <button class="cancel-btn" bindtap="onUserCancelUpgrade">取消升级</button>
+      </view>
+    </view>
+  </view>
+</view>

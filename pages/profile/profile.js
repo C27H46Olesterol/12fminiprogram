@@ -129,6 +129,12 @@ Page({
     })
   },
 
+  goUpdate(){
+    wx.navigateTo({
+      url: '/pages/profile/update/update',
+    })
+  },
+
   async goApply() {
     const res = await app.apiRequest('/system/user/applyRepairmanRole', 'POST');
     if (res.data.code === 200) {

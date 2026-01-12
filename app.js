@@ -2,7 +2,12 @@
 App({
   globalData: {
     userInfo: '',
-    hasUserInfo: false
+    hasUserInfo: false,
+    // 全局蓝牙状态
+    bleDeviceId: '',
+    bleServiceId: '',
+    bleWriteCharId: '',
+    isBluetoothConnected: false
   },
 
   onLaunch() {

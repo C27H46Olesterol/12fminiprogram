@@ -1,1 +1,203 @@
 /* pages/update/update.wxss */
+.container {
+  padding: 30rpx;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 设备选择卡片 */
+.select-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.arrow-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-left: 10rpx;
+  opacity: 0.5;
+}
+
+.connection-status {
+  position: absolute;
+  bottom: 10rpx;
+  right: 32rpx;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.is-bt {
+  color: #1677ff;
+}
+
+/* 版本信息卡片 */
+.card-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 30rpx;
+  color: #1a1a1a;
+  border-bottom: 2rpx solid #f0f0f0;
+  padding-bottom: 20rpx;
+}
+
+.version-items {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.version-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-label {
+  font-size: 26rpx;
+  color: #888;
+}
+
+.item-value {
+  font-size: 28rpx;
+  color: #333;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.sw-version {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+/* 按钮组 */
+.button-group {
+  margin-top: 60rpx;
+  padding: 0 20rpx;
+}
+
+.btn {
+  height: 90rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 45rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 16rpx;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1677ff, #0050b3);
+  color: white;
+  box-shadow: 0 8rpx 20rpx rgba(22, 119, 255, 0.2);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2rpx solid #1677ff;
+  color: #1677ff;
+}
+
+/* 升级进度弹窗 */
+.progress-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.progress-dialog {
+  width: 80%;
+  background: white;
+  border-radius: 32rpx;
+  padding: 40rpx;
+  text-align: center;
+}
+
+.dialog-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  margin-bottom: 40rpx;
+}
+
+.progress-container {
+  height: 12rpx;
+  background: #f0f0f0;
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1677ff, #52c41a);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1677ff;
+  margin-bottom: 30rpx;
+}
+
+.warning-text {
+  font-size: 24rpx;
+  color: #ff4d4f;
+  margin-bottom: 30rpx;
+}
+
+.cancel-upgrade-box {
+  margin-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 30rpx;
+}
+
+.cancel-btn {
+  background: #f5f5f5 !important;
+  color: #666 !important;
+  font-size: 28rpx !important;
+  height: 70rpx !important;
+  line-height: 70rpx !important;
+  border-radius: 35rpx !important;
+  width: 240rpx !important;
+  margin: 0 auto !important;
+  font-weight: normal !important;
+}
+
+.cancel-btn::after {
+  border: none;
+}

@@ -860,7 +860,7 @@ Page({
     }
   },
 
-  // 点击通知恢复刷新
+  // 点击开关机
   // resumeRefresh() {
   //   wx.vibrateShort({ type: 'light' });
   //   this.resetInactivityTimer();
@@ -1543,6 +1543,10 @@ Page({
           'deviceStatus.online': true
         });
 
+        // 更新全局蓝牙状态
+        app.globalData.bleDeviceId = deviceId;
+        app.globalData.isBluetoothConnected = true;
+
         // 持久化保存
         let savedBTDevices = wx.getStorageSync('savedBTDevices') || [];
         const btIndex = savedBTDevices.findIndex(d => d.deviceId === deviceId);
@@ -1578,6 +1582,7 @@ Page({
         if (res.services.length > 0) {
           const serviceId = res.services[1] ? res.services[1].uuid : res.services[0].uuid;
           this.setData({ serviceId });
+          app.globalData.bleServiceId = serviceId; // 同步到全局
           this.getBLECharacteristics(deviceId, serviceId);
         }
       }
@@ -1594,6 +1599,7 @@ Page({
         const writeChar = res.characteristics.find(c => c.properties.write);
         if (writeChar) {
           this.setData({ characteristicId: writeChar.uuid });
+          app.globalData.bleWriteCharId = writeChar.uuid; // 同步到全局
         }
         wx.showToast({
           title: '蓝牙连接成功！',
@@ -1987,8 +1993,14 @@ Page({
     });
 
     wx.onBLEConnectionStateChange(function (res) {
-      // 该方法回调中可以用于处理连接意外断开等异常情况
       console.log(`device ${res.deviceId} state has changed, connected: ${res.connected}`)
+      app.globalData.isBluetoothConnected = res.connected;
+      if (!res.connected) {
+        app.globalData.bleDeviceId = '';
+        app.globalData.bleServiceId = '';
+        app.globalData.bleWriteCharId = '';
+      }
+
       wx.showModal({
         title: '连接异常',
         content: '蓝牙连接已断开',

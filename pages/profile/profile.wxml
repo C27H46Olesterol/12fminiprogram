@@ -1,89 +1,92 @@
 
-<view class="container">
-  <!-- 头部用户信息 -->
-  <view class="user-header" bindtap="{{!hasUserInfo ? 'onGoLogin' : ''}}">
-    <view class="user-info-row">
-      <image class="avatar" src="{{userInfo.userRole==='维修工'?'/images/icons/worker.png' : '/images/icons/user.png'}}" mode="aspectFill"></image>
-      <view class="info-col">
-        <block wx:if="{{hasUserInfo}}">
-          <text class="nickname">{{userInfo.userName || '微信用户'}}</text>
-          <text class="user-desc">{{userInfo.userRole}}</text>
-        </block>
-        <block wx:else>
-          <text class="nickname">未登录</text>
-          <text class="user-desc">点击登录/注册</text>
-        </block>
+<scroll-view scroll-y="true" class="page-scroll">
+  <view class="container">
+    <!-- 头部用户信息 -->
+    <view class="user-header" bindtap="{{!hasUserInfo ? 'onGoLogin' : ''}}">
+      <view class="user-info-row">
+        <image class="avatar" src="{{userInfo.userRole==='维修工'?'/images/icons/worker.png' : '/images/icons/user.png'}}" mode="aspectFill"></image>
+        <view class="info-col">
+          <block wx:if="{{hasUserInfo}}">
+            <text class="nickname">{{userInfo.userName || '微信用户'}}</text>
+            <text class="user-desc">{{userInfo.userRole}}</text>
+          </block>
+          <block wx:else>
+            <text class="nickname">未登录</text>
+            <text class="user-desc">点击登录/注册</text>
+          </block>
+        </view>
+      </view>
+      <!-- <view class="arrow"></view> -->
+    </view>
+
+    <view class='menu-group'>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap='goResign' wx:if="{{userInfo.userRole === '普通用户'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">申请成为维修工</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDealer' wx:if="{{userInfo.userRole === '维修工'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">添加经销商</text>
+        <view class="arrow"></view>
       </view>
     </view>
-    <!-- <view class="arrow"></view> -->
-  </view>
 
-  <view class='menu-group'>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goResign' wx:if="{{userInfo.userRole === '普通用户'}}">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
-      <text class="menu-text">申请成为维修工</text>
-      <view class="arrow"></view>
+    <!-- 功能菜单组 -->
+    <view class="menu-group">
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDevices' wx:if="{{userInfo.userRole === '普通用户'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">我的设备</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap='goIssuesLog' wx:if="{{userInfo.userRole === '普通用户'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">报修记录</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap="goActivateLog" wx:if="{{userInfo.userRole === '维修工'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">安装记录</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">
+        <image class="menu-icon" src="/images/icons/repair-form.png"></image>
+        <text class="menu-text">维修记录</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap="apiTest">
+        <image class="menu-icon" src="/images/icons/kefu.png"></image>
+        <text class="menu-text">api测试</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap="roleChange">
+        <image class="menu-icon" src="/images/icons/kefu.png"></image>
+        <text class="menu-text">测试：身份更换</text>
+        <view class="arrow"></view>
+      </view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDealer' wx:if="{{userInfo.userRole === '维修工'}}">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
-      <text class="menu-text">添加经销商</text>
-      <view class="arrow"></view>
-    </view>
-  </view>
 
-  <!-- 功能菜单组 -->
-  <view class="menu-group">
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDevices' wx:if="{{userInfo.userRole === '普通用户'}}">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
-      <text class="menu-text">我的设备</text>
-      <view class="arrow"></view>
+    <view class="menu-group">
+      <view class="menu-item" hover-class="menu-item-hover" bindtap="">
+        <image class="menu-icon" src="/images/icons/kefu.png"></image>
+        <text class="menu-text">联系客服</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bindtap="goUpdate">
+        <image class="menu-icon" src="/images/icons/kefu.png"></image>
+        <text class="menu-text">检查升级</text>
+        <view class="arrow"></view>
+      </view>
     </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap='goIssuesLog' wx:if="{{userInfo.userRole === '普通用户'}}">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
-      <text class="menu-text">报修记录</text>
-      <view class="arrow"></view>
-    </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goActivateLog" wx:if="{{userInfo.userRole === '维修工'}}">
-      <image class="menu-icon" src="/images/icons/note.png"></image>
-      <text class="menu-text">安装记录</text>
-      <view class="arrow"></view>
-    </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">
-      <image class="menu-icon" src="/images/icons/repair-form.png"></image>
-      <text class="menu-text">维修记录</text>
-      <view class="arrow"></view>
-    </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="apiTest">
-      <image class="menu-icon" src="/images/icons/kefu.png"></image>
-      <text class="menu-text">api测试</text>
-      <view class="arrow"></view>
-    </view>
-    <view class="menu-item" hover-class="menu-item-hover" bind:tap="roleChange">
-      <image class="menu-icon" src="/images/icons/kefu.png"></image>
-      <text class="menu-text">测试：身份更换</text>
-      <view class="arrow"></view>
-    </view>
-  </view>
+    <!-- 设置/退出组 -->
+    <view class="menu-group">
 
-  <view class="menu-group">
-    <view class="menu-item" hover-class="menu-item-hover" bindtap="">
-      <image class="menu-icon" src="/images/icons/kefu.png"></image>
-      <text class="menu-text">联系客服</text>
-      <view class="arrow"></view>
-    </view>
-    <view class="menu-item" hover-class="menu-item-hover" bindtap="goUpdate">
-      <image class="menu-icon" src="/images/icons/kefu.png"></image>
-      <text class="menu-text">检查升级</text>
-      <view class="arrow"></view>
+      <view class="menu-item" hover-class="menu-item-hover" bindtap="handleLogout" wx:if="{{hasUserInfo}}">
+        <image class="menu-icon" src="/images/icons/out.png"></image>
+        <text class="menu-text">退出登录</text>
+        <view class="arrow"></view>
+      </view>
     </view>
   </view>
-  <!-- 设置/退出组 -->
-  <view class="menu-group">
+</scroll-view>
 
-    <view class="menu-item" hover-class="menu-item-hover" bindtap="handleLogout" wx:if="{{hasUserInfo}}">
-      <image class="menu-icon" src="/images/icons/out.png"></image>
-      <text class="menu-text">退出登录</text>
-      <view class="arrow"></view>
-    </view>
-  </view>
-</view>

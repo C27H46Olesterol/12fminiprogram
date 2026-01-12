@@ -1,10 +1,21 @@
+/* Pages configuration */
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* 页面容器 - 仿微信灰色背景 */
+.page-scroll {
+  width: 100%;
+  height: 100vh;
+  background-color: #ededed;
+}
+
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background-color: #ededed;
-  padding: 0; /* 覆盖全局 padding */
+  padding: 0; 
+  padding-bottom: 180rpx; /* 为自定义 tabbar 预留空间 */
 }
 
 /* 头部用户信息 */
