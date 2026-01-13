@@ -412,13 +412,13 @@
                <text class="expand-text">照明灯</text>
              </view>
              <view class="expand-item" catchtap="selectFunction" data-func="surround" style="--i:3">
-               <view class="expand-btn-circle {{deviceStatus.fl === 1 ? 'active' : ''}}">
+               <view class="expand-btn-circle {{deviceStatus.fl === 0 ? '' : 'active'}}">
                  <image src="/images/icons/light_on.png" mode="aspectFit"></image>
                </view>
-               <text class="expand-text">氛围灯</text>
+               <text class="expand-text">氛围灯</text>1
              </view>
              <view class="expand-item" catchtap="selectFunction" data-func="clean" style="--i:4">
-               <view class="expand-btn-circle {{deviceStatus.fu === 0 ? '' : 'active'}}">
+               <view class="expand-btn-circle {{deviceStatus.fu === 1 ? 'active' : ''}}">
                  <image src="/images/icons/fu.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">负离子</text>
