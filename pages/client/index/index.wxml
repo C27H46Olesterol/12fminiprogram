@@ -418,7 +418,7 @@
                <text class="expand-text">氛围灯</text>
              </view>
              <view class="expand-item" catchtap="selectFunction" data-func="clean" style="--i:4">
-               <view class="expand-btn-circle {{deviceStatus.fu === 1 ? 'active' : ''}}">
+               <view class="expand-btn-circle {{deviceStatus.fu === 0 ? '' : 'active'}}">
                  <image src="/images/icons/fu.png" mode="aspectFit"></image>
                </view>
                <text class="expand-text">负离子</text>

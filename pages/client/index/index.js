@@ -94,7 +94,7 @@ Page({
     showFaultAlert: false, // 是否显示故障警告
     currentFaultInfo: null, // 当前故障信息
 
-
+    isQuickSearch: false, // 快速搜索标志位
   },
   onLoad() {
     //关闭加载弹窗
@@ -470,6 +470,24 @@ Page({
               fail: (err) => console.error("断开蓝牙连接失败", err)
             });
 
+            // 清空本地蓝牙连接状态并关闭监听
+            if (this.data.isBluetoothConnected && this.data.connectedDevice && this.data.connectedDevice.deviceId === device.deviceId) {
+              this.stopBluetoothDataListener();
+              this.setData({
+                isBluetoothConnected: false,
+                connectedDevice: null,
+                serviceId: '',
+                characteristicId: '',
+                bluetoothDevice: ''
+              });
+
+              // 同步清除全局状态
+              app.globalData.isBluetoothConnected = false;
+              app.globalData.bleDeviceId = '';
+              app.globalData.bleServiceId = '';
+              app.globalData.bleWriteCharId = '';
+            }
+
             // 2. 从本地存储中移除该蓝牙设备
             let savedBTDevices = wx.getStorageSync('savedBTDevices') || [];
             savedBTDevices = savedBTDevices.filter(d => d.deviceId !== device.deviceId);
@@ -478,6 +496,12 @@ Page({
             // 3. 从列表中移除
             this.removeDeviceFromList(index);
             wx.showToast({ title: '已移除蓝牙设备', icon: 'none' });
+
+            this.setData({
+              deviceStatus: {
+                ...this.data.offlineDeviceStatus,
+              }
+            })
           } else {
             // 4G设备，尝试调用解绑接口
             try {
@@ -504,6 +528,8 @@ Page({
         }
       }
     });
+
+    this.onShow();
   },
 
   // 移除设备
@@ -511,11 +537,12 @@ Page({
     let deviceList = this.data.deviceList;
     if (!deviceList || deviceList.length <= index) return;
 
+    const removedDevice = deviceList[index];
     deviceList.splice(index, 1);
-    
-    //如果删除的设备是蓝牙设备 关闭蓝牙适配器
-    if(selectedDeivice.connectionType === 'bluetooth'){
-      wx.closeBluetoothAdapter();
+
+    // 如果删除的设备是蓝牙设备，执行必要的清理
+    if (removedDevice && removedDevice.connectionType === 'bluetooth') {
+      console.log('移除蓝牙设备:', removedDevice.name);
     }
 
     // 如果移除的是当前选中的设备，重置选中状态
@@ -698,12 +725,14 @@ Page({
       console.log('检查选中设备状态：', device)
       if (!device) {
         console.log('设备列表无设备')
+        this.clearAllTimers();
         return;
       }
       if (device.connectionType === 'bluetooth') {
         console.log('连接蓝牙设备：', device)
         if (this.data.isBluetoothConnected) {
           // this.getDeviceStatusByBluetooth();
+          this.clearAllTimers();
         } else {
           console.log('蓝牙未连接，跳过状态查询')
         }
@@ -729,7 +758,8 @@ Page({
                 signalStrength: signal || 0,
                 clock: props.timer > 0
               },
-              deiveiceOnline: true
+              deviceOnline: true,
+              isQuickSearch: true
             });
           }
           console.log("本地保存设备状态:", this.data.deviceStatus)
@@ -1417,7 +1447,7 @@ Page({
             let list = this.data.bluetoothDevices;
             newDevices.forEach(device => {
               if (!list.find(d => d.deviceId === device.deviceId)) {
-                console.log("发现设备:",device)
+                console.log("发现设备:", device)
                 list.push(device);
               }
             });
@@ -1439,12 +1469,12 @@ Page({
     }
 
     wx.stopBluetoothDevicesDiscovery({
-      success:(res)=>{
+      success: (res) => {
         console.log("停止蓝牙设备发现")
       }
     });
     wx.offBluetoothDeviceFound({
-      success:(res)=>{
+      success: (res) => {
         console.log("关闭蓝牙设备发现监听")
       }
     });
@@ -1471,11 +1501,12 @@ Page({
     const device = this.data.bluetoothDevices.find(d => d.deviceId === deviceId);
     this.stopSearch();
     wx.closeBluetoothAdapter({
-      success:(res) => {
+      success: (res) => {
         console.log('成功关闭蓝牙适配器')
       }
     });
     if (device) {
+      console.log('开始连接蓝牙设备')
       this._executeBTConnect(device);
     }
   },
@@ -1563,7 +1594,8 @@ Page({
           deviceList: deviceList,
           selectedDeviceIndex: newSelectedIndex,
           selectedDevice: bluetoothDevice,
-          'deviceStatus.online': true
+          'deviceStatus.online': true,
+          isQuickSearch: true
         });
 
         // 更新全局蓝牙状态
@@ -1983,7 +2015,8 @@ Page({
       'deviceStatus.err': parsedData.err1 || parsedData.err2,
       'deviceStatus.online': true,
       'deviceStatus.lock': parsedData.lock,
-      'deviceStatus.timer': parsedData.remainingTime
+      'deviceStatus.timer': parsedData.remainingTime,
+      isQuickSearch: true
     });
     console.log('蓝牙返回信息解析结果', this.data.deviceStatus)
     // 检查故障状态
@@ -2015,33 +2048,57 @@ Page({
       }
     });
 
-    wx.onBLEConnectionStateChange(function (res) {
+    wx.onBLEConnectionStateChange((res) => {
       console.log(`device ${res.deviceId} state has changed, connected: ${res.connected}`)
-      app.globalData.isBluetoothConnected = res.connected;
       if (!res.connected) {
+        app.globalData.isBluetoothConnected = false;
         app.globalData.bleDeviceId = '';
         app.globalData.bleServiceId = '';
         app.globalData.bleWriteCharId = '';
+
+        this.stopBluetoothDataListener();
+
+        wx.showModal({
+          title: '连接异常',
+          content: '蓝牙连接已断开',
+          showCancel: false
+        });
+
+        this.setData({
+          isBluetoothConnected: false,
+          connectedDevice: null,
+          'deviceStatus.online': false
+        });
       }
+    })
+  },
 
-      wx.showModal({
-        title: '连接异常',
-        content: '蓝牙连接已断开',
-        success(res) {
-          if (res.confirm) {
+  /**
+   * 停止蓝牙数据监听
+   */
+  stopBluetoothDataListener() {
+    console.log('正在关闭蓝牙监听...');
 
-          } else if (res.cancel) {
+    // 取消特征值变化监听
+    wx.offBLECharacteristicValueChange();
+    // 取消连接状态变化监听
+    wx.offBLEConnectionStateChange();
 
-          }
-        }
-      })
-      wx.closeBluetoothAdapter({
-        success(res) {
-          console.log('已关闭蓝牙连接')
-          
+    if (this.data.connectedDevice && this.data.serviceId && this.data.characteristicId) {
+      // 停止notify
+      wx.notifyBLECharacteristicValueChange({
+        deviceId: this.data.connectedDevice.deviceId,
+        serviceId: this.data.serviceId,
+        characteristicId: this.data.characteristicId,
+        state: false,
+        success: () => {
+          console.log('[蓝牙接收] 数据监听已停止');
+        },
+        fail: (err) => {
+          console.error('[蓝牙接收] 停止监听失败', err);
         }
       });
-    })
+    }
   },
 
   onLogout() {
