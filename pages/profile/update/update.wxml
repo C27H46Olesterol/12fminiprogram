@@ -49,7 +49,7 @@
     <view class="progress-dialog">
       <view class="dialog-title">正在升级固件...</view>
       <view class="progress-container">
-        <view class="progress-bar" style="width: {{updateProgress}}%"></view>
+        <view class="progress-bar" style="width: {{updateProgress}}'%'"></view>
       </view>
       <view class="progress-text">{{updateProgress}}%</view>
       <view class="warning-text">升级过程中请勿关闭电源或退出程序</view>

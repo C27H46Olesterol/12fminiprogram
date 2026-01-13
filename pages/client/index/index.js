@@ -512,10 +512,16 @@ Page({
     if (!deviceList || deviceList.length <= index) return;
 
     deviceList.splice(index, 1);
+    
+    //如果删除的设备是蓝牙设备 关闭蓝牙适配器
+    if(selectedDeivice.connectionType === 'bluetooth'){
+      wx.closeBluetoothAdapter();
+    }
 
     // 如果移除的是当前选中的设备，重置选中状态
     let selectedDeviceIndex = this.data.selectedDeviceIndex;
     let selectedDevice = this.data.selectedDevice;
+
 
     if (selectedDeviceIndex === index) {
       if (deviceList.length > 0) {
@@ -1411,7 +1417,7 @@ Page({
             let list = this.data.bluetoothDevices;
             newDevices.forEach(device => {
               if (!list.find(d => d.deviceId === device.deviceId)) {
-                console.log("添加设备")
+                console.log("发现设备:",device)
                 list.push(device);
               }
             });
@@ -1431,20 +1437,31 @@ Page({
       clearInterval(this.searchCountdown);
       this.searchCountdown = null;
     }
-    wx.stopBluetoothDevicesDiscovery();
-    // wx.offBluetoothDeviceFound();
+
+    wx.stopBluetoothDevicesDiscovery({
+      success:(res)=>{
+        console.log("停止蓝牙设备发现")
+      }
+    });
+    wx.offBluetoothDeviceFound({
+      success:(res)=>{
+        console.log("关闭蓝牙设备发现监听")
+      }
+    });
     this.setData({ isSearchingBluetooth: false });
   },
 
   //手动刷新蓝牙
   manualRefreshBluetooth() {
     this.stopSearch();
+    wx.closeBluetoothAdapter();
     this.startBluetoothDiscovery();
   },
 
   //关闭蓝牙模式
   closeBluetoothModal() {
     this.stopSearch();
+    wx.closeBluetoothAdapter();
     this.setData({ showBluetoothModal: false });
   },
 
@@ -1452,6 +1469,12 @@ Page({
   connectToBluetooth(e) {
     const deviceId = e.currentTarget.dataset.id;
     const device = this.data.bluetoothDevices.find(d => d.deviceId === deviceId);
+    this.stopSearch();
+    wx.closeBluetoothAdapter({
+      success:(res) => {
+        console.log('成功关闭蓝牙适配器')
+      }
+    });
     if (device) {
       this._executeBTConnect(device);
     }
@@ -2015,6 +2038,7 @@ Page({
       wx.closeBluetoothAdapter({
         success(res) {
           console.log('已关闭蓝牙连接')
+          
         }
       });
     })
