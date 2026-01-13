@@ -1616,11 +1616,12 @@ Page({
         wx.showToast({ title: '连接成功', icon: 'success' });
 
         // 获取服务并开始监听
-        this.getBLEServices(deviceId);
+        this.getBLEServices(deviceId)
+
       },
       fail: (err) => {
         console.error('蓝牙连接失败', err);
-        wx.showToast({ title: '连接失败', icon: 'none' });
+        wx.showToast({ title: '连接失败', icon: 'error' });
       },
       complete: () => {
         wx.hideLoading();
@@ -1660,8 +1661,13 @@ Page({
           title: '蓝牙连接成功！',
           icon: 'success'
         })
-        //连接成功开始监听蓝牙信息
+        // 连接成功开始监听蓝牙信息
         this.startBluetoothDataListener();
+
+        // 延迟发送状态查询指令，确保监听已就绪
+        setTimeout(() => {
+          this.getDeviceStatusByBluetooth();
+        }, 500);
       }
     });
   },
