@@ -41,7 +41,8 @@ Page({
       err: 0,        // 故障代码
       online: false,
       signalStrength: 0,
-      clock: false   // 内部标记是否有定时
+      clock: false,   // 内部标记是否有定时
+      timerDisplay: '00:00'
     },
     offlineDeviceStatus: {
       ps: 0,         // 开关状态 0:关, 1:开
@@ -400,7 +401,7 @@ Page({
 
   //开启蓝牙搜索
   blueToothfunc() {
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     this.setData({
       showDropdown: false,
       showAddDeviceDropdown: false,
@@ -587,7 +588,7 @@ Page({
 
   //定时
   async timerTest() {
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
 
     // Check if device is powered on
     if (!this.checkPower()) {
@@ -621,7 +622,7 @@ Page({
 
   // 增减定时（步长 30 分钟），限制在 30 - 480
   changeTimer(e) {
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     const delta = parseInt(e.currentTarget.dataset.delta, 10) || 0;
     let m = this.data.timerMinutes + delta;
     if (m < 30) m = 30; // Minimum 30 mins for setting
@@ -677,7 +678,8 @@ Page({
           this.setData({
             wxTimerList: list,
             'deviceStatus.clock': false,
-            'deviceStatus.timer': 0
+            'deviceStatus.timer': 0,
+            'deviceStatus.timerDisplay': '00:00'
           });
           this.timerInstance = null;
         }
@@ -692,7 +694,8 @@ Page({
     this.setData({
       showTimerModal: false,
       'deviceStatus.clock': minutes > 0,
-      'deviceStatus.timer': minutes
+      'deviceStatus.timer': minutes,
+      'deviceStatus.timerDisplay': this._formatTimerDisplay(minutes)
     });
     this.bufferCommand('setTimer', minutes);
 
@@ -707,6 +710,14 @@ Page({
     if (h === 0) return `${m} 分钟`;
     if (m === 0) return `${h} 小时`;
     return `${h} 小时 ${m} 分钟`;
+  },
+
+  // 格式化为 小时:分钟 格式
+  _formatTimerDisplay(mins) {
+    if (!mins || mins <= 0) return '00:00';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   },
 
   // 返回基础小时数（1 - 8 小时）字符串
@@ -756,7 +767,8 @@ Page({
                 ...props,
                 online: true,
                 signalStrength: signal || 0,
-                clock: props.timer > 0
+                clock: props.timer > 0,
+                timerDisplay: this._formatTimerDisplay(props.timer !== undefined ? props.timer : this.data.deviceStatus.timer)
               },
               deviceOnline: true,
               isQuickSearch: true
@@ -906,7 +918,7 @@ Page({
   // 开关机
   async togglePower() {
 
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     wx.showLoading({ title: '正在连接设备...', mask: true });
     const device = this.data.selectedDevice;
 
@@ -947,103 +959,161 @@ Page({
   },
 
   // 增加风速
-  increaseWindSpeed() {
-
-    wx.vibrateShort({ type: 'medium' });
+  increaseWindSpeed(isLongPress = false) {
     if (!this.checkPower()) return;
+    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
+    else wx.vibrateShort({ type: 'light' });
+
     let speed = this.data.deviceStatus.fs || 1;
     if (speed < 5) {
       const newSpeed = speed + 1;
       this.setData({
         'deviceStatus.fs': newSpeed
       });
-      wx.showToast({
-        title: '风速' + newSpeed + '档',
-        icon: 'none'
-      })
+      if (!isLongPress) {
+        wx.showToast({
+          title: '风速' + newSpeed + '档',
+          icon: 'none'
+        })
+      }
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
-      this.setData({
-        'deviceStatus.fs': 5
-      });
-      this.bufferCommand('setWindSpeed', 5);
-      wx.showToast({ title: '已是最大风速', icon: 'none' });
+      if (!isLongPress) {
+        this.setData({
+          'deviceStatus.fs': 5
+        });
+        this.bufferCommand('setWindSpeed', 5);
+        wx.showToast({ title: '已是最大风速', icon: 'none' });
+      }
     }
   },
 
   // 减少风速
-  decreaseWindSpeed() {
-
-    wx.vibrateShort({ type: 'medium' });
+  decreaseWindSpeed(isLongPress = false) {
     if (!this.checkPower()) return;
+    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
+    else wx.vibrateShort({ type: 'light' });
+
     let speed = this.data.deviceStatus.fs || 1;
     if (speed > 1) {
       const newSpeed = speed - 1;
       this.setData({
         'deviceStatus.fs': newSpeed
       });
-      wx.showToast({
-        title: '风速' + newSpeed + '档',
-        icon: 'none'
-      })
+      if (!isLongPress) {
+        wx.showToast({
+          title: '风速' + newSpeed + '档',
+          icon: 'none'
+        })
+      }
       this.bufferCommand('setWindSpeed', newSpeed);
     } else {
-      this.setData({
-        'deviceStatus.fs': 1
-      });
-      this.bufferCommand('setWindSpeed', 1);
-      wx.showToast({ title: '已是最小风速', icon: 'none' });
+      if (!isLongPress) {
+        this.setData({
+          'deviceStatus.fs': 1
+        });
+        this.bufferCommand('setWindSpeed', 1);
+        wx.showToast({ title: '已是最小风速', icon: 'none' });
+      }
     }
   },
 
   // 增加温度
-  increaseTemperature() {
-
-    wx.vibrateShort({ type: 'medium' });
+  increaseTemperature(isLongPress = false) {
     if (!this.checkPower()) return;
+    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
+    else wx.vibrateShort({ type: 'light' });
+
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
     if (temp < 32) {
       const newTemp = temp + 1;
       this.setData({
         'deviceStatus.temp': newTemp * 10
       });
-      wx.showToast({
-        title: '设置' + newTemp + '°C',
-        icon: 'none'
-      })
+      if (!isLongPress) {
+        wx.showToast({
+          title: '设置' + newTemp + '°C',
+          icon: 'none'
+        })
+      }
       this.bufferCommand('setTemperature', newTemp);
     } else {
-      this.setData({
-        'deviceStatus.temp': 320
-      });
-      this.bufferCommand('setTemperature', 32);
-      wx.showToast({ title: '已是最高温度', icon: 'none' });
+      if (!isLongPress) {
+        this.setData({
+          'deviceStatus.temp': 320
+        });
+        this.bufferCommand('setTemperature', 32);
+        wx.showToast({ title: '已是最高温度', icon: 'none' });
+      }
     }
   },
 
   // 减少温度
-  decreaseTemperature() {
-
-    wx.vibrateShort({ type: 'light' });
+  decreaseTemperature(isLongPress = false) {
     if (!this.checkPower()) return;
+    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
+    else wx.vibrateShort({ type: 'light' });
+
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
     if (temp > 5) {
       const newTemp = temp - 1;
       this.setData({
         'deviceStatus.temp': newTemp * 10
       });
-      wx.showToast({
-        title: '设置' + newTemp + '°C',
-        icon: 'none'
-      })
+      if (!isLongPress) {
+        wx.showToast({
+          title: '设置' + newTemp + '°C',
+          icon: 'none'
+        })
+      }
       this.bufferCommand('setTemperature', newTemp);
     } else {
-      this.setData({
-        'deviceStatus.temp': 50
-      });
-      this.bufferCommand('setTemperature', 5);
-      wx.showToast({ title: '已是最低温度', icon: 'none' });
+      if (!isLongPress) {
+        this.setData({
+          'deviceStatus.temp': 50
+        });
+        this.bufferCommand('setTemperature', 5);
+        wx.showToast({ title: '已是最低温度', icon: 'none' });
+      }
     }
+  },
+
+  // --- 长按控制逻辑 ---
+  onControlStart(e) {
+    const action = e.currentTarget.dataset.action;
+    if (!this[action]) return;
+
+    // 停止自动刷新，防止长按时数据抖动
+    this.stopAutoRefresh();
+    this.isLongPressing = true;
+
+    // 立即执行一次
+    this[action](false);
+
+    // 判定长按
+    this._longPressDelay = setTimeout(() => {
+      this._longPressTimer = setInterval(() => {
+        this[action](true);
+      }, 150); // 匀速变化频率
+    }, 500);
+  },
+
+  onControlEnd() {
+    this.isLongPressing = false;
+    if (this._longPressDelay) {
+      clearTimeout(this._longPressDelay);
+      this._longPressDelay = null;
+    }
+    if (this._longPressTimer) {
+      clearInterval(this._longPressTimer);
+      this._longPressTimer = null;
+    }
+
+    // 延迟恢复自动刷新，给设备留出状态更新的时间
+    if (this.resumeTimer) clearTimeout(this.resumeTimer);
+    this.resumeTimer = setTimeout(() => {
+      this.resetInactivityTimer();
+    }, 2000);
   },
 
   // --- 新增功能键整合逻辑 ---
@@ -1078,7 +1148,7 @@ Page({
 
   switchMode(mode) {
 
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     if (!this.checkPower()) return;
 
     // let windSpeed = this.data.deviceStatus.fs;
@@ -1124,7 +1194,7 @@ Page({
   },
 
   setZYBF(state) {
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     if (!this.checkPower()) return;
     console.log('左右摆风：', this.data.deviceStatus.zybf);
     const lr = (state === 1 || state === 3);
@@ -1137,7 +1207,7 @@ Page({
   },
 
   setSXBF(state) {
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     if (!this.checkPower()) return;
     console.log('上下摆风：', this.data.deviceStatus.sxbf);
     const ud = (state === 1 || state === 3);
@@ -1162,7 +1232,7 @@ Page({
 
   selectFunction(e) {
 
-    wx.vibrateShort({ type: 'medium' });
+    wx.vibrateShort({ type: 'light' });
     // if (!this.checkPower()) return;
     if (!this.data.deviceStatus.online) {
       wx.showToast({
@@ -1969,11 +2039,12 @@ Page({
       '9': 'E9',
       '10': 'E10'
     }
-    if (!fault1Value[byte12]) {
-      parsedData.err1 = fault1Value[0];
-    } else {
-      parsedData.err1 = fault1Value[byte12];
-    }
+    // if (!fault1Value[byte12]) {
+    //   parsedData.err1 = fault1Value[0];
+    // } else {
+    //   parsedData.err1 = fault1Value[byte12];
+    // }
+    parsedData.err1 = byte12
 
     //byte 13:故障代码2
     const byte13 = dataView.getUint8(13);
@@ -1982,18 +2053,25 @@ Page({
       '2': 'FJ/EF',
       '3': 'HU'
     }
-    if (!fault2Value[byte13]) {
-      parsedData.err2 = '';
-    } else {
-      parsedData.err2 = fault2Value[byte13];
+    // if (!fault2Value[byte13]) {
+    //   parsedData.err2 = '';
+    // } else {
+    //   parsedData.err2 = fault2Value[byte13];
+    // }
+    if(parsedData.err2 > 1){
+      parsedData.err2 = byte13+9;
+    }else{
+      parsedData.err2 = byte13;
     }
+
+    const errCode = parsedData.err2? parsedData.err2:parsedData.err1;
 
     //byte 14:设定温度
     const byte14 = dataView.getUint8(14);
     if (byte14 < 17) {
       parsedData.setTemp = byte14 + 15;
     }
-    else if (byte > 29) {
+    else if (byte14 > 29) {
       parsedData.setTemp = byte14 - 25;
     }
 
@@ -2003,6 +2081,13 @@ Page({
 
     // 打印解析结果
     console.log('[蓝牙接收] 解析数据:', parsedData);
+
+    // 逻辑：如果是最近刚发送过指令（1.5秒内），则跳过本次设备上报的数据同步
+    // 防止指令执行中设备返回旧状态导致 UI 抖动
+    // if (this.lastCommandTime && (Date.now() - this.lastCommandTime < 1500)) {
+    //   console.log('[蓝牙接收] 近期有指令发送，跳过本次状态同步以防抖动');
+    //   return;
+    // }
 
     // 更新界面状态
     this.setData({
@@ -2018,11 +2103,11 @@ Page({
       'deviceStatus.it': parsedData.it,
       'deviceStatus.ot': parsedData.ot,
       'deviceStatus.bv': parsedData.voltage,
-      'deviceStatus.err': parsedData.err1 || parsedData.err2,
+      'deviceStatus.err': errCode,
       'deviceStatus.online': true,
       'deviceStatus.lock': parsedData.lock,
       'deviceStatus.timer': parsedData.remainingTime,
-      isQuickSearch: true
+      'deviceStatus.timerDisplay': this._formatTimerDisplay(parsedData.remainingTime),
     });
     console.log('蓝牙返回信息解析结果', this.data.deviceStatus)
     // 检查故障状态
@@ -2115,7 +2200,8 @@ Page({
       deviceStatus: {
         ps: 0, temp: 250, fs: 1, fm: 5, fl: 0, light: 0, lock: 0,
         sxbf: 0, zybf: 0, fu: 0, timer: 0, bv: 0, it: 0, ot: 0, err: 0,
-        online: false, signalStrength: 0, clock: false
+        online: false, signalStrength: 0, clock: false,
+        timerDisplay: '00:00'
       }
     });
   },

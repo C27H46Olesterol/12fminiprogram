@@ -113,7 +113,27 @@ const FAULT_CODES = {
             '更换控制器'
         ],
         videoUrl: ''
-    }
+    },
+    11: {
+      code: 'EF',
+      title: '内风机故障',
+      cause: '风机电路反馈故障',
+      solutions: [
+          '检查风机保险连接',
+          '更换面板'
+      ],
+      videoUrl: ''
+    },
+    12: {
+      code: 'HU',
+      title: '电瓶电压过高',
+      cause: '检查电源电压',
+      solutions: [
+          '更换12v/24v电源',
+          '更换面板'
+      ],
+      videoUrl: ''
+  },
 };
 
 module.exports = {

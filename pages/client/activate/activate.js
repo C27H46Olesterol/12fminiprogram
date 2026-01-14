@@ -27,23 +27,23 @@ Page({
     // this.getCurrentLocation();
 
     // 自动填充手机号逻辑
-    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
-    const userPhone = userInfo && (userInfo.phone || userInfo.phoneNumber);
-    const userRole = userInfo && userInfo.role; // 假设role字段存在
+    // const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
+    // const userPhone = userInfo && (userInfo.phone || userInfo.phoneNumber);
+    // const userRole = userInfo && userInfo.role; // 假设role字段存在
 
-    if (userPhone) {
-      if (userRole === 'worker') {
-        // 如果是维修工提交，自动填充安装师傅手机号
-        this.setData({
-          'formData.installerPhone': userPhone
-        });
-      } else {
-        // 默认为普通用户/产品用户提交，填充用户手机号
-        this.setData({
-          'formData.userPhone': userPhone
-        });
-      }
-    }
+    // if (userPhone) {
+    //   if (userRole === 'worker') {
+    //     // 如果是维修工提交，自动填充安装师傅手机号
+    //     this.setData({
+    //       'formData.installerPhone': userPhone
+    //     });
+    //   } else {
+    //     // 默认为普通用户/产品用户提交，填充用户手机号
+    //     this.setData({
+    //       'formData.userPhone': userPhone
+    //     });
+    //   }
+    // }
 
     this.checkCanSubmit();
   },
