@@ -274,19 +274,8 @@ Page({
       try {
         // const result = await app.apiRequest('/pro/banding/my', 'GET');
         const result = await deviceApi.getUserActiveDevice();
-        if (result.code === 401) {
-          wx.showModal({
-            title: '提醒',
-            content: '授权信息过期，\n请重新登陆',
-            success(res) {
-              if (res.confirm) {
-                this.onGoLogin();
-              } else if (res.cancel) {
+        if (!this.handleApiResult(result)) return [];
 
-              }
-            }
-          })
-        }
         // 检查调用是否成功
         if (result && result.data) {
           const res = result.data;
@@ -449,6 +438,7 @@ Page({
       title: `已切换至 ${device.sn || '新设备'}`,
       icon: 'none'
     });
+
     // 切换设备后对新设备继续轮询
     this.resetInactivityTimer();
   },
@@ -507,6 +497,7 @@ Page({
             // 4G设备，尝试调用解绑接口
             try {
               const res = await deviceApi.unbindDevice(device.sn)
+              if (!this.handleApiResult(res)) return;
               if (res && res.code == 200) {
                 this.removeDeviceFromList(index);
                 wx.showToast({ title: '解绑成功', icon: 'success' });
@@ -749,9 +740,9 @@ Page({
         }
         return
       } else {
-        console.log('选中4g设备', device.connectionType)
         const sn = device.sn;
         const res = await deviceApi.getDevicePropertyDetail(sn);
+        if (!this.handleApiResult(res)) return;
         if (res.code === 200) {
           overTimeCount = 0;
           const props = res.data.properties;
@@ -802,7 +793,13 @@ Page({
               setTimeout(() => {
                 wx.hideLoading();
               }, 5 * 1000)
+              this.setData({
+                deviceStatus: this.data.offlineDeviceStatus
+              })
               this.stopAutoRefresh();
+              this.setData({
+                showRefreshNotify: true
+              })
             }
           }
 
@@ -817,23 +814,34 @@ Page({
 
   // --- 自动刷新与不活跃计时逻辑 ---
 
-  // 启动/重置不活跃计时器 (10秒 - 测试用)
+  //页面刷新条件检查
+  checkInfoReturn() {
+    const userInfo = this.data.userInfo
+    const hasUserInfo = this.data.hasUserInfo
+    const deviceOnline = this.data.deviceStatus.online;
+    const selectedDevice = this.data.selectedDevice
+
+    const checkInfo = {
+      userInfo: userInfo,
+      hasUserInfo: hasUserInfo,
+      deviceOnline: deviceOnline,
+      selectedDevice: selectedDevice
+    }
+    console.log('自动刷新条件检查checkInfo:', checkInfo);
+    if (userInfo && hasUserInfo && selectedDevice && deviceOnline) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  // 启动/重置不活跃计时器
   async resetInactivityTimer() {
     // 如果页面不活跃，直接返回，不启动任何定时器
     if (!this.isPageActive) return;
 
-    const userInfo = this.data.userInfo
-    const hasUserInfo = this.data.hasUserInfo
-    const deiveiceOnline = this.data.deviceStatus.online;
-    const selectedDevice = this.data.selectedDevice
 
-    console.log("计时器启动状态查询userInfo:", userInfo);
-    console.log("计时器启动状态查询hasUserInfo:", hasUserInfo);
-    console.log("计时器启动状态查询deiveiceOnline:", deiveiceOnline);
-    console.log("计时器启动状态查询selectedDevice:", selectedDevice);
-
-    // 登录后，选中设备且设备在线（或蓝牙已连接）时开始刷新
-    if (userInfo && hasUserInfo && selectedDevice && (deiveiceOnline || this.data.isBluetoothConnected)) {
+    if (this.checkInfoReturn()) {
       this.setData({ showRefreshNotify: false });
 
       // 清除旧的不活跃计时器
@@ -844,7 +852,7 @@ Page({
       // 启动新的不活跃计时器 (5分钟无操作则停止自动刷新)
       this.inactivityTimeoutId = setTimeout(() => {
         this.autoStopRefresh();
-      }, 300 * 1000);
+      }, 30 * 1000);
 
       // 如果刷新定时器没启动，则启动它
       if (!this.refreshIntervalId) {
@@ -852,9 +860,8 @@ Page({
         this.startAutoRefresh();
       }
     } else {
-      console.log('[Timer] 未满足启动条件:', { userInfo: !!userInfo, online: deiveiceOnline, connected: this.data.isBluetoothConnected, device: !!selectedDevice });
+      console.log('[Timer] 未满足启动条件:');
     }
-
   },
 
   // 开启自动刷新 (每30秒)
@@ -908,27 +915,20 @@ Page({
     }
   },
 
-  // 点击开关机
-  // resumeRefresh() {
-  //   wx.vibrateShort({ type: 'light' });
-  //   this.resetInactivityTimer();
-  //   this.setData({ showRefreshNotify: false });
-  // },
-
   // 开关机
   async togglePower() {
-
     wx.vibrateShort({ type: 'light' });
-    wx.showLoading({ title: '正在连接设备...', mask: true });
+
     const device = this.data.selectedDevice;
-
-    // 1. 获取最新设备状态
-    await this.loadDeviceStatus(true)
-    console.log('开机指令发送后-设备在线状态查询结果')
-    wx.hideLoading();
-
     const deviceStatus = this.data.deviceStatus;
 
+    if (!device) {
+      wx.showToast({
+        title: '请先选择设备',
+        icon: 'error'
+      })
+      return;
+    }
     //设备在线状态判断
     if (!deviceStatus.online) {
       wx.showToast({
@@ -939,22 +939,19 @@ Page({
     }
 
     if (deviceStatus.ps === 1) {
-      // 如果已开机：直接同步显示（loadDeviceStatus已更新deviceStatus）
-      // wx.showToast({ title: '设备已开机', icon: 'success' });
+      // 如果开机状态，发送关机指令
       this.setData({
         'deviceStatus.ps': 0
       });
-      wx.showToast({ title: '正在关机...', icon: 'loading' });
-      this.bufferCommand('setPower', 0);
+      wx.showToast({ title: '正在关机...', icon: 'loading', duration: 1 * 1000 });
+      this.bufferCommand('setPower', 0)
     } else {
-      // 如果已关机：按关机时的状态开机
+      // 如果已关机发送开机指令：按关机时的状态开机
       this.setData({
         'deviceStatus.ps': 1
       });
-      console.log('点击按钮后本地数据', this.data.deviceStatus)
-      wx.showToast({ title: '正在开机...', icon: 'loading' });
-      // 发送开机指令 (底层sendBluetoothCommand会处理记忆恢复)
-      this.bufferCommand('setPower', 1);
+      wx.showToast({ title: '正在开机...', icon: 'loading', duration: 1 * 1000 });
+      this.bufferCommand('setPower', 1)
     }
   },
 
@@ -1112,7 +1109,7 @@ Page({
     // 延迟恢复自动刷新，给设备留出状态更新的时间
     if (this.resumeTimer) clearTimeout(this.resumeTimer);
     this.resumeTimer = setTimeout(() => {
-      this.resetInactivityTimer();
+      // // this.resetInactivityTimer();
     }, 2000);
   },
 
@@ -1190,7 +1187,7 @@ Page({
       this.setZYBF(isZYBFOn ? 0 : 1);
     }
 
-    this.setData({ showSwingDropdown: false });
+    // this.setData({ showSwingDropdown: false });
   },
 
   setZYBF(state) {
@@ -1351,6 +1348,7 @@ Page({
       }
       else if (device.connectionType === '4g') {
         const res = await deviceApi.setDeviceDesiredProperty(deviceName, property);
+        if (!this.handleApiResult(res)) return;
         if (res && res.code === 200) {
           console.log('指令发送成功');
           // 设置成功后，不强制立即刷新，保留本地乐观更新的状态，等待自动刷新周期或下一次有效更新
@@ -1370,7 +1368,7 @@ Page({
       // this.resumeTimer = setTimeout(() => {
       //   if (this.isPageActive) {
       //     console.log('[Remote] 恢复自动刷新');
-      //     this.resetInactivityTimer();
+      //     // // this.resetInactivityTimer();
       //   }
       // }, 2000);
     }
@@ -1379,7 +1377,7 @@ Page({
   // 辅助函数：检查电源状态
   checkPower() {
     if (this.data.deviceStatus.ps !== 1) {
-      wx.showToast({ title: '请先开机', icon: 'none' });
+      wx.showToast({ title: '请先开机', icon: 'error' });
       return false;
     }
     return true;
@@ -2058,13 +2056,13 @@ Page({
     // } else {
     //   parsedData.err2 = fault2Value[byte13];
     // }
-    if(parsedData.err2 > 1){
-      parsedData.err2 = byte13+9;
-    }else{
+    if (parsedData.err2 > 1) {
+      parsedData.err2 = byte13 + 9;
+    } else {
       parsedData.err2 = byte13;
     }
 
-    const errCode = parsedData.err2? parsedData.err2:parsedData.err1;
+    const errCode = parsedData.err2 ? parsedData.err2 : parsedData.err1;
 
     //byte 14:设定温度
     const byte14 = dataView.getUint8(14);
@@ -2206,4 +2204,25 @@ Page({
     });
   },
 
+  // 统一处理 API 返回结果，校验登录态
+  handleApiResult(res) {
+    if (res && res.code === 401) {
+      wx.stopPullDownRefresh();
+      // 清除可能的轮询
+      this.stopAutoRefresh();
+
+      wx.showModal({
+        title: '提醒',
+        content: '登录信息已过期，请重新登录',
+        showCancel: false,
+        success: (modalRes) => {
+          if (modalRes.confirm) {
+            this.onGoLogin();
+          }
+        }
+      });
+      return false;
+    }
+    return true;
+  }
 });
