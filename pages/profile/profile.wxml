@@ -73,7 +73,7 @@
         <view class="arrow"></view>
       </view>
       <view class="menu-item" hover-class="menu-item-hover" bindtap="goUpdate">
-        <image class="menu-icon" src="/images/icons/kefu.png"></image>
+        <image class="menu-icon" src="/images/icons/wrench.png"></image>
         <text class="menu-text">检查升级</text>
         <view class="arrow"></view>
       </view>

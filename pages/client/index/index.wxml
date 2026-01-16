@@ -187,7 +187,13 @@
           <text class="display-label">信号</text>
           <view class="display-item-content">
             <block>
-              <view class="device-status-dot {{deviceStatus.signalStrength > 0 ? 'online' : 'offline'}}"></view>
+              <view class="display-signal-bars-small">
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 1 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 7 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 13 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 19 ? 'active' : ''}}"></view>
+                <view class="display-signal-bar {{deviceStatus.signalStrength >= 25 ? 'active' : ''}}"></view>
+              </view>
             </block>
           </view>
         </view>

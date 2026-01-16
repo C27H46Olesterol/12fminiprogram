@@ -170,18 +170,6 @@ Page({
     this.isPageActive = false; // 标记页面为非活跃状态
     this.clearAllTimers();
     console.log('onHide()事件触发，已清除所有定时器')
-
-    // // 触发蓝牙监听，并开启后台主动查询定时器
-    // if (this.data.isBluetoothConnected) {
-    //   console.log('onHide触发：启动后台蓝牙状态监听与轮询');
-    //   // this.startBluetoothDataListener();
-
-    //   // 每3秒向蓝牙设备发送状态查询指令
-    //   this.backgroundBTInterval = setInterval(() => {
-    //     console.log('[Background] 执行蓝牙状态主动查询');
-    //     // this.getDeviceStatusByBluetooth();
-    //   }, 3000);
-    // }
   },
 
   onUnload() {
@@ -419,6 +407,11 @@ Page({
   onSelectDevice(e) {
     //切换设备前中止轮询
     this.stopAutoRefresh();
+    //清除上一个设备的遗留状态
+    this.setData({
+      deviceStatus: this.data.offlineDeviceStatus
+    })
+
     const index = e.currentTarget.dataset.index;
     const device = this.data.deviceList[index];
 
@@ -770,7 +763,7 @@ Page({
         else if (res.code === 500) {
           if (res.msg === '获取属性失败:设备不在线') {
             wx.showToast({
-              title: '设备连接超时',
+              title: '设备不在线',
               icon: 'error'
             })
             this.setData({
@@ -782,25 +775,12 @@ Page({
             })
           }
           else if (res.msg && res.msg.includes('设备响应超时')) {
-            overTimeCount++;
-            console.log('响应超时计数:', overTimeCount);
-            if (overTimeCount / 5 != 0) {
-              console.log('响应超时过多认为设备已不在线');
-              wx.showLoading({
-                title: '设备连接超时',
-                mask: 'true'
-              });
-              setTimeout(() => {
-                wx.hideLoading();
-              }, 5 * 1000)
-              this.setData({
-                deviceStatus: this.data.offlineDeviceStatus
-              })
-              this.stopAutoRefresh();
-              this.setData({
-                showRefreshNotify: true
-              })
-            }
+            // overTimeCount++;
+            // console.log('响应超时计数:', overTimeCount);
+            wx.showLoading({
+              title: '设备响应超时',
+              mask: 'true'
+            });
           }
 
         }
