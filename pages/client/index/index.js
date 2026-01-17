@@ -135,7 +135,7 @@ Page({
   onPullDownRefresh: function () {
     this.onShow();
     wx.showToast({
-      title:'刷新成功',
+      title: '刷新成功',
     })
   },
 
@@ -920,48 +920,7 @@ Page({
     }, 5 * 60 * 1000);
   },
 
-  // 中断逻辑：收到SET指令
-  bufferCommand(action, value) {
-    console.log(`[System] 收到SET指令: ${action}, 中断当前/挂起GET`);
-    this.resetInactivityTimer(); // 用户操作，重置5分钟计时
 
-    // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
-    this._dataVersion = (this._dataVersion || 0) + 1;
-
-    // 2. 立即停止空闲轮询
-    if (this._pollTimer) {
-      clearInterval(this._pollTimer);
-      this._pollTimer = null;
-    }
-
-    // 3. 重置防抖计时器 (每次新SET到来都重置)
-    if (this._debounceTimer) clearTimeout(this._debounceTimer);
-
-    // 4. 属性锁定 (保持界面稳定)
-    const actionToProp = {
-      'setPower': ['ps'], 'setTemperature': ['temp'], 'setWindSpeed': ['fs'],
-      'setMode': ['fm'], 'setLighting': ['light', 'fl', 'fu'],
-      'setSwingUpDown': ['sxbf'], 'setSwingLeftRight': ['zybf'], 'setTimer': ['timer']
-    };
-    if (actionToProp[action]) actionToProp[action].forEach(p => this.lockProperty(p));
-
-    // 5. SET指令入队
-    this.lastCommandTime = Date.now();
-    // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
-    const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
-    if (existingSetIndex > -1) {
-      this._cmdQueue[existingSetIndex].value = value;
-      console.log(`[Queue] 覆盖待执行指令: ${action}`);
-    } else {
-      this._enqueueTask({ type: 'SET', action, value });
-    }
-
-    // 6. 开启/重置 3s 防抖计时器 -> 执行最终验证 -> 恢复轮询
-    this._debounceTimer = setTimeout(() => {
-      console.log('[System] SET序列结束且3s静默，执行最终验证 (FINAL_GET)');
-      this._enqueueTask({ type: 'FINAL_GET' });
-    }, 3000);
-  },
 
   // 统一任务队列入队
   _enqueueTask(task) {
@@ -1029,7 +988,7 @@ Page({
 
     const nextPs = status.ps === 1 ? 0 : 1;
     this.setData({ 'deviceStatus.ps': nextPs });
-    wx.showToast({ title: nextPs ? '正在开机...' : '正在关机...', icon: 'loading' });
+    wx.showToast({ title: nextPs ? '正在开机...' : '正在关机...', icon: 'loading' }, 1 * 1000);
     this.bufferCommand('setPower', nextPs);
   },
 
@@ -1286,15 +1245,26 @@ Page({
     };
     if (actionToProp[action]) actionToProp[action].forEach(p => this.lockProperty(p));
 
-    // 5. SET指令入队
-    this.lastCommandTime = Date.now();
-    // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
-    const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
-    if (existingSetIndex > -1) {
-      this._cmdQueue[existingSetIndex].value = value;
-      console.log(`[Queue] 覆盖待执行指令: ${action}`);
+    // 5. 指令发送消抖 (针对温度等连续操作)
+    const debounceActions = ['setTemperature'];
+    if (debounceActions.includes(action)) {
+      if (!this._cmdDebounceTimers) this._cmdDebounceTimers = {};
+
+      // 清除旧计时器
+      if (this._cmdDebounceTimers[action]) {
+        clearTimeout(this._cmdDebounceTimers[action]);
+      }
+
+      // 设置新计时器 (500ms 后执行入队)
+      this._cmdDebounceTimers[action] = setTimeout(() => {
+        this._executeEnqueue(action, value);
+        delete this._cmdDebounceTimers[action];
+      }, 500);
+
+      console.log(`[Debounce] 指令已延迟: ${action} -> ${value}`);
     } else {
-      this._enqueueTask({ type: 'SET', action, value });
+      // 非消抖指令直接执行
+      this._executeEnqueue(action, value);
     }
 
     // 6. 开启/重置 3s 防抖计时器 -> 执行最终验证 -> 恢复轮询
@@ -1302,6 +1272,25 @@ Page({
       console.log('[System] SET序列结束且3s静默，执行最终验证 (FINAL_GET)');
       this._enqueueTask({ type: 'FINAL_GET' });
     }, 3000);
+  },
+
+  // 内部方法：执行实际入队
+  _executeEnqueue(action, value) {
+    this.lastCommandTime = Date.now();
+    // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
+    const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
+    if (existingSetIndex > -1) {
+      this._cmdQueue[existingSetIndex].value = value;
+      console.log(`[Queue] 覆盖待执行指令: ${action}`);
+
+      // 如果队列处理器已停止但队列不为空，重新唤醒 (Safety Check)
+      if (!this._isProcessingQueue && this._cmdQueue.length > 0) {
+        console.warn('[Queue] 队列非运行状态，重新激活执行');
+        this._processNextInQueue();
+      }
+    } else {
+      this._enqueueTask({ type: 'SET', action, value });
+    }
   },
 
   // 实际发送指令到 API
