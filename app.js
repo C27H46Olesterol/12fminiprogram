@@ -61,7 +61,7 @@ App({
   //api通用方法，登陆单独使用request请求，修改测试环境注意
   async apiRequest(api, method = 'GET', data = {}, contentType = 'application/json') {
     return new Promise((resolve, reject) => {
-      const baseURL = "https://ha.musenyu.cn"
+      const baseURL = "https://api.12f.tech"
       // const baseURL = 'http://192.168.70.27:8080'
       wx.request({
         url: baseURL + api,

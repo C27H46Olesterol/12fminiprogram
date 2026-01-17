@@ -108,7 +108,7 @@ Page({
 
       // 3. 发送登录请求
       wx.request({
-        url: 'https://ha.musenyu.cn/auth/login',
+        url: 'https://api.12f.tech/auth/login',
         method: 'POST',
         data: {
           clientId: '2aeeae6eada0ddca866d775707cc5b11',
