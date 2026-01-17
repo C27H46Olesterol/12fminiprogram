@@ -134,6 +134,9 @@ Page({
   //下拉刷新事件
   onPullDownRefresh: function () {
     this.onShow();
+    wx.showToast({
+      title:'刷新成功',
+    })
   },
 
   onShow() {
@@ -914,7 +917,7 @@ Page({
         icon: 'none',
         duration: 3000
       });
-    }, 1 * 10 * 1000);
+    }, 5 * 60 * 1000);
   },
 
   // 中断逻辑：收到SET指令
