@@ -20,7 +20,7 @@
   z-index: 2000; /* 确保在最上方 */
   padding: 20rpx 30rpx;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   font-size: 26rpx;
   transform: translateY(-100%);

@@ -1,5 +1,10 @@
 <!--pages/client/index/index.wxml-->
 <view class="container client-home" bindtap="closeAllDropdowns">
+  <!-- 刷新提示 -->
+  <view class="refresh-notify {{showRefreshNotify ? 'show' : ''}}">
+    <text>下拉以刷新界面</text>
+  </view>
+  
   <!-- 故障警告 -->
   <view wx:if="{{showFaultAlert && currentFaultInfo}}" class="fault-alert-overlay" catchtap="closeFaultAlert">
     <view class="fault-alert-container" catchtap>
@@ -113,9 +118,9 @@
                   <block wx:if="{{item.connectionType === 'bluetooth'}}">
                     <image class="connection-icon bluetooth-icon" src="/images/icons/bluetooth.png" mode="aspectFit"></image>
                   </block>
-                  <block wx:else>
+                  <!-- <block wx:else>
                     <view class="device-status-dot {{item.signalStrength > 0 ? 'online' : 'offline'}}"></view>
-                  </block>
+                  </block> -->
                 </view>
 
                 <!-- 2. 图片 -->

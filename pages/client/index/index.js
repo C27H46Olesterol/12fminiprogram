@@ -154,6 +154,9 @@ Page({
     });
 
     console.log("client/index加载完毕");
+    this.setData({
+      showRefreshNotify: false
+    })
     setTimeout(() => { wx.hideLoading(); }, 1500);
     wx.stopPullDownRefresh();
   },
@@ -856,10 +859,12 @@ Page({
     if (this._debounceTimer) clearTimeout(this._debounceTimer);
     if (this._longPressDelay) clearTimeout(this._longPressDelay); // Clear long press timers too
     if (this._longPressTimer) clearInterval(this._longPressTimer); // Clear long press timers too
+    if (this._idleTimeout) clearTimeout(this._idleTimeout); // Clear inactivity timer
     this._pollTimer = null;
     this._debounceTimer = null;
     this._longPressDelay = null;
     this._longPressTimer = null;
+    this._idleTimeout = null;
     console.log('[System] 已停止所有轮询和计时');
   },
 
@@ -877,6 +882,8 @@ Page({
     }
 
     console.log('[System] 启动空闲轮询模式 (3s interval)');
+    this.resetInactivityTimer(); // 启动/重置 5分钟超时计时器
+
     this._pollTimer = setInterval(() => {
       if (this.isPageActive) {
         // 二次检查在线状态
@@ -890,12 +897,30 @@ Page({
           this._enqueueTask({ type: 'IDLE_GET' });
         }
       }
-    }, 3000);
+    }, 3 * 1000);
+  },
+
+  // 重置空闲计时器 (5分钟无操作则停止刷新)
+  resetInactivityTimer() {
+    if (this._idleTimeout) clearTimeout(this._idleTimeout);
+    this._idleTimeout = setTimeout(() => {
+      console.log('[System] 5分钟无操作，停止刷新');
+      this.stopAllPolling();
+      this.setData({
+        showRefreshNotify: true
+      });
+      wx.showToast({
+        title: '已停止刷新，下拉可重新连接',
+        icon: 'none',
+        duration: 3000
+      });
+    }, 1 * 10 * 1000);
   },
 
   // 中断逻辑：收到SET指令
   bufferCommand(action, value) {
     console.log(`[System] 收到SET指令: ${action}, 中断当前/挂起GET`);
+    this.resetInactivityTimer(); // 用户操作，重置5分钟计时
 
     // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
     this._dataVersion = (this._dataVersion || 0) + 1;
@@ -1236,6 +1261,7 @@ Page({
   // 中断逻辑：收到SET指令
   bufferCommand(action, value) {
     console.log(`[System] 收到SET指令: ${action}, 中断当前/挂起GET`);
+    this.resetInactivityTimer(); // 用户操作，重置5分钟计时
 
     // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
     this._dataVersion = (this._dataVersion || 0) + 1;
