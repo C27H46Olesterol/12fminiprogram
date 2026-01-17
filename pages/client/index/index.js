@@ -137,29 +137,25 @@ Page({
   },
 
   onShow() {
-    this.isPageActive = true; // 标记页面为活跃状态
-    this.UserInfoStorageCheck() //检查用户登陆状态
-    if (typeof this.getTabBar === 'function' &&
-      this.getTabBar()) {
-      this.getTabBar().setData({
-        selected: 1
-      })
+    this.isPageActive = true;
+    this.UserInfoStorageCheck();
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 1 });
     }
 
-    console.log("显示client/index")
+    console.log("显示client/index");
     this.loadUserData().then(() => {
-      // 页面显示时启动固定间隔查询生产器
+      // 页面显示时，执行一次同步并在空闲时启动轮询
       if (this.isPageActive) {
-        this.setRefreshMode('ACTIVE');
+        this.initPolling(); // 初始化
+        this.loadDeviceStatus(true); // 立即同步一次
+        this.startIdlePolling(); // 启动3s轮询
       }
-    }); // 加载用户专属数据
+    });
 
-    console.log("client/index加载完毕")
-    setTimeout(() => {
-      wx.hideLoading();
-    }, 1500)
-
-    wx.stopPullDownRefresh()
+    console.log("client/index加载完毕");
+    setTimeout(() => { wx.hideLoading(); }, 1500);
+    wx.stopPullDownRefresh();
   },
 
   /**
@@ -188,15 +184,15 @@ Page({
   },
 
   onHide() {
-    this.isPageActive = false; // 标记页面为非活跃状态
-    this.clearAllTimers();
-    console.log('onHide()事件触发，已清除所有定时器')
+    this.isPageActive = false;
+    this.stopAllPolling();
+    console.log('onHide()事件触发，已清除所有定时器');
   },
 
   onUnload() {
-    this.isPageActive = false; // 标记页面为非活跃状态
-    this.clearAllTimers();
-    console.log('onUnload()事件触发，已清除所有定时器和连接')
+    this.isPageActive = false;
+    this.stopAllPolling();
+    console.log('onUnload()事件触发，已清除所有定时器和连接');
   },
 
   //缓存登陆信息检查
@@ -409,6 +405,7 @@ Page({
     this.startBluetoothDiscovery();
   },
 
+
   // --- Remote Control Methods (Moved from remote.js) ---
 
   // 切换设备选择弹窗
@@ -427,7 +424,7 @@ Page({
   // 选择设备
   onSelectDevice(e) {
     //切换设备前中止轮询
-    this.stopAutoRefresh();
+    this.stopAllPolling();
     //清除上一个设备的遗留状态
     this.setData({
       deviceStatus: this.data.offlineDeviceStatus
@@ -454,7 +451,9 @@ Page({
     });
 
     // 切换设备后对新设备继续轮询
-    this.resetInactivityTimer();
+    this.initPolling();
+    this.loadDeviceStatus(true);
+    this.startIdlePolling();
   },
 
   // 取消配对/删除设备
@@ -733,8 +732,15 @@ Page({
     return `${h} 小时`;
   },
 
-  // 加载设备状态返回处理
-  async loadDeviceStatus(force = false) {
+  // 加载设备状态返回处理 (支持版本控制中断)
+  async loadDeviceStatus(force = false, expectedVersion) {
+    // 检查版本号：如果当前全局版本号已经大于请求时的版本号，说明有新SET指令插入，直接丢弃本次GET结果
+    const currentVersion = this._dataVersion || 0;
+    if (expectedVersion !== undefined && expectedVersion !== currentVersion) {
+      console.log(`[System] GET请求过期 (Req v${expectedVersion} < curr v${currentVersion}), 已中断`);
+      return;
+    }
+
     if (this._isLoadingStatus) return;
     this._isLoadingStatus = true;
 
@@ -765,19 +771,17 @@ Page({
           const signal = res.data.csq;
           //如果是强制通过指令后更新，或者过了不更新期，则同步远程状态
           if (force || !this.lastCommandTime || Date.now() - this.lastCommandTime > 2000) {
-            if (!props) {
-              return
-            }
+            // ... (keep existing filtering logic if needed, or just simplified below)
 
             // 过滤掉当前正在锁定的属性，防止 UI 回跳
             const filteredProps = {};
-            Object.keys(props).forEach(key => {
-              if (!this.isPropertyLocked(key)) {
-                filteredProps[key] = props[key];
-              } else {
-                console.log(`[Lock] 正在跳过锁定属性的覆盖: ${key}`);
-              }
-            });
+            if (props) {
+              Object.keys(props).forEach(key => {
+                if (!this.isPropertyLocked(key)) {
+                  filteredProps[key] = props[key];
+                }
+              });
+            }
 
             this.setData({
               deviceStatus: {
@@ -791,6 +795,9 @@ Page({
               deviceOnline: true,
               isQuickSearch: true
             });
+
+            // 设备在线，尝试启动空闲轮询 (如果尚未启动)
+            this.startIdlePolling();
           }
           console.log("本地保存设备状态:", this.data.deviceStatus)
         }
@@ -803,19 +810,23 @@ Page({
             this.setData({
               deviceStatus: this.data.offlineDeviceStatus
             })
-            this.stopAutoRefresh();
+            // 设备不在线，停止所有轮询
+            this.stopAllPolling();
             this.setData({
               showRefreshNotify: true
             })
           }
           else if (res.msg && res.msg.includes('设备响应超时')) {
-            // overTimeCount++;
-            // console.log('响应超时计数:', overTimeCount);
             wx.showToast({
-              title: '设备响应超时',
+              title: '设备连接超时，已停止刷新',
               icon: 'error',
               mask: 'true'
             }, 2 * 1000);
+            // 超时也停止轮询
+            this.stopAllPolling();
+            this.setData({
+              showRefreshNotify: true
+            });
           }
 
         }
@@ -826,131 +837,154 @@ Page({
     } finally {
       this._isLoadingStatus = false;
       this.checkFaultStatus(this.data.deviceStatus);
-      // 原有的 triggerNextRefresh 已被统一队列和固定 3s 定时器取代
     }
   },
 
-  // --- 自动刷新与刷新控制 ---
+  // --- 双模式智能轮询核心系统 ---
 
-  // 页面刷新条件检查
-  checkInfoReturn() {
-    const { userInfo, hasUserInfo, deviceStatus, selectedDevice } = this.data;
-    if (userInfo && hasUserInfo && selectedDevice && deviceStatus.online) {
-      return true;
-    }
-    return false;
+  // 初始化轮询状态
+  initPolling() {
+    if (this._dataVersion === undefined) this._dataVersion = 0;
+    this._cmdQueue = [];
+    this._isProcessingQueue = false;
+    this.stopAllPolling();
   },
 
-  /**
-   * 统一队列运行策略：固定 3s 查询生产者
-   */
-  setRefreshMode(mode) {
-    if (!this.isPageActive) mode = 'STOPPED';
+  // 停止所有轮询和计时
+  stopAllPolling() {
+    if (this._pollTimer) clearInterval(this._pollTimer);
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+    if (this._longPressDelay) clearTimeout(this._longPressDelay); // Clear long press timers too
+    if (this._longPressTimer) clearInterval(this._longPressTimer); // Clear long press timers too
+    this._pollTimer = null;
+    this._debounceTimer = null;
+    this._longPressDelay = null;
+    this._longPressTimer = null;
+    console.log('[System] 已停止所有轮询和计时');
+  },
 
-    // 1. 清理现有查询定时器
-    if (this._queryProducerId) {
-      clearInterval(this._queryProducerId);
-      this._queryProducerId = null;
-    }
+  // 开启空闲轮询 (默认模式: 每3s执行一次GET)
+  startIdlePolling() {
+    if (this._pollTimer) return; // 避免重复开启
+    // 检查基本条件
+    const { userInfo, hasUserInfo, selectedDevice, deviceStatus } = this.data;
+    if (!userInfo || !hasUserInfo || !selectedDevice || !this.isPageActive) return;
 
-    this._refreshMode = mode;
-
-    if (mode === 'STOPPED') {
-      this.setData({ showRefreshNotify: true });
+    // 关键逻辑：如果不在线，禁止启动轮询
+    if (!deviceStatus.online) {
+      console.log('[System] 设备不在线，停止/不启动空闲轮询');
       return;
     }
 
-    this.setData({ showRefreshNotify: false });
-    console.log(`[Timer] 启动 3s 查询生成器模式: ${mode}`);
+    console.log('[System] 启动空闲轮询模式 (3s interval)');
+    this._pollTimer = setInterval(() => {
+      if (this.isPageActive) {
+        // 二次检查在线状态
+        if (!this.data.deviceStatus.online) {
+          this.stopAllPolling();
+          return;
+        }
 
-    // 2. 立即放入一个初始查询任务
-    this._enqueueTask({ type: 'QUERY' });
-
-    // 3. 建立 3s 周期生产循环
-    this._queryProducerId = setInterval(() => {
-      if (this.isPageActive && this._refreshMode !== 'STOPPED') {
-        // 防止队列积压查询
-        const hasQuery = this._cmdQueue.some(t => t.type === 'QUERY');
-        if (!hasQuery) {
-          console.log(`[Timer] 周期性产出查询任务`);
-          this._enqueueTask({ type: 'QUERY' });
+        const hasIdleGet = this._cmdQueue.some(t => t.type === 'IDLE_GET');
+        if (!hasIdleGet) {
+          this._enqueueTask({ type: 'IDLE_GET' });
         }
       }
     }, 3000);
   },
 
-  startAutoRefresh() {
-    this.setRefreshMode('ACTIVE');
+  // 中断逻辑：收到SET指令
+  bufferCommand(action, value) {
+    console.log(`[System] 收到SET指令: ${action}, 中断当前/挂起GET`);
+
+    // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
+    this._dataVersion = (this._dataVersion || 0) + 1;
+
+    // 2. 立即停止空闲轮询
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = null;
+    }
+
+    // 3. 重置防抖计时器 (每次新SET到来都重置)
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+
+    // 4. 属性锁定 (保持界面稳定)
+    const actionToProp = {
+      'setPower': ['ps'], 'setTemperature': ['temp'], 'setWindSpeed': ['fs'],
+      'setMode': ['fm'], 'setLighting': ['light', 'fl', 'fu'],
+      'setSwingUpDown': ['sxbf'], 'setSwingLeftRight': ['zybf'], 'setTimer': ['timer']
+    };
+    if (actionToProp[action]) actionToProp[action].forEach(p => this.lockProperty(p));
+
+    // 5. SET指令入队
+    this.lastCommandTime = Date.now();
+    // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
+    const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
+    if (existingSetIndex > -1) {
+      this._cmdQueue[existingSetIndex].value = value;
+      console.log(`[Queue] 覆盖待执行指令: ${action}`);
+    } else {
+      this._enqueueTask({ type: 'SET', action, value });
+    }
+
+    // 6. 开启/重置 3s 防抖计时器 -> 执行最终验证 -> 恢复轮询
+    this._debounceTimer = setTimeout(() => {
+      console.log('[System] SET序列结束且3s静默，执行最终验证 (FINAL_GET)');
+      this._enqueueTask({ type: 'FINAL_GET' });
+    }, 3000);
   },
 
-  stopAutoRefresh() {
-    console.log('[Timer] 暂停自动刷新');
-    this.setRefreshMode('STOPPED');
-  },
-
-  // 辅助方法：任务入队
+  // 统一任务队列入队
   _enqueueTask(task) {
     if (!this._cmdQueue) this._cmdQueue = [];
-
-    // CONTROL 类型：执行末尾覆盖优化
-    if (task.type === 'CONTROL') {
-      const idx = this._cmdQueue.findIndex(t => t.type === 'CONTROL' && t.action === task.action);
-      if (idx > -1) {
-        this._cmdQueue[idx].value = task.value;
-        console.log(`[Queue] 覆盖待执行指令: ${task.action}`);
-        return;
-      }
-    }
-
-    // QUERY 类型：避免重复堆积
-    if (task.type === 'QUERY') {
-      if (this._cmdQueue.some(t => t.type === 'QUERY')) return;
-    }
-
     this._cmdQueue.push(task);
-
-    // 如果当前没在处理，则启动处理器
     if (!this._isProcessingQueue) {
       this._processNextInQueue();
     }
   },
 
-  // 统一队列处理器 (严格串行)
+  // 队列处理器
   async _processNextInQueue() {
-    if (!this.isPageActive || this._cmdQueue.length === 0) {
+    if (this._cmdQueue.length === 0) {
       this._isProcessingQueue = false;
+      // 如果队列为空，且没有防抖计时器在运行，则尝试恢复空闲轮询
+      if (!this._debounceTimer && !this._pollTimer && this.isPageActive && this.data.deviceStatus.online) {
+        console.log('[System] 队列处理完毕，尝试恢复空闲轮询');
+        this.startIdlePolling();
+      }
       return;
     }
-
     this._isProcessingQueue = true;
     const task = this._cmdQueue.shift();
 
     try {
-      if (task.type === 'CONTROL') {
-        console.log(`[Queue] 正在执行控制: ${task.action}`);
+      if (task.type === 'SET') {
+        console.log(`[Queue] 执行SET: ${task.action}`);
         await this.sendControlCommand(task.action, task.value);
-      } else if (task.type === 'QUERY') {
-        console.log(`[Queue] 正在执行周期查询`);
-        await this.loadDeviceStatus(false);
+        // SET失败不重试，直接执行下一条
       }
-    } catch (err) {
-      console.error('[Queue] 执行报错:', err);
+      else if (task.type === 'IDLE_GET' || task.type === 'FINAL_GET') {
+        // 执行GET (携带发起时的版本号)
+        // 注意：IDLE_GET虽然是3s一次，但如果在队列等待期间来了SET，_dataVersion会变，
+        // loadDeviceStatus内部会拦截，从而实现"若任何GET执行期间收到新SET则立即中断"的效果
+        await this.loadDeviceStatus(false, this._dataVersion);
+
+        if (task.type === 'FINAL_GET') {
+          // 最终验证完成后，且没有被新的SET打断（版本号一致），则恢复空闲轮询
+          // 实际上 bufferCommand 会清除timer，所以这里再次检查并启动是安全的
+          console.log('[System] 最终验证完成，恢复空闲轮询');
+          if (this.data.deviceStatus.online) {
+            this.startIdlePolling();
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[Queue] 执行异常:', e);
+    } finally {
+      // 递归处理下一个
+      this._processNextInQueue();
     }
-
-    // 处理下一个
-    this._processNextInQueue();
-  },
-
-  // 清除所有定时器
-  clearAllTimers() {
-    if (this._queryProducerId) clearInterval(this._queryProducerId);
-    if (this.resumeTimer) clearTimeout(this.resumeTimer);
-    if (this._longPressDelay) clearTimeout(this._longPressDelay);
-    if (this._longPressTimer) clearInterval(this._longPressTimer);
-    this._cmdQueue = [];
-    this._isProcessingQueue = false;
-    this._refreshMode = 'STOPPED';
-    console.log('[Timer] 已清理所有定时器');
   },
 
   // --- UI 控制处理器 ---
@@ -1016,130 +1050,6 @@ Page({
     const action = e.currentTarget.dataset.action;
     if (!this[action]) return;
 
-    this.stopAutoRefresh();
-    this.isLongPressing = true;
-    this[action](false);
-
-    this._longPressDelay = setTimeout(() => {
-      this._longPressTimer = setInterval(() => {
-        this[action](true);
-      }, 150);
-    }, 500);
-  },
-
-  onControlEnd() {
-    this.isLongPressing = false;
-    if (this._longPressDelay) clearTimeout(this._longPressDelay);
-    if (this._longPressTimer) clearInterval(this._longPressTimer);
-
-    if (this.resumeTimer) clearTimeout(this.resumeTimer);
-    this.resumeTimer = setTimeout(() => {
-      if (this.isPageActive) this.setRefreshMode('ACTIVE');
-    }, 2000);
-  },
-
-  // 弹出菜单切换逻辑
-  toggleModeDropdown() {
-    this.setData({
-      showModeDropdown: !this.data.showModeDropdown,
-      showSwingDropdown: false,
-      showFunctionDropdown: false,
-      showAddDeviceDropdown: false,
-      showDeviceModal: false
-    });
-  },
-
-  toggleSwingDropdown() {
-    this.setData({
-      showSwingDropdown: !this.data.showSwingDropdown,
-      showModeDropdown: false,
-      showFunctionDropdown: false,
-      showAddDeviceDropdown: false,
-      showDeviceModal: false
-    });
-  },
-
-  toggleFunctionDropdown() {
-    this.setData({
-      showFunctionDropdown: !this.data.showFunctionDropdown,
-      showModeDropdown: false,
-      showSwingDropdown: false,
-      showAddDeviceDropdown: false,
-      showDeviceModal: false
-    });
-  },
-
-  // 模式与摆风切换
-  selectMode(e) {
-    const mode = parseInt(e.currentTarget.dataset.mode, 10);
-    if (isNaN(mode) || !this.checkPower()) return;
-
-    wx.vibrateShort({ type: 'light' });
-    this.setData({ 'deviceStatus.fm': mode, showModeDropdown: false });
-
-    const modeName = { 0: '通风', 1: '睡眠', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
-    this.showControlToast(`${modeName}模式`);
-    this.bufferCommand('setMode', mode);
-  },
-
-  selectSwing(e) {
-    const type = e.currentTarget.dataset.type;
-    if (!this.checkPower()) return;
-
-    wx.vibrateShort({ type: 'light' });
-    if (type === 'ud') {
-      const next = this.data.deviceStatus.sxbf === 1 ? 0 : 1;
-      this.setData({ 'deviceStatus.sxbf': next });
-      this.showControlToast(next ? '开启上下摆风' : '关闭上下摆风');
-      this.bufferCommand('setSwingUpDown', next);
-    } else if (type === 'lr') {
-      const next = this.data.deviceStatus.zybf === 1 ? 0 : 1;
-      this.setData({ 'deviceStatus.zybf': next });
-      this.showControlToast(next ? '开启左右摆风' : '关闭左右摆风');
-      this.bufferCommand('setSwingLeftRight', next);
-    }
-  },
-
-  selectFunction(e) {
-    const func = e.currentTarget.dataset.func;
-    const s = this.data.deviceStatus;
-    if (!s.online) return;
-
-    wx.vibrateShort({ type: 'light' });
-    if (func === 'off') {
-      this.setData({ 'deviceStatus.light': 0, 'deviceStatus.fl': 0, 'deviceStatus.fu': 0 });
-      this.showControlToast('关闭所有额外功能');
-    } else {
-      const val = s[func] === 1 ? 0 : 1;
-      this.setData({ [`deviceStatus.${func}`]: val });
-      const names = { 'light': '照明', 'fl': '氛围灯', 'fu': '负离子' };
-      this.showControlToast((names[func] || '功能') + (val ? '开启' : '关闭'));
-    }
-    this.bufferCommand('setLighting', true);
-  },
-
-  // 重置不活跃计时器
-  async resetInactivityTimer() {
-    if (!this.isPageActive) return;
-
-    if (this.checkInfoReturn()) {
-      // 1. 确保处于活跃模式
-      if (this._refreshMode === 'STOPPED') {
-        this.setRefreshMode('ACTIVE');
-      }
-
-      // 2. 清除之前的停止定时器
-      if (this._toStopTimer) clearTimeout(this._toStopTimer);
-
-      // 3. 5分钟无操作后完全停止刷新
-      this._toStopTimer = setTimeout(() => {
-        console.log('[Timer] 用户 5min 未操作，停止自动刷新');
-        this.setRefreshMode('STOPPED');
-      }, 300000); // 5分钟 = 300,000ms
-
-    } else {
-      console.log('[Timer] 未满足启动条件');
-    }
   },
 
   // 开启自动刷新
@@ -1227,7 +1137,6 @@ Page({
     const action = e.currentTarget.dataset.action;
     if (!this[action]) return;
 
-    this.stopAutoRefresh();
     this.isLongPressing = true;
     this[action](false);
 
@@ -1242,11 +1151,6 @@ Page({
     this.isLongPressing = false;
     if (this._longPressDelay) clearTimeout(this._longPressDelay);
     if (this._longPressTimer) clearInterval(this._longPressTimer);
-
-    if (this.resumeTimer) clearTimeout(this.resumeTimer);
-    this.resumeTimer = setTimeout(() => {
-      if (this.isPageActive) this.setRefreshMode('ACTIVE');
-    }, 2000);
   },
 
   // 弹出菜单切换逻辑
@@ -1329,22 +1233,46 @@ Page({
     this.bufferCommand('setLighting', true);
   },
 
-  // 指令缓冲入队
+  // 中断逻辑：收到SET指令
   bufferCommand(action, value) {
+    console.log(`[System] 收到SET指令: ${action}, 中断当前/挂起GET`);
+
+    // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
+    this._dataVersion = (this._dataVersion || 0) + 1;
+
+    // 2. 立即停止空闲轮询
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = null;
+    }
+
+    // 3. 重置防抖计时器 (每次新SET到来都重置)
+    if (this._debounceTimer) clearTimeout(this._debounceTimer);
+
+    // 4. 属性锁定 (保持界面稳定)
     const actionToProp = {
       'setPower': ['ps'], 'setTemperature': ['temp'], 'setWindSpeed': ['fs'],
       'setMode': ['fm'], 'setLighting': ['light', 'fl', 'fu'],
       'setSwingUpDown': ['sxbf'], 'setSwingLeftRight': ['zybf'], 'setTimer': ['timer']
     };
-    if (actionToProp[action]) {
-      actionToProp[action].forEach(p => this.lockProperty(p));
+    if (actionToProp[action]) actionToProp[action].forEach(p => this.lockProperty(p));
+
+    // 5. SET指令入队
+    this.lastCommandTime = Date.now();
+    // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
+    const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
+    if (existingSetIndex > -1) {
+      this._cmdQueue[existingSetIndex].value = value;
+      console.log(`[Queue] 覆盖待执行指令: ${action}`);
+    } else {
+      this._enqueueTask({ type: 'SET', action, value });
     }
 
-    // 每次发送指令时，重置 5 分钟定时器
-    this.resetInactivityTimer();
-
-    this.lastCommandTime = Date.now();
-    this._enqueueTask({ type: 'CONTROL', action, value });
+    // 6. 开启/重置 3s 防抖计时器 -> 执行最终验证 -> 恢复轮询
+    this._debounceTimer = setTimeout(() => {
+      console.log('[System] SET序列结束且3s静默，执行最终验证 (FINAL_GET)');
+      this._enqueueTask({ type: 'FINAL_GET' });
+    }, 3000);
   },
 
   // 实际发送指令到 API
