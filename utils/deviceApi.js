@@ -37,9 +37,9 @@ function setDeviceDesiredProperty(deviceName, deviceProperty) {
 }
 
 //用户解绑
-function unbindDevice(deviceName){
-  return app.apiRequest('/pro/banding/unbind','GET',deviceName);
-}
+// function unbindDevice(deviceName){
+//   return app.apiRequest('/pro/banding/unbind','GET',deviceName);
+// }
 
 //获取用户绑定设备信息
 function getUserActiveDevice(){
@@ -50,6 +50,5 @@ module.exports = {
     getDeviceInfo,
     getDevicePropertyDetail,
     setDeviceDesiredProperty,
-    getUserActiveDevice,
-    unbindDevice
+    getUserActiveDevice
 };

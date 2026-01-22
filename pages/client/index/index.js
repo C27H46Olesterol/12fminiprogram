@@ -109,6 +109,7 @@ Page({
     this._cmdQueue = [];
     this._isProcessingQueue = false;
     this._refreshMode = 'STOPPED';
+    this._statusFailCount = 0; // 初始化连续失败计数器
     console.log('加载页面onLoad完毕')
   },
 
@@ -119,12 +120,12 @@ Page({
     console.log(`[Lock] 锁定属性: ${prop}`);
   },
 
-  // 检查属性是否处于锁定状态 (2.5秒内)
+  // 检查属性是否处于锁定状态 (3.5秒内)
   isPropertyLocked(prop) {
     if (!this._propLocks) return false;
     const lockTime = this._propLocks[prop];
     if (!lockTime) return false;
-    const isLocked = (Date.now() - lockTime) < 2500;
+    const isLocked = (Date.now() - lockTime) < 3500;
     if (!isLocked) {
       delete this._propLocks[prop]; // 过期自动清除
     }
@@ -772,6 +773,14 @@ Page({
         const res = await deviceApi.getDevicePropertyDetail(sn);
         if (!this.handleApiResult(res)) return;
         if (res.code === 200) {
+          // 二次检查版本号：防止在 API 请求期间产生的新指令被旧数据覆盖
+          const postRequestVersion = this._dataVersion || 0;
+          if (expectedVersion !== undefined && expectedVersion !== postRequestVersion) {
+            console.log(`[System] GET响应丢弃 (响应回传时 v${postRequestVersion} > 发起时 v${expectedVersion})`);
+            return;
+          }
+
+          this._statusFailCount = 0; // 成功则重置失败计数
           overTimeCount = 0;
           const props = res.data.properties;
           const signal = res.data.csq;
@@ -808,33 +817,26 @@ Page({
           console.log("本地保存设备状态:", this.data.deviceStatus)
         }
         else if (res.code === 500) {
-          if (res.msg === '获取属性失败:设备不在线') {
-            wx.showToast({
-              title: '设备不在线',
-              icon: 'error'
-            })
-            this.setData({
-              deviceStatus: this.data.offlineDeviceStatus
-            })
-            // 设备不在线，停止所有轮询
-            this.stopAllPolling();
-            this.setData({
-              showRefreshNotify: true
-            })
-          }
-          else if (res.msg && res.msg.includes('设备响应超时')) {
-            wx.showToast({
-              title: '设备连接超时，已停止刷新',
-              icon: 'error',
-              mask: 'true'
-            }, 2 * 1000);
-            // 超时也停止轮询
-            this.stopAllPolling();
-            this.setData({
-              showRefreshNotify: true
-            });
-          }
+          this._statusFailCount = (this._statusFailCount || 0) + 1;
+          console.warn(`[System] GET请求失败 (${this._statusFailCount}/3): ${res.msg}`);
 
+          // 只有连续失败3次才彻底停止并提示
+          if (this._statusFailCount >= 3) {
+            if (res.msg === '获取属性失败:设备不在线') {
+              wx.showToast({ title: '设备已离线', icon: 'error' });
+              this.setData({ deviceStatus: this.data.offlineDeviceStatus });
+            } else {
+              wx.showToast({ title: '连接不稳定，已停止刷新', icon: 'none' });
+            }
+
+            this.stopAllPolling();
+            this.setData({ showRefreshNotify: true });
+          } else {
+            // 失败次数未达上限，静默处理，等待下一个轮询周期重试
+            console.log('[System] 偶发性错误，尝试在下个周期自动修复...');
+            // 如果是 FINAL_GET 失败了，确保依然能恢复 IDLE 轮询
+            if (force) { this.startIdlePolling(); }
+          }
         }
       }
       console.log('加载当前选中设备：', device)
@@ -942,24 +944,28 @@ Page({
       }
       return;
     }
+
     this._isProcessingQueue = true;
     const task = this._cmdQueue.shift();
 
     try {
       if (task.type === 'SET') {
-        console.log(`[Queue] 执行SET: ${task.action}`);
+        console.log(`[Queue] 执行SET: ${task.action},${task.value}`);
         await this.sendControlCommand(task.action, task.value);
-        // SET失败不重试，直接执行下一条
-      }
-      else if (task.type === 'IDLE_GET' || task.type === 'FINAL_GET') {
-        // 执行GET (携带发起时的版本号)
-        // 注意：IDLE_GET虽然是3s一次，但如果在队列等待期间来了SET，_dataVersion会变，
-        // loadDeviceStatus内部会拦截，从而实现"若任何GET执行期间收到新SET则立即中断"的效果
-        await this.loadDeviceStatus(false, this._dataVersion);
+      } else if (task.type === 'IDLE_GET' || task.type === 'FINAL_GET') {
+        // --- 核心优化：指令插队拦截 ---
+        // 如果当前是 GET 任务，但队列中出现了新的 SET 任务，则立即放弃本次 GET，优先处理 SET
+        const hasPendingSet = this._cmdQueue.some(t => t.type === 'SET');
+        if (hasPendingSet) {
+          console.warn(`[Queue] 检测到待处理SET指令，跳过本次${task.type}以保障响应速度`);
+          return; // finally 会触发下一条任务（即那个SET）
+        }
 
-        if (task.type === 'FINAL_GET') {
-          // 最终验证完成后，且没有被新的SET打断（版本号一致），则恢复空闲轮询
-          // 实际上 bufferCommand 会清除timer，所以这里再次检查并启动是安全的
+        console.log(`[Queue] 执行${task.type}，版本号: v${this._dataVersion}`);
+        const isFinal = task.type === 'FINAL_GET';
+        await this.loadDeviceStatus(isFinal, this._dataVersion);
+
+        if (isFinal) {
           console.log('[System] 最终验证完成，恢复空闲轮询');
           if (this.data.deviceStatus.online) {
             this.startIdlePolling();
@@ -969,8 +975,11 @@ Page({
     } catch (e) {
       console.error('[Queue] 执行异常:', e);
     } finally {
-      // 递归处理下一个
-      this._processNextInQueue();
+      // --- 核心优化：断开递归栈 ---
+      // 使用 setTimeout 确保这一长串指令处理不会阻塞 UI 线程的主循环
+      setTimeout(() => {
+        this._processNextInQueue();
+      }, 0);
     }
   },
 
@@ -992,12 +1001,17 @@ Page({
     this.bufferCommand('setPower', nextPs);
   },
 
+
+
   increaseWindSpeed(isLongPress = false) {
     if (!this.checkPower()) return;
     if (!isLongPress) wx.vibrateShort({ type: 'medium' });
     let speed = this.data.deviceStatus.fs || 1;
     if (speed < 5) {
-      this.setData({ 'deviceStatus.fs': ++speed });
+      speed++;
+      this.data.deviceStatus.fs = speed; // 同步更新以便连续点击读到新值
+      this.setData({ 'deviceStatus.fs': speed });
+      this.showWindSpeedToast(speed);
       this.bufferCommand('setWindSpeed', speed);
     }
   },
@@ -1007,9 +1021,22 @@ Page({
     if (!isLongPress) wx.vibrateShort({ type: 'medium' });
     let speed = this.data.deviceStatus.fs || 1;
     if (speed > 1) {
-      this.setData({ 'deviceStatus.fs': --speed });
+      speed--;
+      this.data.deviceStatus.fs = speed; // 同步更新以便连续点击读到新值
+      this.setData({ 'deviceStatus.fs': speed });
+      this.showWindSpeedToast(speed);
       this.bufferCommand('setWindSpeed', speed);
     }
+  },
+
+  // 显示风速提示
+  showWindSpeedToast(speed) {
+    wx.showToast({
+      title: `风速 ${speed} 档`,
+      icon: 'none',
+      duration: 500, // Short duration
+      mask: false
+    });
   },
 
   increaseTemperature(isLongPress = false) {
@@ -1017,7 +1044,9 @@ Page({
     if (!isLongPress) wx.vibrateShort({ type: 'medium' });
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
     if (temp < 32) {
-      this.setData({ 'deviceStatus.temp': (++temp) * 10 });
+      temp++;
+      this.data.deviceStatus.temp = temp * 10; // 同步更新
+      this.setData({ 'deviceStatus.temp': temp * 10 });
       this.bufferCommand('setTemperature', temp);
     }
   },
@@ -1027,7 +1056,9 @@ Page({
     if (!isLongPress) wx.vibrateShort({ type: 'medium' });
     let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
     if (temp > 5) {
-      this.setData({ 'deviceStatus.temp': (--temp) * 10 });
+      temp--;
+      this.data.deviceStatus.temp = temp * 10; // 同步更新
+      this.setData({ 'deviceStatus.temp': temp * 10 });
       this.bufferCommand('setTemperature', temp);
     }
   },
@@ -1037,92 +1068,9 @@ Page({
     const action = e.currentTarget.dataset.action;
     if (!this[action]) return;
 
-  },
-
-  // 开启自动刷新
-  startAutoRefresh() {
-    this.resetInactivityTimer();
-  },
-
-  // 固定时间停止刷新
-  autoStopRefresh() {
-    this.setRefreshMode('STOPPED');
-  },
-
-  // 清除所有定时器 (用于生命周期注销)
-  clearAllTimers() {
-    this._refreshMode = 'STOPPED';
-    if (this._queryProducerId) clearInterval(this._queryProducerId);
-    if (this.resumeTimer) clearTimeout(this.resumeTimer);
+    // 清除上一次可能的残留定时器（防止响应重叠）
     if (this._longPressDelay) clearTimeout(this._longPressDelay);
     if (this._longPressTimer) clearInterval(this._longPressTimer);
-    if (this._toStopTimer) clearTimeout(this._toStopTimer);
-    this._cmdQueue = [];
-    this._isProcessingQueue = false;
-    console.log('[Timer] 所有生产者和定时器已清理');
-  },
-
-  // 开关机
-  async togglePower() {
-    wx.vibrateShort({ type: 'light' });
-    const device = this.data.selectedDevice;
-    const status = this.data.deviceStatus;
-
-    if (!device || !status.online) {
-      wx.showToast({ title: '设备不在线', icon: 'error' });
-      return;
-    }
-
-    const nextPs = status.ps === 1 ? 0 : 1;
-    this.setData({ 'deviceStatus.ps': nextPs });
-    wx.showToast({ title: nextPs ? '正在开机...' : '正在关机...', icon: 'loading' });
-    this.bufferCommand('setPower', nextPs);
-  },
-
-  increaseWindSpeed(isLongPress = false) {
-    if (!this.checkPower()) return;
-    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
-    let speed = this.data.deviceStatus.fs || 1;
-    if (speed < 5) {
-      this.setData({ 'deviceStatus.fs': ++speed });
-      this.bufferCommand('setWindSpeed', speed);
-    }
-  },
-
-  decreaseWindSpeed(isLongPress = false) {
-    if (!this.checkPower()) return;
-    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
-    let speed = this.data.deviceStatus.fs || 1;
-    if (speed > 1) {
-      this.setData({ 'deviceStatus.fs': --speed });
-      this.bufferCommand('setWindSpeed', speed);
-    }
-  },
-
-  increaseTemperature(isLongPress = false) {
-    if (!this.checkPower()) return;
-    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
-    let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
-    if (temp < 32) {
-      this.setData({ 'deviceStatus.temp': (++temp) * 10 });
-      this.bufferCommand('setTemperature', temp);
-    }
-  },
-
-  decreaseTemperature(isLongPress = false) {
-    if (!this.checkPower()) return;
-    if (!isLongPress) wx.vibrateShort({ type: 'medium' });
-    let temp = Math.floor((this.data.deviceStatus.temp || 250) / 10);
-    if (temp > 5) {
-      this.setData({ 'deviceStatus.temp': (--temp) * 10 });
-      this.bufferCommand('setTemperature', temp);
-    }
-  },
-
-  // 长按控制
-  onControlStart(e) {
-    const action = e.currentTarget.dataset.action;
-    if (!this[action]) return;
 
     this.isLongPressing = true;
     this[action](false);
@@ -1177,6 +1125,7 @@ Page({
     if (isNaN(mode) || !this.checkPower()) return;
 
     wx.vibrateShort({ type: 'light' });
+    this.data.deviceStatus.fm = mode; // 同步更新本地副本
     this.setData({ 'deviceStatus.fm': mode, showModeDropdown: false });
 
     const modeName = { 0: '通风', 1: '睡眠', 2: '制冷', 3: '强劲', 4: '自动', 5: '制热' }[mode] || '自动';
@@ -1209,10 +1158,14 @@ Page({
 
     wx.vibrateShort({ type: 'light' });
     if (func === 'off') {
+      this.data.deviceStatus.light = 0;
+      this.data.deviceStatus.fl = 0;
+      this.data.deviceStatus.fu = 0;
       this.setData({ 'deviceStatus.light': 0, 'deviceStatus.fl': 0, 'deviceStatus.fu': 0 });
       this.showControlToast('关闭所有额外功能');
     } else {
       const val = s[func] === 1 ? 0 : 1;
+      this.data.deviceStatus[func] = val; // 同步更新本地副本
       this.setData({ [`deviceStatus.${func}`]: val });
       const names = { 'light': '照明', 'fl': '氛围灯', 'fu': '负离子' };
       this.showControlToast((names[func] || '功能') + (val ? '开启' : '关闭'));
@@ -1228,7 +1181,13 @@ Page({
     // 1. 版本号自增 (核心：任何正在进行的GET请求回来后对比版本号，不一致则丢弃)
     this._dataVersion = (this._dataVersion || 0) + 1;
 
-    // 2. 立即停止空闲轮询
+    // 2. 立即停止空闲轮询并尝试清除挂起提示（自动唤醒）
+    if (this.data.showRefreshNotify) {
+      console.log('[System] 监测到用户操作，正在自动唤醒通讯链路...');
+      this.setData({ showRefreshNotify: false });
+      this._statusFailCount = 0; // 重置错误计数
+    }
+
     if (this._pollTimer) {
       clearInterval(this._pollTimer);
       this._pollTimer = null;
@@ -1245,8 +1204,8 @@ Page({
     };
     if (actionToProp[action]) actionToProp[action].forEach(p => this.lockProperty(p));
 
-    // 5. 指令发送消抖 (针对温度等连续操作)
-    const debounceActions = ['setTemperature'];
+    // 5. 指令发送消抖 (针对温度、风速、摆风、灯光等连续操作)
+    const debounceActions = ['setTemperature', 'setWindSpeed', 'setSwingUpDown', 'setSwingLeftRight', 'setLighting'];
     if (debounceActions.includes(action)) {
       if (!this._cmdDebounceTimers) this._cmdDebounceTimers = {};
 
@@ -1255,11 +1214,11 @@ Page({
         clearTimeout(this._cmdDebounceTimers[action]);
       }
 
-      // 设置新计时器 (500ms 后执行入队)
+      // 设置新计时器 (250ms 后执行入队)
       this._cmdDebounceTimers[action] = setTimeout(() => {
         this._executeEnqueue(action, value);
         delete this._cmdDebounceTimers[action];
-      }, 500);
+      }, 250);
 
       console.log(`[Debounce] 指令已延迟: ${action} -> ${value}`);
     } else {
@@ -1267,16 +1226,15 @@ Page({
       this._executeEnqueue(action, value);
     }
 
-    // 6. 开启/重置 3s 防抖计时器 -> 执行最终验证 -> 恢复轮询
+    // 6. 开启/重置 1.5s 防抖计时器 -> 执行最终验证 -> 恢复轮询
     this._debounceTimer = setTimeout(() => {
-      console.log('[System] SET序列结束且3s静默，执行最终验证 (FINAL_GET)');
+      console.log('[System] SET序列结束且1.5s静默，执行最终验证 (FINAL_GET)');
       this._enqueueTask({ type: 'FINAL_GET' });
-    }, 3000);
+    }, 1500);
   },
 
   // 内部方法：执行实际入队
   _executeEnqueue(action, value) {
-    this.lastCommandTime = Date.now();
     // 检查队列中是否已有相同action的SET指令，如果有则更新其value，否则添加
     const existingSetIndex = this._cmdQueue.findIndex(t => t.type === 'SET' && t.action === action);
     if (existingSetIndex > -1) {
@@ -1298,21 +1256,23 @@ Page({
     const device = this.data.selectedDevice;
     if (!device || !this.data.deviceStatus.online) return;
 
-    try {
-      let property = {};
-      const s = this.data.deviceStatus;
-      switch (action) {
-        case 'setPower': property.ps = value; break;
-        case 'setTemperature': property.temp = value * 10; break;
-        case 'setWindSpeed': property.fs = value; break;
-        case 'setMode': property.fm = value; break;
-        case 'setLighting': property.light = s.light; property.fl = s.fl; property.fu = s.fu; break;
-        case 'setSwingUpDown': property.sxbf = value; break;
-        case 'setSwingLeftRight': property.zybf = value; break;
-        case 'setTimer': property.timer = value; break;
-      }
+    // 更新最后指令执行时间，用于 loadDeviceStatus 的不更新期判断
+    this.lastCommandTime = Date.now();
+    let property = {};
+    const s = this.data.deviceStatus;
+    switch (action) {
+      case 'setPower': property.ps = value; break;
+      case 'setTemperature': property.temp = value * 10; break;
+      case 'setWindSpeed': property.fs = value; break;
+      case 'setMode': property.fm = value; break;
+      case 'setLighting': property.light = s.light; property.fl = s.fl; property.fu = s.fu; break;
+      case 'setSwingUpDown': property.sxbf = value; break;
+      case 'setSwingLeftRight': property.zybf = value; break;
+      case 'setTimer': property.timer = value; break;
+    }
 
-      // 根据当前设备连接类型发送指令
+    // 根据当前设备连接类型发送指令
+    try {
       if (device.connectionType === 'bluetooth') {
         if (this.data.isBluetoothConnected) {
           action === 'setTimer' ? this.sendBluetoothCommandTimer() : this.sendBluetoothCommand(s);
