@@ -958,25 +958,23 @@ Page({
         const hasPendingSet = this._cmdQueue.some(t => t.type === 'SET');
         if (hasPendingSet) {
           console.warn(`[Queue] 检测到待处理SET指令，跳过本次${task.type}以保障响应速度`);
-          return; // finally 会触发下一条任务（即那个SET）
+          return;
         }
 
-        console.log(`[Queue] 执行${task.type}，版本号: v${this._dataVersion}`);
+        console.log(`[Queue] 执行${task.type} (并行模式)，当前版本: v${this._dataVersion}`);
         const isFinal = task.type === 'FINAL_GET';
-        await this.loadDeviceStatus(isFinal, this._dataVersion);
 
-        if (isFinal) {
-          console.log('[System] 最终验证完成，恢复空闲轮询');
-          if (this.data.deviceStatus.online) {
-            this.startIdlePolling();
-          }
-        }
+        // --- 核心优化：非阻塞执行 ---
+        // 关键点：不再 await 这个 GET 请求，允许它在后台慢慢等待网络返回。
+        // 这样即便 GET 超时卡住 60s，下方的 finally 也会立即触发 setTimeout 执行队列里的下一个 SET 系列。
+        this.loadDeviceStatus(isFinal, this._dataVersion).then(() => {
+          if (isFinal) console.log('[System] 1.5s 最终验证后台同步完成');
+        });
       }
     } catch (e) {
       console.error('[Queue] 执行异常:', e);
     } finally {
-      // --- 核心优化：断开递归栈 ---
-      // 使用 setTimeout 确保这一长串指令处理不会阻塞 UI 线程的主循环
+      // 断开栈，立即寻找下一个任务
       setTimeout(() => {
         this._processNextInQueue();
       }, 0);
@@ -1013,6 +1011,8 @@ Page({
       this.setData({ 'deviceStatus.fs': speed });
       this.showWindSpeedToast(speed);
       this.bufferCommand('setWindSpeed', speed);
+    } else {
+      if (!isLongPress) this.showControlToast('风速已到最大值');
     }
   },
 
@@ -1026,6 +1026,8 @@ Page({
       this.setData({ 'deviceStatus.fs': speed });
       this.showWindSpeedToast(speed);
       this.bufferCommand('setWindSpeed', speed);
+    } else {
+      if (!isLongPress) this.showControlToast('风速已到最小值');
     }
   },
 
@@ -1048,6 +1050,8 @@ Page({
       this.data.deviceStatus.temp = temp * 10; // 同步更新
       this.setData({ 'deviceStatus.temp': temp * 10 });
       this.bufferCommand('setTemperature', temp);
+    } else {
+      if (!isLongPress) this.showControlToast('温度已到最大值');
     }
   },
 
@@ -1060,6 +1064,8 @@ Page({
       this.data.deviceStatus.temp = temp * 10; // 同步更新
       this.setData({ 'deviceStatus.temp': temp * 10 });
       this.bufferCommand('setTemperature', temp);
+    } else {
+      if (!isLongPress) this.showControlToast('温度已到最小值');
     }
   },
 
@@ -1209,18 +1215,24 @@ Page({
     if (debounceActions.includes(action)) {
       if (!this._cmdDebounceTimers) this._cmdDebounceTimers = {};
 
+      // 核心策略：将温度和风速进行任务归并 (捆绑发送)
+      let debounceKey = action;
+      if (action === 'setTemperature' || action === 'setWindSpeed') {
+        debounceKey = 'setAirControl';
+      }
+
       // 清除旧计时器
-      if (this._cmdDebounceTimers[action]) {
-        clearTimeout(this._cmdDebounceTimers[action]);
+      if (this._cmdDebounceTimers[debounceKey]) {
+        clearTimeout(this._cmdDebounceTimers[debounceKey]);
       }
 
       // 设置新计时器 (250ms 后执行入队)
-      this._cmdDebounceTimers[action] = setTimeout(() => {
-        this._executeEnqueue(action, value);
-        delete this._cmdDebounceTimers[action];
+      this._cmdDebounceTimers[debounceKey] = setTimeout(() => {
+        this._executeEnqueue(debounceKey, value);
+        delete this._cmdDebounceTimers[debounceKey];
       }, 250);
 
-      console.log(`[Debounce] 指令已延迟: ${action} -> ${value}`);
+      console.log(`[Debounce] 指令已延迟并归并: ${debounceKey} (来自:${action}) -> ${value}`);
     } else {
       // 非消抖指令直接执行
       this._executeEnqueue(action, value);
@@ -1262,6 +1274,11 @@ Page({
     const s = this.data.deviceStatus;
     switch (action) {
       case 'setPower': property.ps = value; break;
+      case 'setAirControl':
+        // 核心优化：同时下发温度和风速，实现属性打捆
+        property.temp = s.temp;
+        property.fs = s.fs;
+        break;
       case 'setTemperature': property.temp = value * 10; break;
       case 'setWindSpeed': property.fs = value; break;
       case 'setMode': property.fm = value; break;
