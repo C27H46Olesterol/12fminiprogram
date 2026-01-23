@@ -116,8 +116,9 @@ Page({
           grantType: 'xcx',
           xcxCode: loginRes.code,
           phoneCode: phoneCode,
-          appid: 'wxa81a2077330256cf',
-          tenantId: "000000",
+          appid: 'wxa81a2077330256cf',、
+          
+          tenantId: "447210",
           latitude: locationRes.latitude,
           longitude: locationRes.longitude,
           speed: locationRes.speed,
