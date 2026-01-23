@@ -32,16 +32,16 @@ Page({
    * 初始化页面逻辑
    */
   initPage() {
-    if (app.globalData.hasUserInfo && app.globalData.userInfo) {
-      this.setData({
-        hasUserInfo: app.globalData.hasUserInfo,
-        userInfo: app.globalData.userInfo
-      });
-      console.log("缓存登陆信息校验1：hasUserInfo：", this.data.hasUserInfo)
-      console.log("缓存登陆信息校验2：usserInfo", this.data.userInfo)
-    } else {
-      console.log('用户未登录')
-    }
+    // if (app.globalData.hasUserInfo && app.globalData.userInfo) {
+    //   this.setData({
+    //     hasUserInfo: app.globalData.hasUserInfo,
+    //     userInfo: app.globalData.userInfo
+    //   });
+    //   console.log("缓存登陆信息校验1：hasUserInfo：", this.data.hasUserInfo)
+    //   console.log("缓存登陆信息校验2：usserInfo", this.data.userInfo)
+    // } else {
+    //   console.log('用户未登录')
+    // }
   },
 
   // ===================== 维修工逻辑 =====================
@@ -85,5 +85,6 @@ Page({
 
   handleLogin() {
     wx.navigateTo({ url: '/pages/login/login' });
-  }
+  },
+
 })

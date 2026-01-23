@@ -756,7 +756,7 @@ Page({
       console.log('检查选中设备状态：', device)
       if (!device) {
         console.log('设备列表无设备')
-        this.clearAllTimers();
+        // this.clearAllTimers();
         return;
       }
       if (device.connectionType === 'bluetooth') {

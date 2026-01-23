@@ -2,7 +2,7 @@
 <view class="container">
   
   <!-- 1. 维修工视图 -->
-  <block wx:if="{{userInfo.userRole === '维修工'}}">
+  <!-- <block wx:if="{{userInfo.userRole === '维修工'}}">
     <view class="worker-header">
       <view class="header-content">
         <text class="greeting">您好，{{userInfo.userName || "售后工程师"}}</text>
@@ -36,10 +36,10 @@
         <text class="work-desc">查阅技术文档</text>
       </view>
     </view>
-  </block>
+  </block> -->
 
   <!-- 2. 普通用户视图 (功能入口) -->
-  <block wx:if="{{userInfo.userRole === '普通用户'}}">
+  <!-- <block wx:if="{{userInfo.userRole === '普通用户'}}">
     <view class="worker-header user-mode">
       <view class="header-content">
         <text class="greeting">您好，{{userInfo.userName || "尊敬的用户"}}</text>
@@ -49,7 +49,7 @@
     </view>
 
     <view class="workbench-grid">
-      <!-- 报修申请 -->
+
       <view class="work-card" bindtap="handleReport">
         <view class="icon-circle teal">
           <image class="work-icon" src="/images/icons/repair-form.png"></image>
@@ -58,7 +58,6 @@
         <text class="work-desc">设备故障在线报修</text>
       </view>
 
-      <!-- 自助手册 -->
       <view class="work-card" bindtap="handleManual">
         <view class="icon-circle green">
           <image class="work-icon" src="/images/icons/menu.png"></image>
@@ -75,20 +74,17 @@
         <text class="work-desc">查看报修进度</text>
       </view>
     </view>
-  </block>
+  </block> -->
   
   <!-- 3. 未登录用户视图 -->
-  <block wx:if="{{!hasUserInfo}}">
+  <block>
     <view class="login-prompt-card">
       <view class="prompt-header">
         <image class="prompt-icon" src="/images/logo.png" mode="aspectFit"></image>
-        <text class="prompt-title">欢迎使用颐尔福服务平台</text>
-        <text class="prompt-subtitle">登录后可享受设备控制、报修申请等完整功能</text>
+        <text class="prompt-title">欢迎使用卡品汇服务平台</text>
+        <text class="prompt-subtitle">畅享4G远程遥控</text>
       </view>
       
-      <button class="login-action-btn" bindtap="handleLogin">
-        立即登录
-      </button>
 
       <view class="feature-previews">
         <view class="preview-item">
@@ -99,10 +95,10 @@
           <icon type="success" size="14" color="#1677ff" />
           <text>实时状态监控</text>
         </view>
-        <view class="preview-item">
+        <!-- <view class="preview-item">
           <icon type="success" size="14" color="#1677ff" />
           <text>在线报修一键直达</text>
-        </view>
+        </view> -->
       </view>
     </view>
 
