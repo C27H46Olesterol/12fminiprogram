@@ -10,11 +10,48 @@ Page({
         pageNum: 1,
         pageSize: 10,
         loading: false,
-        hasMore: true
+        hasMore: true,
+        stats: {
+            total: 0,
+            installed: 0,
+            uninstalled: 0
+        }
     },
 
     onLoad(options) {
         this.loadOutboundList();
+        this.loadStats();
+    },
+
+    // 加载统计信息
+    async loadStats() {
+        const app = getApp();
+        try {
+            // 1. 获取库存总数 (由经销商出库给维修工的总数)
+            const outboundRes = await app.apiRequest('/erp/xiaoshouDetail/myOutboundList', 'GET', {
+                pageNum: 1,
+                pageSize: 1
+            });
+
+            // 2. 获取已安装数 (维修工提交并审核通过的安装记录总数)
+            const installRes = await app.apiRequest('/pro/installRecord/list', 'GET', {
+                pageNum: 1,
+                pageSize: 1
+            });
+
+            const total = outboundRes.total || 0;
+            const installed = installRes.total || 0;
+
+            this.setData({
+                stats: {
+                    total: total,
+                    installed: installed,
+                    uninstalled: Math.max(0, total - installed)
+                }
+            });
+        } catch (error) {
+            console.error('加载统计失败:', error);
+        }
     },
 
     // 加载出库记录

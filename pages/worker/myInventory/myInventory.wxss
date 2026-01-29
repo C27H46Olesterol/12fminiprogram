@@ -6,6 +6,49 @@
   flex-direction: column;
 }
 
+/* 统计概览 */
+.stats-section {
+  padding: 30rpx 32rpx;
+  background: #ffffff;
+}
+
+.stats-card {
+  display: flex;
+  background: #1677ff;
+  border-radius: 20rpx;
+  padding: 40rpx 20rpx;
+  color: #ffffff;
+  box-shadow: 0 10rpx 30rpx rgba(22, 119, 255, 0.2);
+}
+
+.stats-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stats-value {
+  font-size: 44rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  opacity: 0.8;
+}
+
+.stats-divider {
+  width: 1rpx;
+  height: 60rpx;
+  background: rgba(255, 255, 255, 0.2);
+  align-self: center;
+}
+
+.text-success { color: #ffffff !important; }
+.text-warning { color: #ffffff !important; }
+
 /* 顶部搜索与筛选 */
 .filter-section {
   padding: 24rpx 32rpx;

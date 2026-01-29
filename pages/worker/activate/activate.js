@@ -1,6 +1,7 @@
 // pages/client/activate/activate.js
 const app = getApp();
 const formAPI = require("../../../utils/formAPI");
+const FormData = require("../../../utils/formdata");
 
 Page({
   data: {
@@ -16,7 +17,15 @@ Page({
     // 状态
     canSubmit: false,
     isSubmitting: false,
-    location: null // 存储定位信息
+    location: null, // 存储定位信息
+
+    // 校验信息
+    validations: {
+      productCode: { isValid: true, msg: '' },
+      licensePlate: { isValid: true, msg: '' },
+      userPhone: { isValid: true, msg: '' },
+      installerPhone: { isValid: true, msg: '' }
+    }
   },
 
   onLoad() {
@@ -24,26 +33,16 @@ Page({
   },
 
   initPage() {
-    // 自动获取定位
-    // this.getCurrentLocation();
-
     // 自动填充手机号逻辑
     const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo');
-    const userPhone = userInfo && (userInfo.phone || userInfo.phoneNumber);
-    const userRole = userInfo && userInfo.role; // 假设role字段存在
+    // 根据 login.js 的存储结构，手机号字段应为 userPhone
+    const userPhone = userInfo && (userInfo.userPhone || userInfo.phone || userInfo.phoneNumber);
 
     if (userPhone) {
-      if (userRole === 'worker') {
-        // 如果是维修工提交，自动填充安装师傅手机号
-        this.setData({
-          'formData.installerPhone': userPhone
-        });
-      } else {
-        // 默认为普通用户/产品用户提交，填充用户手机号
-        this.setData({
-          'formData.userPhone': userPhone
-        });
-      }
+      // 在维修工端激活界面，默认将当前登录用户的手机号填入“安装师傅手机号”字段
+      this.setData({
+        'formData.installerPhone': userPhone
+      });
     }
 
     this.checkCanSubmit();
@@ -75,23 +74,76 @@ Page({
 
   // 输入处理
   onProductCodeInput(e) {
-    this.setData({ 'formData.productCode': e.detail.value });
-    this.checkCanSubmit();
+    const val = e.detail.value;
+    this.setData({ 'formData.productCode': val });
+    this.validateField('productCode', val);
   },
 
   onLicensePlateInput(e) {
-    this.setData({ 'formData.licensePlate': e.detail.value });
-    this.checkCanSubmit();
+    const val = e.detail.value;
+    this.setData({ 'formData.licensePlate': val });
+    this.validateField('licensePlate', val);
   },
 
   onUserPhoneInput(e) {
-    this.setData({ 'formData.userPhone': e.detail.value });
-    this.checkCanSubmit();
+    const val = e.detail.value;
+    this.setData({ 'formData.userPhone': val });
+    this.validateField('userPhone', val);
   },
 
   onInstallerPhoneInput(e) {
-    this.setData({ 'formData.installerPhone': e.detail.value });
-    this.checkCanSubmit();
+    const val = e.detail.value;
+    this.setData({ 'formData.installerPhone': val });
+    this.validateField('installerPhone', val);
+  },
+
+  // 单字段校验逻辑
+  validateField(field, value) {
+    let isValid = true;
+    let msg = '';
+    const phoneRegex = /^1[3-9]\d{9}$/;
+
+    switch (field) {
+      case 'productCode':
+        if (!value.trim()) {
+          isValid = false;
+          msg = '请输入产品序列号';
+        }
+        break;
+      case 'licensePlate':
+        if (!value.trim()) {
+          isValid = false;
+          msg = '请输入车牌号码';
+        } else if (value.length < 7) {
+          isValid = false;
+          msg = '车牌号码格式不正确';
+        }
+        break;
+      case 'userPhone':
+        if (!value) {
+          isValid = false;
+          msg = '请输入用户手机号';
+        } else if (!phoneRegex.test(value)) {
+          isValid = false;
+          msg = '手机号格式错误';
+        }
+        break;
+      case 'installerPhone':
+        if (!value) {
+          isValid = false;
+          msg = '请输入安装师傅手机号';
+        } else if (!phoneRegex.test(value)) {
+          isValid = false;
+          msg = '手机号格式错误';
+        }
+        break;
+    }
+
+    this.setData({
+      [`validations.${field}`]: { isValid, msg }
+    }, () => {
+      this.checkCanSubmit();
+    });
   },
 
   // 扫码
@@ -122,7 +174,8 @@ Page({
       mediaType: ['image', 'video'],
       sourceType: ['camera', 'album'],
       success: (res) => {
-        const newImages = [...currentImages, ...res.tempFiles.tempFilePath];
+        const newPaths = res.tempFiles.map(file => file.tempFilePath);
+        const newImages = [...currentImages, ...newPaths];
         if (type === 'process') {
           this.setData({ 'formData.processImages': newImages });
         } else {
@@ -190,39 +243,46 @@ Page({
 
   // 验证表单
   checkCanSubmit() {
-    const { formData } = this.data;
-    const phoneRegex = /^1[3-9]\d{9}$/;
+    const { formData, validations } = this.data;
 
-    const isValid =
+    // 检查所有必填项是否填写且照片已上传
+    const hasRequiredValues =
       formData.productCode.trim() !== '' &&
       formData.licensePlate.trim() !== '' &&
-      phoneRegex.test(formData.userPhone) &&
-      phoneRegex.test(formData.installerPhone) &&
+      formData.userPhone.trim() !== '' &&
+      formData.installerPhone.trim() !== '' &&
       formData.processImages.length > 0 &&
       formData.finishImages.length > 0;
-    // console.log("图片提交长度：", formData.processImages.length)
-    // console.log("表单内容是否可以提交：", isValid)
-    this.setData({ canSubmit: isValid });
+
+    // 检查是否有失败的校验
+    const hasValidationErrors = Object.values(validations).some(v => !v.isValid);
+
+    this.setData({ canSubmit: hasRequiredValues && !hasValidationErrors });
   },
 
   // 上传多张图片到服务器
   async uploadImages(imagePaths) {
-    console.log(imagePaths.map(path => path.tempFilePath))
-    let formData = new FormData();
+    if (!imagePaths || imagePaths.length === 0) return [];
 
-    imagePaths.map(path => {
-      formData.appendFile("file", path.tempFilePath);
+    const uploadPromises = imagePaths.map(async (path) => {
+      let formData = new FormData();
+      formData.appendFile("file", path);
+      let data = formData.getData();
+      try {
+        const res = await formAPI.uploadImg(data);
+        return res; // Assuming res contains the url or object from backend
+      } catch (err) {
+        console.error("单个图片上传失败:", path, err);
+        throw err;
+      }
     });
 
-    let data = formData.getData();
-    const uploadPromises = formAPI.uploadImg(data);
     try {
       const results = await Promise.all(uploadPromises);
-      console.log("上传图片结果", results);
-      // 假设接口直接返回url或id，这里直接返回结果数组
+      console.log("所有图片上传成功:", results);
       return results;
     } catch (err) {
-      console.error("图片上传失败", err);
+      console.error("图片批量上传失败", err);
       throw err;
     }
   },
@@ -299,6 +359,12 @@ Page({
 
     } catch (error) {
       console.error('提交失败:', error);
+      wx.hideLoading();
+      wx.showToast({
+        title: error.message || '提交过程发生错误',
+        icon: 'none',
+        duration: 3000
+      });
     } finally {
       this.setData({ isSubmitting: false });
     }
