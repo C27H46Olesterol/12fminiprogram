@@ -12,10 +12,13 @@ Page({
       storeAddress: '',
       userName: '',
       contactPhone: '',
-      distributors: [''],
       storeImages: [],
       licenseImages: []
     },
+    dealerPhoneSearch: '',
+    isSearchingDealer: false,
+    selectedDealer: null,
+    searchError: '',
     canSubmit: false,
     isSubmitting: false
   },
@@ -24,10 +27,6 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad(options) {
-
-    wx.navigateTo({
-      url: '/pages/index',
-    })
   },
 
   // 输入处理
@@ -60,30 +59,49 @@ Page({
   },
 
   // 经销商信息处理
-  onDistributorInput(e) {
-    const index = e.currentTarget.dataset.index;
-    const value = e.detail.value;
-    const distributors = [...this.data.formData.distributors];
-    distributors[index] = value;
+  onDealerPhoneInput(e) {
     this.setData({
-      'formData.distributors': distributors
+      dealerPhoneSearch: e.detail.value,
+      searchError: ''
     });
   },
 
-  onAddDistributor() {
-    const distributors = [...this.data.formData.distributors, ''];
-    this.setData({
-      'formData.distributors': distributors
-    });
+  async onSearchDealer() {
+    const phone = this.data.dealerPhoneSearch.trim();
+    if (!phone) {
+      this.setData({ searchError: '请输入手机号' });
+      return;
+    }
+
+    this.setData({ isSearchingDealer: true, searchError: '' });
+    try {
+      const res = await app.apiRequest('/pro/repairDealerBind/getDealerByPhone', 'GET', { phone: phone });
+      if (res && (res.code === 200 || res.code === 0) && res.data) {
+        this.setData({
+          selectedDealer: res.data,
+          isSearchingDealer: false
+        });
+        this.checkCanSubmit();
+      } else {
+        this.setData({
+          searchError: res.msg || '未找到该经销商',
+          isSearchingDealer: false
+        });
+      }
+    } catch (err) {
+      this.setData({
+        searchError: '查询失败，请检查网络',
+        isSearchingDealer: false
+      });
+    }
   },
 
-  onRemoveDistributor(e) {
-    const index = e.currentTarget.dataset.index;
-    const distributors = [...this.data.formData.distributors];
-    distributors.splice(index, 1);
+  onRemoveDealer() {
     this.setData({
-      'formData.distributors': distributors
+      selectedDealer: null,
+      dealerPhoneSearch: ''
     });
+    this.checkCanSubmit();
   },
 
   // 通用图片选择逻辑
@@ -166,7 +184,8 @@ Page({
   // 图片上传逻辑
   uploadFile(filePath) {
     return new Promise((resolve, reject) => {
-      const baseURL = "https://ha.musenyu.cn"
+      // const baseURL = "https://api.12f.tech"
+      const baseURL = "http://127.0.0.1:8080"
       wx.uploadFile({
         url: baseURL + '/resource/oss/upload',
         filePath: filePath,
@@ -197,12 +216,14 @@ Page({
   // 检查是否可提交
   checkCanSubmit() {
     const { storeName, storeAddress, userName, contactPhone, storeImages, licenseImages } = this.data.formData;
+    const { selectedDealer } = this.data;
     const isValid = storeName.trim() &&
       storeAddress.trim() &&
       userName.trim() &&
       contactPhone.trim() &&
       storeImages.length > 0 &&
-      licenseImages.length > 0;
+      licenseImages.length > 0 &&
+      selectedDealer;
 
     this.setData({
       canSubmit: !!isValid
@@ -238,27 +259,35 @@ Page({
         storePhoto: storePhoto,
         businessLicense: businessLicense,
         contactName: formData.userName,
-        contactPhone: formData.contactPhone,
-        // 如果后端支持，也可以把经销商信息带上
-        distributors: formData.distributors.filter(item => item.trim() !== '')
+        contactPhone: formData.contactPhone
       };
 
-      // 3. 提交数据
-      const result = await app.apiRequest('/pro/repairInfo/submit', 'POST', payload);
+      // 3. 提交维修工信息
+      console.log('正在提交维修工信息，Payload:', payload);
+      const infoResult = await app.apiRequest('/pro/repairInfo/submit', 'POST', payload);
 
-      if (result && (result.code === 200 || result.code === 0)) {
-        wx.hideLoading();
-        wx.showToast({
-          title: '提交成功，请等待审核',
-          icon: 'success',
-          duration: 2000
-        });
+      if (infoResult && (infoResult.code === 200 || infoResult.code === 0)) {
+        // 4. 提交绑定申请
+        const bindUrl = `/pro/repairDealerBind/submit?dealerUserId=${this.data.selectedDealer.userId}`;
+        console.log('正在提交绑定申请，URL:', bindUrl);
+        const bindResult = await app.apiRequest(bindUrl, 'POST');
 
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 2000);
+        if (bindResult && (bindResult.code === 200 || bindResult.code === 0)) {
+          wx.hideLoading();
+          wx.showToast({
+            title: '提交成功，请等待审核',
+            icon: 'success',
+            duration: 2000
+          });
+
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 2000);
+        } else {
+          throw new Error(bindResult.msg || '绑定申请失败');
+        }
       } else {
-        throw new Error(result.msg || '提交失败');
+        throw new Error(infoResult.msg || '信息提交失败');
       }
 
     } catch (error) {

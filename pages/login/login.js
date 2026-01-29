@@ -108,8 +108,8 @@ Page({
 
       // 3. 发送登录请求
       wx.request({
-        url: 'https://api.12f.tech/auth/login',
-        // url: 'http://127.0.0.1:8080/auth/login',
+        // url: 'https://api.12f.tech/auth/login',
+        url: 'http://127.0.0.1:8080/auth/login',
         method: 'POST',
         data: {
           clientId: '2aeeae6eada0ddca866d775707cc5b11',

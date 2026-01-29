@@ -150,28 +150,44 @@
       </view>
     </view>
 
-        <!-- 经销商信息 (选填) -->
+    <!-- 经销商绑定 -->
     <view class="form-card">
-      <view class="card-title">经销商信息(选填)</view>
-      <view class="dynamic-list">
-        <view class="dynamic-item" wx:for="{{formData.distributors}}" wx:key="index">
-          <input 
-            class="form-input flex-1" 
-            type="text" 
-            placeholder="经销商编号或手机号" 
-            placeholder-class="input-placeholder"
-            value="{{item}}" 
-            data-index="{{index}}"
-            bindinput="onDistributorInput"
-          />
-          <view class="remove-item-btn" bindtap="onRemoveDistributor" data-index="{{index}}" wx:if="{{formData.distributors.length > 1}}">
-            <text class="remove-icon">移除</text>
-          </view>
+      <view class="card-title">绑定经销商</view>
+      <view class="search-box">
+        <input 
+          class="form-input flex-1" 
+          type="number" 
+          placeholder="请输入经销商手机号" 
+          placeholder-class="input-placeholder"
+          value="{{dealerPhoneSearch}}" 
+          bindinput="onDealerPhoneInput"
+        />
+        <button class="btn-search" bindtap="onSearchDealer" loading="{{isSearchingDealer}}">查询</button>
+      </view>
+      
+      <!-- 经销商查询结果展示 -->
+      <view class="dealer-info-card" wx:if="{{selectedDealer}}">
+        <view class="dealer-info-item">
+          <text class="dealer-label">经销商姓名：</text>
+          <text class="dealer-value">{{selectedDealer.nickName || selectedDealer.userName}}</text>
+        </view>
+        <view class="dealer-info-item">
+          <text class="dealer-label">手机号码：</text>
+          <text class="dealer-value">{{selectedDealer.phonenumber}}</text>
+        </view>
+        <view class="dealer-status">
+          <icon type="success" size="14"></icon>
+          <text>已验证</text>
+        </view>
+        <view class="remove-dealer" bindtap="onRemoveDealer">
+          <text>重选</text>
         </view>
       </view>
-      <view class="add-item-btn" bindtap="onAddDistributor">
-        <text class="add-btn-icon">+</text>
-        <text>添加经销商信息</text>
+      <view class="search-tip" wx:if="{{!selectedDealer && searchError}}">
+        <text class="error-text">{{searchError}}</text>
+      </view>
+      <view class="search-tip" wx:if="{{!selectedDealer && !searchError}}">
+        <text>请输入经销商手机号并点击查询以进行绑定</text>
       </view>
     </view>
 
