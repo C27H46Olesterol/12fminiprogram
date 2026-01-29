@@ -4,53 +4,89 @@ Page({
     searchQuery: '',
     filterDate: '',
     sortOrder: 'desc', // 'desc' or 'asc'
-    records: [
-      {
-        id: '1',
-        sn: 'SN123456789',
-        licensePlate: '粤B88888',
-        userPhone: '138****0001',
-        activationDate: '2025-12-25 10:30',
-        status: '审核通过',
-        statusType: 'success',
-        location: '广东省深圳市南山区某街道',
-        processImages: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-        finishImages: ['https://via.placeholder.com/150'],
-        expanded: false
-      },
-      {
-        id: '2',
-        sn: 'SN987654321',
-        licensePlate: '粤A66666',
-        userPhone: '139****2222',
-        activationDate: '2025-12-26 14:15',
-        status: '待审核',
-        statusType: 'warning',
-        location: '广东省广州市天河区某中心',
-        processImages: ['https://via.placeholder.com/150'],
-        finishImages: ['https://via.placeholder.com/150', 'https://via.placeholder.com/150'],
-        expanded: false
-      },
-      {
-        id: '3',
-        sn: 'SN55556666',
-        licensePlate: '浙A77777',
-        userPhone: '135****3333',
-        activationDate: '2025-12-20 09:00',
-        status: '驳回重传',
-        statusType: 'error',
-        location: '浙江省杭州市西湖区',
-        processImages: ['https://via.placeholder.com/150'],
-        finishImages: ['https://via.placeholder.com/150'],
-        expanded: false,
-        remark: '安装完照模糊，请重新上传'
-      }
-    ],
-    filteredRecords: []
+    records: [],
+    filteredRecords: [],
+    total: 0,
+    pageNum: 1,
+    pageSize: 10,
+    loading: false,
+    hasMore: true
   },
 
   onLoad(options) {
-    this.filterRecords();
+    this.loadInstallRecords();
+  },
+
+  // 加载安装记录
+  async loadInstallRecords(isLoadMore = false) {
+    if (this.data.loading) return;
+    if (isLoadMore && !this.data.hasMore) return;
+
+    this.setData({ loading: true });
+    const app = getApp();
+
+    try {
+      const res = await app.apiRequest('/pro/installRecord/list', 'GET', {
+        pageNum: this.data.pageNum,
+        pageSize: this.data.pageSize
+      });
+
+      if (res && (res.code === 200 || res.code === 0)) {
+        const newRecords = res.rows.map(item => ({
+          id: item.id,
+          sn: item.productSn,
+          licensePlate: item.licensePlate,
+          driverPhone: item.driverPhone,
+          customerPhone: item.customerPhone,
+          installTime: item.installTime,
+          status: item.installStatus === '1' ? '已完成' : '进行中',
+          statusType: item.installStatus === '1' ? 'success' : 'warning',
+          remark: item.remark,
+          processImages: item.installProcessPhotos ? item.installProcessPhotos.split(',') : [],
+          finishImages: item.installCompletePhotos ? item.installCompletePhotos.split(',') : [],
+          expanded: false
+        }));
+
+        const records = isLoadMore ? [...this.data.records, ...newRecords] : newRecords;
+
+        this.setData({
+          records: records,
+          total: res.total,
+          loading: false,
+          hasMore: records.length < res.total
+        }, () => {
+          this.filterRecords();
+        });
+      } else {
+        wx.showToast({ title: res.msg || '查询失败', icon: 'none' });
+        this.setData({ loading: false });
+      }
+    } catch (error) {
+      console.error('加载列表失败:', error);
+      this.setData({ loading: false });
+    }
+  },
+
+  onPullDownRefresh() {
+    this.setData({
+      pageNum: 1,
+      hasMore: true,
+      records: []
+    }, () => {
+      this.loadInstallRecords().then(() => {
+        wx.stopPullDownRefresh();
+      });
+    });
+  },
+
+  onReachBottom() {
+    if (this.data.hasMore) {
+      this.setData({
+        pageNum: this.data.pageNum + 1
+      }, () => {
+        this.loadInstallRecords(true);
+      });
+    }
   },
 
   onSearch(e) {
@@ -85,18 +121,19 @@ Page({
     let filtered = records.filter(item => {
       const matchKeyword = !searchQuery ||
         item.sn.toLowerCase().includes(searchQuery) ||
-        item.licensePlate.toLowerCase().includes(searchQuery) ||
-        item.userPhone.toLowerCase().includes(searchQuery);
+        (item.customerName && item.customerName.toLowerCase().includes(searchQuery)) ||
+        item.userPhone.includes(searchQuery);
 
-      const matchDate = !filterDate || item.activationDate.startsWith(filterDate);
+      const matchDate = !filterDate || (item.activationDate && item.activationDate.startsWith(filterDate));
 
       return matchKeyword && matchDate;
     });
 
     // 排序
     filtered.sort((a, b) => {
-      const dateA = new Date(a.activationDate.replace(/-/g, '/'));
-      const dateB = new Date(b.activationDate.replace(/-/g, '/'));
+      if (!a.installTime || !b.installTime) return 0;
+      const dateA = new Date(a.installTime.replace(/-/g, '/'));
+      const dateB = new Date(b.installTime.replace(/-/g, '/'));
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 

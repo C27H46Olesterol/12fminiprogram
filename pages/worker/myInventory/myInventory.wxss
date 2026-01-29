@@ -1,4 +1,4 @@
-/* pages/worker/activateLog/activateLog.wxss */
+/* pages/worker/myInventory/myInventory.wxss */
 .container {
   background-color: #f8fafc;
   min-height: 100vh;
@@ -103,6 +103,12 @@
   display: flex;
   align-items: center;
   margin-bottom: 12rpx;
+}
+
+.sn-label {
+  font-size: 24rpx;
+  color: #94a3b8;
+  margin-right: 8rpx;
 }
 
 .sn-label {

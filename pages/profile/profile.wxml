@@ -25,11 +25,11 @@
         <text class="menu-text">申请成为维修工</text>
         <view class="arrow"></view>
       </view>
-      <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDealer' wx:if="{{userInfo.userRole === '维修工'}}">
+      <!-- <view class="menu-item" hover-class="menu-item-hover" bind:tap='goDealer' wx:if="{{userInfo.userRole === '维修工'}}">
         <image class="menu-icon" src="/images/icons/note.png"></image>
         <text class="menu-text">添加经销商</text>
         <view class="arrow"></view>
-      </view>
+      </view> -->
     </view>
 
     <!-- 功能菜单组 -->
@@ -47,6 +47,11 @@
       <view class="menu-item" hover-class="menu-item-hover" bind:tap="goActivateLog" wx:if="{{userInfo.userRole === '维修工'}}">
         <image class="menu-icon" src="/images/icons/note.png"></image>
         <text class="menu-text">安装记录</text>
+        <view class="arrow"></view>
+      </view>
+      <view class="menu-item" hover-class="menu-item-hover" bind:tap="goMyInventory" wx:if="{{userInfo.userRole === '维修工'}}">
+        <image class="menu-icon" src="/images/icons/note.png"></image>
+        <text class="menu-text">我的库存</text>
         <view class="arrow"></view>
       </view>
       <view class="menu-item" hover-class="menu-item-hover" bind:tap="goRepairLog"  wx:if="{{userInfo.userRole === '维修工'}}">

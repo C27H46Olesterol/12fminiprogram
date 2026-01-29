@@ -119,7 +119,7 @@ Page({
 
     wx.chooseMedia({
       count: maxCount,
-      mediaType: ['image','video'],
+      mediaType: ['image', 'video'],
       sourceType: ['camera', 'album'],
       success: (res) => {
         const newImages = [...currentImages, ...res.tempFiles.tempFilePath];
@@ -211,7 +211,7 @@ Page({
     let formData = new FormData();
 
     imagePaths.map(path => {
-      formData.appendFile("file",path.tempFilePath);
+      formData.appendFile("file", path.tempFilePath);
     });
 
     let data = formData.getData();
@@ -267,25 +267,25 @@ Page({
       const finishImageIds = await this.uploadImages(this.data.formData.finishImages);
       let processImgsUrl = processImageIds.map(url => url.url);
       let finishImgsUrl = finishImageIds.map(url => url.url);
-      // 2. 准备提交数据 - use eventData preferred, fallback to data
-      // eventData keys match 'name' attributes: productSn, licensePlate, driverPhone, customerPhone
-      const formatFormData = {
+      // 2. 准备提交数据
+      const payload = {
         productSn: eventData.productSn || this.data.formData.productCode,
         driverPhone: eventData.driverPhone || this.data.formData.userPhone,
         customerPhone: eventData.customerPhone || this.data.formData.installerPhone,
         licensePlate: eventData.licensePlate || this.data.formData.licensePlate,
-        installProcessPhotos: processImgsUrl.toString(),
-        installCompletePhotos: finishImgsUrl.toString()
-      }
+        installProcessPhotos: processImgsUrl.join(','),
+        installCompletePhotos: finishImgsUrl.join(','),
+        installStatus: "1", // 1 为已完成
+        installTime: new Date().toISOString()
+      };
 
-      const result = await formAPI.uploadInstallForm(formatFormData);
-      // 实际的业务返回值在 result.data 中
-      const res = result.data;
-      console.log('提交返回', res)
-      if (res.code === 200) {
+      console.log('正在发送安装记录:', payload);
+      const res = await app.apiRequest('/pro/installRecord', 'POST', payload);
+
+      if (res && (res.code === 200 || res.code === 0)) {
         wx.hideLoading();
         wx.showToast({
-          title: '提交成功',
+          title: '审核提交成功',
           icon: 'success',
           duration: 2000
         });
@@ -294,7 +294,7 @@ Page({
           wx.navigateBack();
         }, 2000);
       } else {
-        throw new Error(res?.message || '提交失败');
+        throw new Error(res.msg || '提交失败');
       }
 
     } catch (error) {

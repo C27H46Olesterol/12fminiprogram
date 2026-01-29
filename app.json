@@ -13,6 +13,7 @@
     "pages/manual/manual",
     "pages/worker/repairLog/repairLog",
     "pages/worker/activateLog/activateLog",
+    "pages/worker/myInventory/myInventory",
     "pages/client/issuesLog/issuesLog",
     "pages/client/devices/devices",
     "pages/login/dealer/dealer",

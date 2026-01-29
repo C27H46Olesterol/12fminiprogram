@@ -71,10 +71,12 @@ Page({
     wx.navigateTo({
       url: '/pages/worker/activateLog/activateLog',
     })
-    // wx.showToast({
-    //   title: '功能开发中！',
-    //   icon:'success'
-    // })
+  },
+
+  goMyInventory() {
+    wx.navigateTo({
+      url: '/pages/worker/myInventory/myInventory',
+    })
   },
 
   goIssuesLog() {
@@ -123,13 +125,13 @@ Page({
     })
   },
 
-  goDealer(){
+  goDealer() {
     wx.navigateTo({
       url: '/pages/login/dealer/dealer',
     })
   },
 
-  goUpdate(){
+  goUpdate() {
     wx.navigateTo({
       url: '/pages/profile/update/update',
     })
