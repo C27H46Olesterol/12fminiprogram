@@ -203,8 +203,8 @@
           </view>
         </view>
         <view class="display-item fault-status" >
-          <text class="display-label-mini" wx:if="{{deviceStatus.err}}">故障码</text>
-          <text class="display-value fault-code {{deviceStatus.err > 0 ? 'error' : 'nomal'}}" wx:if="{{deviceStatus.err}}">{{deviceStatus.err > 0 ? 'E' + deviceStatus.err : '--'}}</text>
+          <text class="display-label-mini" >故障码</text>
+          <text class="display-value fault-code {{deviceStatus.err > 0 ? 'error' : 'nomal'}}">{{deviceStatus.err > 0 ? 'E' + deviceStatus.err : '--'}}</text>
         </view>
         <!-- <view class="display-item">
           <text class="display-label">设备状态</text>
@@ -240,37 +240,33 @@
           <text class="display-label">进风温度</text>
           <text class="display-value">{{ deviceStatus.it ? (deviceStatus.it === 999 ? 'SHr' : (deviceStatus.it === 254 ? 'SHr':(deviceStatus.it === 255 ? 'OPE' : (deviceStatus.it - 50 + '°C')))) : '--'}}</text>
         </view>
-      </view>
-
-      <!-- 第四行：更多状态 -->
-      <view class="display-row">
-        <view class="display-item">
-          <text class="display-label">上下摆风</text>
-          <text class="display-value {{deviceStatus.sxbf === 1 ? 'active' : ''}}">{{deviceStatus.sxbf === 1 ? '打开' : '关闭'}}</text>
-        </view>
-        <view class="display-item">
-          <text class="display-label">左右摆风</text>
-          <text class="display-value {{deviceStatus.zybf === 1 ? 'active' : ''}}">{{deviceStatus.zybf === 1 ? '打开' : '关闭'}}</text>
-        </view>
         <view class="display-item">
           <text class="display-label">电压</text>
           <text class="display-value">{{deviceStatus.bv ? deviceStatus.bv / 10 : '--'}}V</text>
         </view>
       </view>
 
-      <!-- 第五行：扩展功能状态 -->
-      <view class="display-row">
-        <view class="display-item">
-          <text class="display-label">照明灯</text>
-          <text class="display-value {{deviceStatus.light === 1 ? 'active' : ''}}">{{deviceStatus.light === 1 ? '打开' : '关闭'}}</text>
+      <!-- 第四行：功能状态图标化 (Consolidated Status Icons) -->
+      <view class="display-row status-icons-row">
+        <!-- 上下摆风 -->
+        <view class="status-icon-item" title="上下摆风">
+          <image class="status-icon-img {{deviceStatus.sxbf === 1 ? 'status-active' : 'status-inactive'}}" src="/images/icons/uptodown.png" mode="aspectFit"></image>
         </view>
-        <view class="display-item">
-          <text class="display-label">氛围灯</text>
-          <text class="display-value {{deviceStatus.fl >= 1 ? 'active' : ''}}">{{deviceStatus.fl >= 1 ? '打开' : '关闭'}}</text>
+        <!-- 左右摆风 -->
+        <view class="status-icon-item" title="左右摆风">
+          <image class="status-icon-img {{deviceStatus.zybf === 1 ? 'status-active' : 'status-inactive'}}" src="/images/icons/sidetoside.png" mode="aspectFit"></image>
         </view>
-        <view class="display-item">
-          <text class="display-label">负离子</text>
-          <text class="display-value {{deviceStatus.fu === 1 ? 'active' : ''}}">{{deviceStatus.fu === 1 ? '打开' : '关闭'}}</text>
+        <!-- 照明灯 -->
+        <view class="status-icon-item" title="照明灯">
+          <image class="status-icon-img {{deviceStatus.light === 1 ? 'status-active' : 'status-inactive'}}" src="/images/icons/light_on.png" mode="aspectFit"></image>
+        </view>
+        <!-- 氛围灯 -->
+        <view class="status-icon-item" title="氛围灯">
+          <image class="status-icon-img {{deviceStatus.fl >= 1 ? 'status-active' : 'status-inactive'}}" src="/images/icons/sun.png" mode="aspectFit"></image>
+        </view>
+        <!-- 负离子 -->
+        <view class="status-icon-item" title="负离子">
+          <image class="status-icon-img {{deviceStatus.fu === 1 ? 'status-active' : 'status-inactive'}}" src="/images/icons/fu.png" mode="aspectFit"></image>
         </view>
       </view>
     </view>
