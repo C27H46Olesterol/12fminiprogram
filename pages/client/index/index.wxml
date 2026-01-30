@@ -186,7 +186,7 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">开机状态</text>
-          <text class="display-value {{deviceStatus.ps === 1 ? 'active' : ''}}">{{deviceStatus.ps === 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.ps === 1 ? 'active' : ''}}">{{deviceStatus.ps === 1 ? '打开' : '关闭'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">信号</text>
@@ -202,19 +202,23 @@
             </block>
           </view>
         </view>
-        <view class="display-item">
+        <view class="display-item fault-status" >
+          <text class="display-label-mini" wx:if="{{deviceStatus.err}}">故障码</text>
+          <text class="display-value fault-code {{deviceStatus.err > 0 ? 'error' : 'nomal'}}" wx:if="{{deviceStatus.err}}">{{deviceStatus.err > 0 ? 'E' + deviceStatus.err : '--'}}</text>
+        </view>
+        <!-- <view class="display-item">
           <text class="display-label">设备状态</text>
           <text class="display-value nomal" wx:if="{{deviceStatus.online}}">在线</text>
           <text class="display-value" wx:else>离线</text>
-        </view>
+        </view> -->
       </view>
 
       <!-- 中间：核心显示 (温度 & 模式) -->
       <view class="display-main">
         <!-- 左侧：故障码显示 -->
-        <view class="display-item fault-status">
-          <text class="display-label-mini">故障码</text>
-          <text class="display-value fault-code {{deviceStatus.err > 0 ? 'error' : 'nomal'}}">{{deviceStatus.err > 0 ? 'E' + deviceStatus.err : '--'}}</text>
+        <view class="display-item">
+          <text class="display-label">风速</text>
+          <text class="display-value">{{deviceStatus.fs ? deviceStatus.fs + '档' : '--'}}</text>
         </view>
         <view class="display-item temp-display">
           <text class="temp-value">{{deviceStatus.temp ? deviceStatus.temp / 10 : '--'}}</text>
@@ -227,10 +231,7 @@
 
       <!-- 第三行：环境信息 -->
       <view class="display-row">
-        <view class="display-item">
-          <text class="display-label">风速</text>
-          <text class="display-value">{{deviceStatus.fs ? deviceStatus.fs + '档' : '--'}}</text>
-        </view>
+
         <view class="display-item">
           <text class="display-label">出风温度</text>
           <text class="display-value">{{ deviceStatus.ot ? (deviceStatus.ot === 999 ? 'SHr' : (deviceStatus.ot === 254 ? 'SHr':(deviceStatus.ot === 255 ? 'OPE' : (deviceStatus.ot - 50 + '°C')))) : '--'}}</text>
@@ -245,11 +246,11 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">上下摆风</text>
-          <text class="display-value {{deviceStatus.sxbf === 1 ? 'active' : ''}}">{{deviceStatus.sxbf === 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.sxbf === 1 ? 'active' : ''}}">{{deviceStatus.sxbf === 1 ? '打开' : '关闭'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">左右摆风</text>
-          <text class="display-value {{deviceStatus.zybf === 1 ? 'active' : ''}}">{{deviceStatus.zybf === 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.zybf === 1 ? 'active' : ''}}">{{deviceStatus.zybf === 1 ? '打开' : '关闭'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">电压</text>
@@ -261,15 +262,15 @@
       <view class="display-row">
         <view class="display-item">
           <text class="display-label">照明灯</text>
-          <text class="display-value {{deviceStatus.light === 1 ? 'active' : ''}}">{{deviceStatus.light === 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.light === 1 ? 'active' : ''}}">{{deviceStatus.light === 1 ? '打开' : '关闭'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">氛围灯</text>
-          <text class="display-value {{deviceStatus.fl >= 1 ? 'active' : ''}}">{{deviceStatus.fl >= 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.fl >= 1 ? 'active' : ''}}">{{deviceStatus.fl >= 1 ? '打开' : '关闭'}}</text>
         </view>
         <view class="display-item">
           <text class="display-label">负离子</text>
-          <text class="display-value {{deviceStatus.fu === 1 ? 'active' : ''}}">{{deviceStatus.fu === 1 ? 'ON' : 'OFF'}}</text>
+          <text class="display-value {{deviceStatus.fu === 1 ? 'active' : ''}}">{{deviceStatus.fu === 1 ? '打开' : '关闭'}}</text>
         </view>
       </view>
     </view>
