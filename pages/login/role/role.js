@@ -22,6 +22,8 @@ Page({
       this.setData({
         isWorker: true
       })
+
+      this.selectWorker();
     }
   },
 
