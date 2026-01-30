@@ -756,14 +756,12 @@ Page({
       console.log('检查选中设备状态：', device)
       if (!device) {
         console.log('设备列表无设备')
-        this.clearAllTimers();
         return;
       }
       if (device.connectionType === 'bluetooth') {
         console.log('连接蓝牙设备：', device)
         if (this.data.isBluetoothConnected) {
           // this.getDeviceStatusByBluetooth();
-          this.clearAllTimers();
         } else {
           console.log('蓝牙未连接，跳过状态查询')
         }
